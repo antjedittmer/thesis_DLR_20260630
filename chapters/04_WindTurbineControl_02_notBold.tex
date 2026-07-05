@@ -631,7 +631,7 @@ As expected, increasing the allowable pitch rate enhances the effectiveness of t
 Figure~\ref{fig:PSDIPC} shows the Power Spectral Density (PSD) of the blade root out-of-plane moment to visualize and explain the gradual improvement with increasing pitch rate for all three test cases. The black line represents the baseline CPC. The blue line, representing IPC with a 4°/s rate limit, reduces the 1P peak by 87\%, while the red line, representing IPC with an 8°/s rate limit, further lowers it, achieving a significant 98\% reduction. At the 2P frequency, the blue line shows a slight increase compared to the baseline, while the red line effectively lowers the 2P peak. As expected, the 8°/s rate limit offers better load reduction across both 1P and 2P frequencies. The controller tuned with the rate limit set to 13°/s, depicted as a yellow line, decreases the 1P and 2P peaks even more. 
 \begin{figure}[h]
     \begin{center}
-        \includegraphics[width=0.6\textwidth]{figures/figures_WESC25/fig02_PSDroot_breaky_ratecomp.eps}
+        \includegraphics[width=0.6\textwidth]{figures/figures_WESC25/fig02_PSDroot_breaky_ratecomp.png}
         \caption[Controller comparison: Power Spectral Density of blade root out-of-plane moment of baseline PI with 8\textdegree/s rate limit, IPC with 4°/s,  8°/s, and 13°/s rate limit]{Controller comparison: Power Spectral Density of blade root out-of-plane moment of baseline PI (black) with 8\textdegree/s rate limit, IPC with 4°/s rate limit (blue),  8°/s rate limit (red), and 13°/s rate limit (yellow)}
         \label{fig:PSDIPC}
     \end{center}
@@ -838,7 +838,7 @@ Figure~\ref{fig:PSDTEF} shows the power spectral density (PSD) of the blade root
     \subfloat[Baseline (black), IPC (blue), and IFC (green)]{\includegraphics[width=0.485\textwidth]{figures/Images_Torque24/fig02_PSDroot_breaky.eps}}\hfill 
     \subfloat[AALC (red), and AALC optimized (pink)]{\includegraphics[width=0.485\textwidth]{figures/Images_Torque24/fig02_PSDroot_breaky1c.eps}}\hfill
     %\subfloat[blc blc]{\includegraphics[width=0.31\textwidth]{figures/twoTurbinesGreedyOpt_2d.eps}}
-    \caption{Power Spectral Density of optimization set signals, Turbulence Class A, with mean wind speed 16~m/s.}
+    \caption{Power Spectral Density of optimization set signals, turbulence class A, with mean wind speed 16~m/s.}
     \label{fig:PSDTEF}
 \end{figure}
 %    
@@ -868,7 +868,7 @@ Table~\ref{tabone} contains the five evaluation criteria to quantify the effect 
 
 Figure~\ref{fig:CtrlCompAll} shows the evaluation criteria for blade DEL $C_\text{DEL,b}$,
 tower DEL $C_\text{DEL,t}$, and power standard deviation $C_{\delta P}$ as a function
-of actuator activity($C_\text{Act}$) for qLMPC, IPC, and AALC, evaluated for normal
+of actuator activity criterion $C_\text{Act}$ for qLMPC, IPC, and AALC, evaluated for normal
 turbulent wind of turbulence class~B and a mean wind speed of 16\,m/s from the second verification test set. All criteria are
 normalized by the corresponding values of the PI CPC baseline, so that values below unity
 indicate improvement. For qLMPC and IPC, three pitch rate limits were tested, resulting
@@ -880,7 +880,7 @@ limit of 8\textdegree/s.
          \includegraphics[width=0.65\textwidth]{figures/figures_WESC25/afig01_IPCMPCpareto.eps}
          
  
-\caption[Evaluation criteria for qLMPC, IPC, and AALC for turbulent wind] { Evaluation criteria  qLMPC, IPC, and IPC-TEFC for turbulent wind (16\,m/s mean, IEC turbulence class A (14\%)). Criteria are tower base and blade DELS, power mean and standard deviation, and pitch rate.}
+\caption[Evaluation criteria for qLMPC, IPC, and AALC for turbulent wind] { Evaluation criteria  qLMPC, IPC, and IPC-TEFC for turbulent wind (16\,m/s mean, IEC turbulence class B (14\%)). Criteria are tower base and blade DELS, power mean and standard deviation, and pitch rate.}
          \label{fig:CtrlCompAll}
      \end{center}
  \end{figure}

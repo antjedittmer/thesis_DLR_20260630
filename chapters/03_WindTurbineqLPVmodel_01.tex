@@ -22,13 +22,13 @@ The geometric parameters depicted are the hub height $H_t$ and the rotor radius 
     \end{minipage}
 \end{figure}
 %\noindent
-Two models are introduced in this section: The first one modeling the rotor speed and the tower movement, the second one taking additionally the generator speed and the blade deflection into account.  Both models use the three inputs rotor torque, generator torque and thrust force.  
+Two qLPV designs are introduced in this section: the first models the rotor speed and the tower movement, while the second additionally accounts for the generator speed and the blade deflection. Both models use the three inputs rotor torque, generator torque, and thrust force.
 
 The five states of the first model considered are the fore-aft and side-to-side tower deflections at hub height, $x_t$ and $y_t$, as well as their derivatives, $\dot{x}_t$ and $\dot{y}_t$, i.e., the fore-aft and side-to-side velocities, and the angular rotor speed $\omega_r$.
 The state vector of the second model additionally contains the angular generator speed $\omega_g$ and the angular flapwise blade deflection $\delta_b$. Note that both the wind speed and the resulting force act in a distributed manner over the rotor disk. The vectors $V_r$ and $F_{T,r}$ give an equivalent one dimensional wind and force vector of the two dimensional wind field distributed over the rotor disk area and the forces acting at the segments of the blades.
 
- The thrust $F_{T,r}$ is the sum of the accumulated forces acting on the blades of the turbines, with the accumulated force per blade denoted $F_{T,bi}$ for the $i^{\text{th}}$ blade and with $n_b$ as the number of blades. To model the hub's movement and the resulting mechanical moments from the thrust force $F_{T,r}$, these forces are consolidated into a single force acting at a specific point on the blade, which is located at a distance $r_b$ from the rotor hub. This uses the same modeling as in \cite{Bianchi2007} where "the thrust forces distributed along each blade were
- replaced by a lumped force $F_T$ applied at a distance $r_b$ from the axis of rotation". % The aerodynamic center is the point on the blade where the resultant aerodynamic forces, i.e., lift and drag, effectively act. The aerodynamic center remains fixed relative to the blade regardless of the pitch angle changes and is used for representing aerodynamic forces when analyzing the overall aerodynamic behavior. 
+ The thrust $F_{T,r}$ is the sum of the accumulated forces acting on the blades of the turbines, with the accumulated force per blade denoted $F_{T,bi}$ for the $i$th blade and with $n_b$ as the number of blades. To model the hub's movement and the resulting mechanical moments from the thrust force $F_{T,r}$, these forces are consolidated into a single force acting at a specific point on the blade, which is located at a distance $r_b$ from the rotor hub. This uses the same modeling as in \cite{Bianchi2007} where "the thrust forces distributed along each blade were
+ replaced by a lumped force $F_T$ applied at a distance $r_b$ from the axis of rotation". 
 In the following subsections, the underlying equations for two qLPV models are provided. Both turbine models share the drivetrain and actuator models, as well as the same aerodynamics model. The servo-elastic modeling of the first model is based on two simple physical equations governing the rotational motion and the tower bending. The more advanced servo-elastic modeling of the second model is derived from Lagrange's equation.
 
 \subsection{Drivetrain, Torque Actuator, and Pitch Actuator Models}\label{subsec:drivetrain, Torque Actuator, and Pitch Actuator Models}
@@ -53,7 +53,7 @@ with the transmission inertia $J_s$. The extracted power $P_{g}$ is the product 
 \end{align}
 since equations \eqref{eq:DrvTr} show that the product of the rotor's angular speed and torque equals that of the generator in steady-state. Therefore, setting the torque of the generator directly influences the power output of the turbine.
 %\noindent
-
+%
 The torque actuator can be regarded as the power conditioning unit of the turbine, and its dynamics can be modeled as a first-order differential equation \cite{odgaard2013fault}:
 \begin{align}\label{eq:Tact}
     \dot{T}_{g}(t) = -\frac{1}{\kappa} T_{g}(t) + \frac{1}{\kappa} T_{g,\text{ref}}(t), 
@@ -69,7 +69,6 @@ Although the pitch system is often modeled as a second-order differential equati
     \ddot{\beta_0}(t) = -2\zeta_{\beta_0} \omega_{n,\beta} \dot{\beta}_0(t) - {\omega_{n,\beta}}^2 \beta_0(t) + {\omega_{n,\beta}}^2 \beta_{0,\text{ref}}(t),
 \end{align*}
 the simplified representation as a first order system is made here since the relatively fast actuator dynamics have little influence on the investigated control objectives, which are consistent power output despite wind fluctuations and minimal tower movement. Note that the actuator dynamics, as provided in equations~\eqref{eq:Tact} and \eqref{eq:betaact}, result in low pass filtered signals of the commanded control output signals being applied to the turbine. However, the turbine dynamics, as modeled here in the aerodynamic and mechanical subsystem sections below, operate at much lower frequency and have greater impact on the power output as presented in equation~\eqref{eq:pg}.
-
 \subsection{Aerodynamic Model}
 The aerodynamic model represents the conversion of the available kinetic energy in the wind into mechanical energy using the rotor blades. Based on blade actuator disc theory, the mathematical equations for the rotor torque $T_{r}$, the aerodynamic power captured by the rotor $P_{r}$, and the thrust force $F_{T,r}$ can be derived from equations~\eqref{eq:PwPt} and~\eqref{eq:Ft}, used in Section~\ref{sec:WindTurbines} to provide the relationship between wind speed, thrust force and power, as
 \begin{equation}\label{eq:aero}
@@ -103,11 +102,11 @@ and hence depends on the rotor radius $R_r$, the rotor angular speed $\omega_{r}
 \end{figure}
 %
 \subsection{Structural Models} \label{subsec:Structural Models}
-In this section, two modeling approaches are presented. They are based on previous studies, \cite{schlipf2013nonlinear, mulders2020preventing, Bianchi2007} aiming to derive a structural model and are modified and extended to be amenable for comparison and systematic verification with FAST. Both models leverage the aerodynamic model from equation~\eqref{eq:aero}. The resulting non-linear differential equations were implemented in Simulink, parameterized using the NREL 5MW turbine parameters given in Table \ref{table:1}, and compared in closed-loop simulations with FAST simulations.
+In this section, two modeling approaches are presented. They are based on previous studies, \cite{schlipf2013nonlinear, mulders2020preventing, Bianchi2007} aiming to derive a structural model and are modified and extended to be amenable for comparison and systematic verification with FAST. Both models leverage the aerodynamic model from Equation~\eqref{eq:aero}. The resulting non-linear differential equations were implemented in Simulink, parameterized using the NREL 5MW turbine parameters given in Table \ref{table:1}, and compared in closed-loop simulations with FAST simulations.
 %
 \subsubsection{Model 1: Structural Model with Tower Fore–Aft and Side–to–Side Motion}
-%\subsection{Model 1: Rotor Speed and Tower Acceleration}
-Models for controller design only need to capture the main dynamics of a system. Hence, the first model uses only the rotor speed and tower acceleration as states. Based on the equations given above, the relationship between the forces and moments acting on the turbine, the inputs, and the rotor speed and tower movements, the states, can be expressed as
+
+Models for controller design only need to capture the main dynamics of a system. Hence, the first model uses only the rotor speed, tower displacements and velocities as states. Based on the equations given above, the relationship between the forces and moments acting on the turbine, the inputs, and the rotor speed and tower movements, the states, can be expressed as
 \begin{equation}\label{eq:Mdl1NonLin}
     \begin{split} 
         \dot{\omega_r}(t) &= \frac{1}{J_r + N_g^2 J_g}(T_r(t) - N_{g}T_{g}(t)) = \frac{1}{J_s}(T_r(t) - N_{g}T_{g}(t)),   \\
@@ -120,14 +119,14 @@ The calculation of the side-to-side force as
 \begin{equation}
     F_{T,y} = \frac{3}{2H_t}(T_r(t) - N_gT_g(t))
 \end{equation}
-follows from a lumped-force excitation analogous to the fore-aft force in \cite{Bianchi2007}, extended here to the in-plane direction. The reasoning is as follows: the net in-plane torque $\Delta T = T_r - N_g T_g$ acts as a moment at the free end of the tower cantilever. Such a tip moment produces a constant bending moment along the tower, with magnitude $\Delta T$ at the base. A triangular load distributed along the tower, zero at the tip and increasing linearly toward the root, has its resultant at $2/3$ of the tower height from the base. Requiring this equivalent distributed load to produce the same base bending moment as the applied tip moment gives $F_{T,y} \cdot \tfrac{2}{3} H_t = \Delta T$, which yields the expression above. This simplified assumption is verified against linearized FAST models in Section~\ref{subsec:ResultsqLPVModel}, where the side-to-side tower response is shown to capture the FAST reference well in the frequency range relevant for control, see Figures~\ref{fig:Bode4} and~\ref{fig:Bode12}.
-
-While the fore-aft lumped-force model is established in the literature \cite{Bianchi2007} and adopted with minor variations in \cite{mulders2020preventing}, the side-to-side counterpart presented here is, to the author's knowledge, original. The validity of this simplified assumption is confirmed against linearized FAST models in Section~\ref{subsec:ResultsqLPVModel}, where the side-to-side tower response is shown to capture the FAST reference well in the frequency range relevant for control (see Figures~\ref{fig:Bode4} and~\ref{fig:Bode12}).
-
+follows from a lumped-force excitation analogous to the fore-aft force in \cite{Bianchi2007}, extended here to the in-plane direction. The reasoning is as follows: the net in-plane torque $\Delta T = T_r - N_g T_g$ acts as a moment at hub height $H_t$. The tower can be regarded as a cantilever beam fixed at the base, with its free end located at hub height. Since the qLPV model captures the tower as a single-degree-of-freedom system represented by the hub-height displacement $y_t$, the equivalent lumped force $F_{T,y}$ is obtained by requiring it to produce the same tip deflection as the applied moment. For a cantilever of length $H_t$, a tip moment $\Delta T$ produces a tip deflection of $\Delta T H_t^2/(2EI)$, while a tip point force $F_{T,y}$ produces a tip deflection of $F_{T,y} H_t^3/(3EI)$,  where $E$ is the modulus of elasticity of the tower material and $I$ is the second moment of area of the tower cross-section. Equating the two gives $F_{T,y}\cdot\tfrac{2}{3}H_t = \Delta T$, which yields the expression above. 
+%
+While the fore-aft lumped-force model is established in the literature \cite{Bianchi2007} and adopted with minor variations in \cite{mulders2020preventing}, the side-to-side counterpart presented here is, to the author's knowledge, original. The validity of this simplified assumption is confirmed against linearized FAST models in Section~\ref{subsec:ResultsqLPVModel}, where the side-to-side tower response is shown to capture the FAST reference reasonably well around the frequency of the first tower mode, see Figures~\ref{fig:Bode4} and~\ref{fig:Bode12}. 
+%
 The tower modal mass \( m_t \) is calculated from the total tower weight \( m_{\text{tower}} \), the total nacelle weight \( m_{\text{nacelle}} \), the total hub weight \( m_{\text{hub}} \), and the total blade weight \( m_{\text{blade}} \) as  
 \begin{align} \label{eq:modalMass}
     m_t = \frac{1}{4}m_{\text{tower}} + m_{\text{nacelle}} + m_{\text{hub}} + n_b m_{\text{blade}}.
-\end{align}
+\end{align} 
 This is the same calculation of the modal mass as suggested in \cite{schlipf2013nonlinear}.
 The damping and stiffness fore-aft $K_t$ and $B_t$ and side-to-side terms $K_{t,\text{sw}}$ and $B_{t,\text{sw}}$ are calculated from the corresponding eigenfrequencies $f_{t,\text{fa}}$ and  $f_{t,\text{sw}}$ and damping $\zeta_t$  with the fore-aft terms as
 \begin{align} \label{eq:DampingStiffness}
@@ -153,12 +152,10 @@ The gradients of the aerodynamic thrust and torque at an operating point need to
 \begin{equation} \label{eq:FTTRGrad}
     \begin{split}
         \hat{F}_{T,r}(t) &= k_{F_T,V} \left( \hat{V}_{\infty}(t) - \hat{\dot{x}}_{t}(t)\right) + \; B_{F_T} \hat{\omega_r}(t) +  k_{F_T,\beta} \hat{\beta_0}(t), \\
-        \hat{T}_r(t) &=  k_{T_r,V} \left( \right)\hat{V}_{\infty}(t) - \hat{\dot{x}}_{t}(t)) + B_{T_r} \hat{\omega_r}(t) +  k_{T_r,\beta} \hat{\beta_0}(t),
+        \hat{T}_r(t) &= k_{T_r,V} \left( \hat{V}_{\infty}(t) - \hat{\dot{x}}_{t}(t)\right) + B_{T_r} \hat{\omega_r}(t) + k_{T_r,\beta} \hat{\beta_0}(t),
     \end{split}
-\end{equation}
-with a bar over a variable denoting a steady-state value in an operating point and a hat denoting its variation with respect to that steady-state. 
-Substituting the terms from equations \eqref{eq:FTTRGrad} into equations \eqref{eq:Mdl1NonLin} yields a linear model describing the influence of changes in the inputs $\bm{w}_{\text{Mdl}}$ on the states $x_{\text{Mdl1}}$ from equations \eqref{eq:NonLinInputDef} and~\eqref{eq:CtrlInputDef}. The partial derivatives of the rotor thrust force and torque are calculated from the equation set~\eqref{eq:aero} with $[F_{T_r} \quad T_r] = [k_{c_T} c_T(\lambda,\beta_0) V_r^2 \quad k_{c_Q}  c_Q(\lambda,\beta_0) V_r^2]$ where the constants are $k_{c_T} = 0.5 \rho_a A_r$ and $k_{c_Q} = 0.5 \rho_a R_r A_r$, respectively. This results in the derivatives:
-%
+\end{equation} \enlargethispage{\baselineskip}
+with a hat denoting a variation with respect to a steady-state. Substituting the terms from equations \eqref{eq:FTTRGrad} into equations \eqref{eq:Mdl1NonLin} yields a linear model describing the influence of changes in the inputs $\bm{w}_{\text{Mdl}}$ on the states $x_{\text{Mdl1}}$ from equations \eqref{eq:NonLinInputDef} and~\eqref{eq:CtrlInputDef}. The partial derivatives of the rotor thrust force and torque are calculated from the equation set~\eqref{eq:aero} with $[F_{T_r} \quad T_r] = [k_{c_T} c_T(\lambda,\beta_0) V_r^2 \quad k_{c_Q}  c_Q(\lambda,\beta_0) V_r^2]$ where the constants are $k_{c_T} = 0.5 \rho_a A_r$ and $k_{c_Q} = 0.5 \rho_a R_r A_r$, respectively. This results in the derivatives: 
 \begin{align*}
      k_{F_T,V} = \frac{\partial F_{T,r}(t)}{\partial{V_{\infty}(t)}} \bigg|_{\bar{V}_{\infty},\bar{\omega}_r,\bar{\beta}_0} &= k_{c_T}  \bar{V}_{\infty} \left(2\bar{c}_T + \frac{\partial  c_T(\lambda,\beta_0)}{\partial{\lambda(t)}}\bigg|_{\bar{V}_{\infty},\bar{\omega}_r,\bar{\beta}_0}  \frac{ \partial \lambda(t)}{ \partial V_{\infty}(t)}\bigg|_{\bar{V}_{\infty},\bar{\omega}_r,\bar{\beta}_0} \bar{V}_{\infty} \right),\\
     %
@@ -174,9 +171,9 @@ k_{c_T} \frac{\partial c_{T}(\lambda,\beta_0)}{\partial \beta_0(t)} \bigg|_{\bar
     k_{c_Q} \frac{\partial c_{Q}(\lambda,\beta_0)}{\partial \lambda(t)} \bigg|_{\bar{V}_{\infty},\bar{\omega}_r,\bar{\beta}_0} \frac{ \partial \lambda(t)}{ \partial \omega_r(t)}\bigg|_{\bar{V}_{\infty},\bar{\omega}_r,\bar{\beta}_0} \bar{V}_{\infty}^2, \\
     %
     k_{T_r,\beta} = \frac{\partial T_{r}(t)}{\partial{\beta_0(t) }}  \bigg|_{\bar{V}_{\infty},\bar{\omega}_r,\bar{\beta}_0} &= 
-    k_{c_Q} \frac{\partial c_{Q}(\lambda,\beta_0)}{\partial \beta_0(t)} \bigg|_{\bar{V}_{\infty},\bar{\omega}_r,\bar{\beta}_0} \bar{V}_{\infty}^2. 
+    k_{c_Q} \frac{\partial c_{Q}(\lambda,\beta_0)}{\partial \beta_0(t)} \bigg|_{\bar{V}_{\infty},\bar{\omega}_r,\bar{\beta}_0} \bar{V}_{\infty}^2, 
 \end{align*}
-%
+with a bar over a variable denoting a steady-state value in an operating point.
 These derivatives are used to implement the qLPV models in this section and the partial derivatives of the torque are used in the qLMPC controller design in Chapter \ref{sec:Application to Wind Turbine Control4}. The derivatives of the tip-speed ratio are calculated as
 \begin{align*}
 \frac{ \partial \lambda(t)}{\partial V_{\infty}(t)}\bigg|_{\bar{V}_{\infty},\bar{\omega}_r,\bar{\beta}_0} &= - \frac{\omega_r(t) R_r}{(V_{\infty}(t)-\dot{x}(t))^2}\bigg|_{\bar{V}_{\infty},\bar{\omega}_r,\bar{\beta}_0} = - \frac{\bar{\omega_r}R_r}{\bar{V}_{\infty}^2},\\
@@ -195,27 +192,25 @@ The system and input matrices are
 \bm{B}_{\text{Mdl1}} &= \begin{bmatrix}
     0 & 0 & 0 \\
     0 & 0 & 0 \\
-    \frac{k_{F_T,V}(\bm{\rho}_{\Rho})}{m_t} & 0 & \frac{k_{F_t,\beta}(\bm{\rho}_{\Rho})}{m_t} \\
+    \frac{k_{F_T,V}(\bm{\rho}_{\Rho})}{m_t} & 0 & \frac{k_{F_T,\beta}(\bm{\rho}_{\Rho})}{m_t} \\
     \frac{3k_{T_r,V}(\bm{\rho}_{\Rho})}{2 m_t H_t} & -\frac{3 N_g}{2 m_t H_t} &  \frac{3k_{T_r,\beta}(\bm{\rho}_{\Rho})}{2 m_t H_t}\\
       \frac{k_{T_r,V}(\bm{\rho}_{\Rho})}{J_s} & -\frac{N_g}{J_s} &  \frac{k_{T_r,\beta}(\bm{\rho}_{\Rho})}{J_s}
 \end{bmatrix}  \in \mathbb{R}^{5 \times 3}\\
-\end{align*}
-with the scheduling parameter vector $\bm{\rho}_{\Rho} = \left[V_{\infty}\quad \omega_r \quad \beta_0\right]$.
+\end{align*} \enlargethispage{\baselineskip}
+with the scheduling parameter vector $\bm{\rho}_{\Rho} = \left[V_{\infty}\quad \omega_r \quad \beta_0\right]$.The turbine parameters used for this model are those of the NREL 5MW reference turbine, as implemented in FAST v8.16 \cite{jonkman2016fast}. 
 %
-The turbine parameters used for this model are those of the NREL 5MW reference turbine, as implemented in FAST v8.16 \cite{jonkman2016fast}. 
-
 This 5th-order model is compared to linearized FAST models linearized at different free-stream wind speeds in the frequency domain for a frequency range relevant for wind turbines. The above-described non-linear dynamics are implemented in Simulink; both the FAST S-Function and the Simulink implementation are run in closed loop with a baseline PI controller. The results are compared with a closed-loop FAST model to verify the Simulink model. Actuator dynamics for torque and pitch are included in the simulation as a separate Simulink model.
 %
 This relatively simple model $x_{\text{Mdl1}}$ provides a reasonable approximation of the FAST NREL 5MW model. Nevertheless, it is investigated whether a slightly more involved approach, also taking the generator and blade dynamics into account, would improve the fit to FAST in an open-loop verification.
 
 \subsubsection{Model 2: Structural Model with Tower and Blade Out-of-Plane Motion} 
 A similar but more detailed modeling approach, inspired by \cite{Bianchi2007}, is presented here. The method proposed in that book is extended by including the side-to-side tower displacement $y_t$, and modified so that the qLPV model inputs correspond to the actual turbine control inputs, enabling direct comparison with FAST.Lagrange's equation is used to build a model with rotor and generator speed, tower, and blade displacement as the states. This approach is therefore an extension of the simpler model considered above. The notation below follows \cite{Bianchi2007} where possible.
-
+%
 A mechanical system of arbitrary complexity can be described by the fundamental equation of motion:
 \begin{align} \label{eqLagrange}
     \mathbf{M}\ddot{\bm{q}}(t) + \mathbf{C}\dot{\bm{q}}(t) + \mathbf{K}{\bm{q}}(t) = \mathbf{Q}(\dot{\bm{q}}(t), \bm{q}(t), t, \bm{w}(t)),
 \end{align}
-where $\mathbf{M}$, $\mathbf{C}$, and $\mathbf{K}$ are the mass, damping, and stiffness matrices, $\bm{q}$ represents the system states, $\bm{w}$ denotes the system inputs, and $\mathbf{Q}$ is a vector of generalized forces. For mechanical structures with any number of degrees of freedom, Lagrange's equation for the \(i^{\text{th}}\) component of \(\bm{q}\) and \(\mathbf{Q}\) is expressed as
+where $\mathbf{M}$, $\mathbf{C}$, and $\mathbf{K}$ are the mass, damping, and stiffness matrices, $\bm{q}$ represents the system states, $\bm{w}$ denotes the system inputs, and $\mathbf{Q}$ is a vector of generalized forces. For mechanical structures with any number of degrees of freedom, Lagrange's equation for the $i$th component of \(\bm{q}\) and \(\mathbf{Q}\) is expressed as
 \begin{align*}
     \frac{d}{dt} \left(\frac{\partial E_k(t)}{\partial \dot{q}_i(t)} \right) - \frac{\partial E_k(t)}{\partial q_i(t)} + \frac{\partial E_d(t)}{\partial \dot{q}_i(t)} + \frac{\partial E_p(t)}{\partial q_i(t)} = Q_i(t),
 \end{align*}
@@ -227,7 +222,7 @@ These terms can be described as
     E_d(t)  & = \frac{1}{2}\left(B_t\dot{x}_t(t)^2 + n_b B_b(r_b\dot{\delta}_b(t))^2 + B_{t,\text{sw}}\dot{y}_t(t)^2 + B_{sr}(\omega_r(t) - \omega_{gr}(t))^2\right),\\
     E_p(t)  & = \frac{1}{2}\left(K_t{x}_t(t)^2 + n_b K_b(r_b{\delta}_b(t))^2 + K_{t,\text{sw}}{y}_t(t)^2 + K_{sr}(\theta_r(t) - \theta_{gr}(t))^2\right),
 \end{align*}
-with tower displacements \(x_t\) and \(y_t\) defined as above, $n_b=3$ the number of blades, \(\delta_b\) the out-of-plane angular blade angle displacement, $r_b$ the radial distance between rotor hub and the application point of the lumped aerodynamic force, and \(\theta_r\), \(\omega_r\), \(\theta_{gr}\), and \(\omega_{gr}\) as the rotor and generator angles and angular speeds, all measured on the low-speed shaft rotor side. \footnote{Note that the terms \(E_k\) and \(E_p\) represent energies in the unit Joules, but \(E_d\) corresponds to a dissipation function representing power in the unit Watts. The coefficients \(B_t\), \(B_b\), and \(B_{t,\text{sw}}\) are linear damping coefficients with units of \(\text{kg}/\text{s}\), representing force per linear velocity. The rotational damping coefficient \(B_{sr}\) has units of \(\text{kg}\cdot \text{m}^2/\text{s}\), representing torque per angular velocity. The linear stiffness coefficients \(K_t\), \(K_b\), and \(K_{t,\text{sw}}\) have units of \(\text{N}/\text{m}\) (equivalently \(\text{kg}/\text{s}^2\)), and the torsional stiffness coefficient \(K_{sr}\) has units of \(\text{N}\cdot\text{m}/\text{rad}\). Since radians are dimensionless in SI, the product \(K_{sr}(\theta_r - \theta_{gr})^2\) has units of energy, \( \text{N}\cdot\text{m} =\text{kg} \cdot \text{m}^2 / \text{s}^2\).}
+with tower displacements \(x_t\) and \(y_t\) defined as above\footnote{Note that the terms \(E_k\) and \(E_p\) represent energies in the unit Joules, but \(E_d\) corresponds to a dissipation function representing power in the unit Watts. The coefficients \(B_t\), \(B_b\), and \(B_{t,\text{sw}}\) are linear damping coefficients with units of~\(\text{kg}/\text{s}\), representing force per linear velocity. The rotational damping coefficient \(B_{sr}\) has units of \(\text{kg}\cdot \text{m}^2/\text{s}\), representing torque per angular velocity. The linear stiffness coefficients \(K_t\), \(K_b\), and \(K_{t,\text{sw}}\) have units of \(\text{N}/\text{m}\) (equivalently \(\text{kg}/\text{s}^2\)), and the torsional stiffness coefficient \(K_{sr}\) has units of \(\text{N}\cdot\text{m}/\text{rad}\). Since radians are dimensionless in SI, the product \(K_{sr}(\theta_r - \theta_{gr})^2\) has units of energy, \( \text{N}\cdot\text{m} =\text{kg} \cdot \text{m}^2 / \text{s}^2\).}. The number of blades is $n_b=3$ , \(\delta_b\) the out-of-plane angular blade angle displacement, $r_b$ the radial distance between rotor hub and the application point of the lumped aerodynamic force, and \(\theta_r\), \(\omega_r\), \(\theta_{gr}\), and \(\omega_{gr}\) as the rotor and generator angles and angular speeds, all measured on the low-speed shaft rotor side. 
  
 The relationship between generator angle and speed measured on the low-speed shaft rotor side to the ones in the high-speed shaft generator side is $\theta_{gr} = N_g \theta_{g}$ and  $\omega_{gr} = N_g \omega_{g}$. The modal blade mass $m_b = 1/4\; m_{\text{blade}}$ is calculated from the blade weight $m_{\text{blade}}$. The factor of 1/4 is used in this thesis, as it is commonly utilized as an approximation for the modal mass of a uniform cantilever beam when considering its first bending mode. Note that this is also the motivation for applying this factor for calculating the modal tower mass $m_t$, see equation~\eqref{eq:modalMass}. Moreover, this approximated modal mass provides a good fit to the linearized FAST models around the first flapwise frequency of approximately 0.7\,Hz. 
 
@@ -412,11 +407,11 @@ The equations described by the system matrices \(\bm{A}_{\text{Mdl2}}\) and \(\b
     - \frac{3 N_g}{2 H_t m_t} T_g, \\[1ex]
     %
     \dot{\omega}_r(t) &= \bm{A}_{\text{Mdl2}, 8, 1:9} \bm{x}_{\text{Mdl2}}(t)^T + \bm{B}_{\text{linMdl2}, 8, 2} T_r(\omega_r, \beta, V_r) \\
-    &= -\frac{K_s}{J_r} \theta_s - \frac{B_{sr}}{J_r} \omega_r + \frac{B_{sr}}{J_r} \omega_{gr}
+    &= -\frac{K_{sr}}{J_r} \theta_s - \frac{B_{sr}}{J_r} \omega_r + \frac{B_{sr}}{J_r} \omega_{gr}
     + \frac{1}{J_r} T_r(\omega_r, \beta, V_r), \\[1ex]
     %
     \dot{\omega}_{gr}(t) &= \bm{A}_{\text{Mdl2}, 9, 1:9} \bm{x}_{\text{Mdl2}}(t)^T + \bm{B}_{\text{linMdl2}, 9, 3} T_g \\
-    &= \frac{K_s}{J_{gr}} \theta_s + \frac{B_{sr}}{J_{gr}} \omega_r - \frac{B_{sr}}{J_{gr}} \omega_{gr}
+    &= \frac{K_{sr}}{J_{gr}} \theta_s + \frac{B_{sr}}{J_{gr}} \omega_r - \frac{B_{sr}}{J_{gr}} \omega_{gr}
     - \frac{N_g}{J_{gr}} T_g.
 \end{align*}
 Here, \(\bm{X}_{n,k}\) denotes the scalar element in the \(n^\text{th}\) row and \(k^\text{th}\) column of matrix \(\bm{X}\), and \(\bm{X}_{n:m, k:l}\) denotes the submatrix from rows \(n\) to \(m\) and columns \(k\) to \(l\). Note that the value $\bm{B}_{\text{linMdl2}, 5, 1}$, which indicates the influence of $F_{T,r}$ on the tower acceleration $\ddot{x}_t$, is zero. This means that there is no direct coupling between the rotor thrust and the fore-aft acceleration of the tower. However, $F_{T,r}$ still affects $\ddot{x}_t$ indirectly through its influence on the blade displacement $\delta_b$, which is coupled into the equation of motion for $\ddot{x}_t$.
@@ -488,40 +483,44 @@ Explicitly, using physical parameters and the lower non-zero block of \(\bm{B}_{
 %
 Adding two additional states, the actuator states \(T_g\) and \(\beta_0\), to the state vector in equation \eqref{eq:X7} yields the augmented state vector \(\bm{x}_{\text{Mdl2}^\prime}\):
 \[\bm{x}_{\text{Mdl2}^\prime} = \begin{bmatrix} x_t \quad \delta_b \quad y_t \quad \theta_S \quad \dot{x}_t \quad \dot{\delta_b} \quad \dot{y}_t \quad {\omega}_r \quad {\omega}_{gr} \quad T_g \quad \beta_0 \end{bmatrix}^T   \in \mathbb{R}^{11 \times 1},\]  
-and results in the \(11^{\text{th}}\)-order system: 
+and results in the 11th-order system: 
 \begin{align*}
 \dot{\bm{x}}_{\text{Mdl2}^{\prime}}(t) = \bm{A}_{\text{Mdl2}^{\prime}} \bm{x}_{\text{Mdl2}^{\prime}}(t) + \bm{B}_{\text{Mdl2}^{\prime}} \bm{w}_{\text{Mdl}}(t),
 \end{align*}
 where \(\bm{w}_{\text{Mdl}} = [V_{\infty} \quad T_g  \quad \beta_0]^T\) and \(\bm{A}_{\text{Mdl2}^{\prime}}\) and \(\bm{B}_{\text{Mdl2}^{\prime}}\) are given by:
 %
-\begin{align*}
-\bm{A}_{\text{Mdl2}^{\prime}} &= \begin{bmatrix}
-\bm{0}_{4 \times 4} & \mathbf{L}_{4 \times 5} & \bm{0}_{4 \times 1} &  \bm{0}_{4 \times 1}\\
--\mathbf{M}_5^{-1}\tilde{\mathbf{K}}_{5 \times 4} & -\mathbf{M}_5^{-1}\mathbf{C}_5 + \mathbf{C}_{5,\text{aero}}(\bm{\rho}_{\Rho}) & \Tilde{\mathbf{Q}}_{T_g} (\bm{\rho}_{\Rho}) & \Tilde{\mathbf{Q}}_{\beta}(\bm{\rho}_{\Rho})\\
-\bm{0}_{1 \times 4} & \bm{0}_{1 \times 5} & -\frac{1}{\kappa} & 0\\
-\bm{0}_{1 \times 4} & \bm{0}_{1 \times 5} & 0 & -\frac{1}{\tau}
-\end{bmatrix} \in \mathbb{R}^{11 \times 11},\\
-\bm{B}_{\text{Mdl2}^{\prime}} &= \begin{bmatrix}
-\bm{0}_{4 \times 1} & \bm{0}_{4 \times 1} & \bm{0}_{4 \times 1}\\
-\Tilde{\mathbf{Q}}_V (\bm{\rho}_{\Rho}) & \bm{0}_{5 \times 1} & \bm{0}_{5 \times 1}\\
-0 & \frac{1}{ \kappa} & 0\\
-0 & 0 & \frac{1}{\tau}
-\end{bmatrix} \in \mathbb{R}^{11 \times 3},
-\end{align*}
+\begin{equation} \label{eq:11thorder}
+    \begin{aligned}
+        \bm{A}_{\text{Mdl2}^{\prime}} &= \begin{bmatrix}
+            \bm{0}_{4 \times 4} & \mathbf{L}_{4 \times 5} & \bm{0}_{4 \times 1} &  \bm{0}_{4 \times 1}\\
+            -\mathbf{M}_5^{-1}\tilde{\mathbf{K}}_{5 \times 4} & -\mathbf{M}_5^{-1}\mathbf{C}_5 + \mathbf{C}_{5,\text{aero}}(\bm{\rho}_{\Rho}) & \Tilde{\mathbf{Q}}_{T_g} (\bm{\rho}_{\Rho}) & \Tilde{\mathbf{Q}}_{\beta}(\bm{\rho}_{\Rho})\\
+            \bm{0}_{1 \times 4} & \bm{0}_{1 \times 5} & -\frac{1}{\kappa} & 0\\
+            \bm{0}_{1 \times 4} & \bm{0}_{1 \times 5} & 0 & -\frac{1}{\tau}
+        \end{bmatrix} \in \mathbb{R}^{11 \times 11},\\
+        \bm{B}_{\text{Mdl2}^{\prime}} &= \begin{bmatrix}
+            \bm{0}_{4 \times 1} & \bm{0}_{4 \times 1} & \bm{0}_{4 \times 1}\\
+            \Tilde{\mathbf{Q}}_V (\bm{\rho}_{\Rho}) & \bm{0}_{5 \times 1} & \bm{0}_{5 \times 1}\\
+            0 & \frac{1}{ \kappa} & 0\\
+            0 & 0 & \frac{1}{\tau}
+        \end{bmatrix} \in \mathbb{R}^{11 \times 3}
+    \end{aligned}
+\end{equation}
+%
 with the scheduling vector $\bm{\rho}_{\Rho}$ containing the free-stream wind speed, the rotor speed and the pitch angle, the same scheduling parameters as for the first model.
-This state-space model of the turbine dynamics is a qLPV system that captures nonlinear behavior by representing it as a linear system with parameters that change based on certain variables, including control inputs. Unlike a standard LPV system, where parameters vary independently of the  inputs and no input is included as a scheduling parameter, the qLPV system allows for this interaction. In this wind turbine model, the blade pitch and wind speed serve both as control and disturbance inputs and as variables influencing the system's behavior, making the model qLPV due to the dynamic relationship introduced by these inputs.\\
-Two qLPV models were designed: one that uses only the rotor speed and tower movement as states, and another that additionally includes the generator speed and angular blade movement, resulting in \(7^{\text{th}}\)-order and \(11^{\text{th}}\)-order models when incorporating the two actuator states, respectively. Both qLPV models are parameterized with the NREL 5MW turbine parameters and will be compared with the turbine dynamics modeled in FAST in the following section.
+This state-space model of the turbine dynamics is a qLPV system that captures nonlinear behavior by representing it as a linear system with parameters that change based on certain variables, including control inputs. Unlike a standard LPV system, where parameters vary independently of the  inputs and no input is included as a scheduling parameter, the qLPV system allows for this interaction. In this wind turbine model, the blade pitch and wind speed serve both as control and disturbance inputs and as variables influencing the system's behavior, making the model qLPV due to the dynamic relationship introduced by these inputs.
+
+Two qLPV models were designed: one that uses only the rotor speed and tower movement as states, and another that additionally includes the generator speed and angular blade movement, resulting in 5th-order and 9th-order models. When incorporating the two actuator states, this results in a 7th-order and 11th order model, see the matrices in Equation~\ref{eq:11thorder} for the latter. Both qLPV models are parameterized with the NREL 5MW turbine parameters and will be compared with the turbine dynamics modeled in FAST in the following section.
 %
 \section{qLPV Model Verification with FAST} \label{sec:qLPVModelVerificationwithFAST0} 
 In this section, the design of the calculations and simulations is described that are used to verify the qLPV models against the turbine simulation software FAST. The verification process includes both open-loop frequency domain analysis as well as closed-loop time domain comparisons to evaluate the accuracy of the qLPV models. 
 \subsection{Open-loop Frequency Domain Verification}
 The FASTTool, which is described in \cite{mulders2020wind}, is used to generate 22 linear state-space models from the FAST code, with constant freestream wind speeds varying from 4\,m/s to 25\,m/s in 1\,m/s increments. The FAST state-space models use as inputs the wind speed, generator torque and blade pitch, and have 30 states. %The inputs are from the wind model and the elastodynamic model of FAST:
-The states consists of the following 15 states and their derivatives, all calculated within the elasto-dynamic model of FAST:
+The state vector consists of the following 15 states and their derivatives, all calculated within the elasto-dynamic model of FAST:
 \begin{itemize}
-    \item 4 tower bending modes: 1$^{\text{st}}$ and 2$^{\text{nd}}$ fore-aft and side-to-side tower bending modes,
+    \item 4 tower bending modes: First and second fore-aft and side-to-side tower bending modes,
     \item 1 mode for the generator speed,
     \item 1 drivetrain rotational-flexibility mode,
-    \item 9 blade bending modes: 1$^{\text{st}}$ and 2$^{\text{nd}}$ flapwise and 1$^{\text{st}}$ edgewise blade mode for each blade.
+    \item 9 blade bending modes: First and second flapwise and first edgewise mode for three blades.
 \end{itemize}
 The transfer function between the inputs wind speed, generator torque and collective blade pitch and the outputs rotor speed and fore-aft tower acceleration are investigated. The qLPV models described in subsection \ref{sec:MechanicalAerodynamicSubsystemModel} incorporate only a subset of these modes, specifically up to the first tower modes and the first flapwise blade mode. As a result, these models are expected to capture the primary low-order dynamics but may not accurately reflect the higher-order dynamics of the full FAST model, which includes additional tower and blade modes. To assess the impact of these simplifications, closed-loop simulations in Simulink are performed for time-domain verification using the baseline controller from FASTTool. This approach allows for a comparison of the simplified qLPV models with the non-linear full-order FAST model.
 %
@@ -580,8 +579,6 @@ The comparison shows a good fit to the linearized FAST reference for both models
 
 In the first column, the frequency response from the generator torque input is shown. From 0.01\,Hz up to approximately 0.7\,Hz, both reduced-order models follow the FAST reference closely. At lower wind speeds, depicted in Figure~\ref{fig:Bode4} as well as in Figure~\ref{fig:Bode12}(a), this is true for all three depicted output axes, i.e., the rotor speed, the tower fore-aft and side-to-side acceleration. At the highest wind speed, see Figure~\ref{fig:Bode12}(b), both models show a small deviation in the side-to-side acceleration at low frequencies that gradually closes as the tower frequency peak is approached. The side-to-side peak's frequency is captured accurately, though its magnitude is slightly underestimated. Above 1\,Hz, an additional resonance in the FAST reference, likely a blade mode, is not captured by either reduced-order model.
 
-The second column shows the response to the blade pitch input. Since pitch control is inactive at lower wind speeds depicted in Figure~\ref{fig:Bode4}, differences between models become more apparent. Only the model including blade dynamics captures the shape and amplitude of the FAST model in the rotor speed response between the tower and blade frequencies. 
-
 The second column shows the response to the blade pitch input. Blade pitch is not used for active control below rated wind speed, as in Figure~\ref{fig:Bode4}, and remains near a fixed angle. The pitch-to-output response therefore reflects the underlying open-loop aeroelastic dynamics, in which blade structural modes play a dominant role. As a result, differences between the reduced-order models become more apparent in this channel. Looking at the response of the rotor speed to the blade pitch, the agreement between the FAST reference and the 9th-order model is considerably better than with the 5th-order model. The advantage of the model with blade dynamics is also clear in the tower fore-aft acceleration response, where it reproduces the blade frequency peak around 0.7\,Hz, especially at 4\,m/s in Figure~\ref{fig:Bode4}a. At higher wind speeds, see Figure~\ref{fig:Bode12}, this peak is less pronounced, and differences among models diminish. Still, the 9th-order model, which includes blade dynamics, consistently provides a better overall fit across the full frequency range for the responses of the rotor speed and tower fore-aft acceleration. Interestingly, in the tower side-to-side acceleration response, the model without blade dynamics outperforms the one including them, particularly at low frequencies. This is likely because the blade mode in the 9th-order model is tuned to match fore-aft motion, which dominates the tower bending, whereas side-to-side effects require more detailed blade modeling than currently included.
 
 The third column depicts the response to variations in wind speed. In the rotor speed response, a sharp notch appears in the FAST reference at approximately 0.34\,Hz, the frequency of the first tower mode, across all wind speeds. Both qLPV models reproduce this notch closely. At higher frequencies, however, Mdl1 continues along a smooth, monotonic decline, while Mdl2 dips more sharply at 0.7\,Hz before recovering to follow the slope of Mdl1. FAST does not dip at 0.7\,Hz, but at 0.8\,Hz for the two lower and around 1\,Hz for the higher wind speeds, still the amplitude of Mdl2 is closer to this reference than the one of Mdl1.
@@ -632,7 +629,7 @@ to the freestream wind input, with separate scaling factors for the torque
 ($k_\tau = 0.75$) and thrust ($k_T = 0.25$) channels to preserve the 
 relevant excitation frequencies for each. As shown in Figure~\ref{fig:TimeCmpMdlNTM}(a), without filtering the models 
 exhibit pronounced high-frequency oscillations and overshoot in blade pitch, 
-rotor speed, and generator power. With the filter active in in Figure~\ref{fig:TimeCmpMdlNTM}(b), the amplitudes more 
+rotor speed, and generator power. With the filter active in Figure~\ref{fig:TimeCmpMdlNTM}(b), the amplitudes more 
 closely follow the FAST reference while the tower fore-aft acceleration 
 retains sufficient high-frequency excitation. Note that these filters are used 
 only for the turbulent wind comparison with FAST and are not included in the 
