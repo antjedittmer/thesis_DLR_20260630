@@ -1,0 +1,202 @@
+%\documentclass[]{report}
+\documentclass[12pt,a4paper,twoside]{report}
+\usepackage[a4paper,top=2.2cm,bottom=2.5cm,left=2.3cm,right=2.3cm,includeheadfoot]{geometry}
+\usepackage{longtable} 
+\usepackage{booktabs}
+\usepackage{bm}
+\usepackage{amssymb}
+% The following packages can be found on http:\\www.ctan.org
+\usepackage{graphics} % for pdf, bitmapped graphics files
+\usepackage{epsfig} % for postscript graphics files
+\usepackage{mathptmx} % assumes new font selection scheme installed
+\usepackage{times} % assumes new font selection scheme installed
+\usepackage{amsmath} % assumes amsmath package installed
+%\usepackage{amssymb}  % assumes amsmath package installed
+\usepackage[]{units} % units
+\usepackage{algorithm} % algorithms
+\usepackage[noend]{algpseudocode} % algorithms
+\algrenewcommand\algorithmicrequire{\textbf{Given: }} % algorithms
+\DeclareMathAlphabet{\mathcal}{OMS}{cmsy}{m}{n} % calligraphic fonts in math mode
+\usepackage{booktabs} % hübsche Tabellen
+\usepackage{graphicx}
+\usepackage{multirow}
+\usepackage{adjustbox}
+\usepackage{cancel}
+
+% In your preamble:
+\usepackage{etoolbox}
+\patchcmd{\listoftables}{\chapter*}{\section*}{}{}  % demote to section, no new page
+\patchcmd{\listoffigures}{\chapter*}{\section*}{}{}
+
+
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{} % clear defaults
+
+
+% Define header
+\fancyhead[LE,RO]{\thepage}  % page number on the outer side
+\fancyhead[RE]{\leftmark}    % chapter title on even pages
+\fancyhead[LO]{\rightmark}   % section title on odd pages
+
+% Thin header rule
+\renewcommand{\headrulewidth}{0.4pt}
+
+\usepackage[authoryear,square]{natbib}
+\setcitestyle{aysep={,}, brackets={[}{]}, citesep={;}, open={[}, close={]}}
+\bibliographystyle{abbrvnat}
+
+% Redefine \cite to behave like \citep
+\let\cite\citep
+
+\usepackage{amsthm}
+\usepackage{bm}
+\usepackage{amsmath}
+\usepackage{caption}
+%\usepackage{subcaption}
+\usepackage{graphicx} 
+\usepackage[caption=false]{subfig}
+\usepackage{appendix}
+% \usepackage{tocbibind} % To include "Appendices" in the table of contents
+\usepackage[nottoc]{tocbibind}
+\usepackage{makecell}
+
+\usepackage{gensymb}
+%\usepackage{siunitx}
+%\usepackage{enumitem}
+
+%\usepackage{url}
+\usepackage[hyphens]{url}
+\usepackage{hyperref}  % Hyperlinks the URLs, which also helps with breaking
+
+
+\makeatletter
+\renewcommand\hyper@natlinkbreak[2]{#1}
+\makeatother
+
+%\usepackage{hypernat} % Fixes the two-link issue
+
+% Redefine \citep and \citet to wrap the whole citation in a single link
+% \usepackage{xpatch}
+% \xpatchcmd{\citep}{\begingroup}{\begingroup\def\hyper@linkstart##1##2{\@secondoftwo}}{}{}
+%% xpatchcmd{\citet}{\begingroup}{\begingroup\def\hyper@linkstart##1##2{\@secondoftwo}}{}{}
+
+
+%\usepackage{gensymb}
+%\makeatletter
+%\renewcommand*{\@opargbegintheorem}[3]{\trivlist
+    %   \item[\hskip \labelsep{\bfseries #1\ #2}] \textit{(#3)}\ \itshape}
+%\makeatother
+
+% tikz
+\graphicspath{ {Figures/} }
+\usepackage{chngcntr}
+\usepackage{pgfplots}	%for Matlab2Tikz
+\usepackage{enumitem}
+\usepgfplotslibrary{external}
+\tikzexternalize[prefix=figures/tikz/, shell escape=-enable-write18]	%!!Important! compile with: latex -enable-write18 on windows with MikTex
+\newcommand{\atikz}[2]{\scalebox{#1}{\input{"figures/#2.tikz"}}}
+%\input{"legend.tex"}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{remark}{Remark}
+\newtheorem{lemma}{Lemma}
+\newtheorem{definition}{Definition}
+
+\newcommand{\Rho}{\mathsf{P}}
+\newcommand{\trp}{T}
+\newcommand{\ones}{\textnormal{\textbf{1}}}
+\newcommand{\diag}{\textnormal{diag}}
+
+%\leftmargin=-1em
+%\setlist
+%\nosep
+\hypersetup{hidelinks} 
+
+
+% Title Page
+\title{Quasi-Linear Parameter-Varying and Koopman Model Predictive Control for Wind Energy Systems}
+\author{Antje Dittmer}
+
+
+
+
+\begin{document}
+   % \maketitle
+    \makeatletter
+    \begin{titlepage}
+        \begin{center}
+            \vspace*{1cm}
+            \LARGE
+            \textbf{\@title}
+            
+            \vspace{2.5cm}
+            \large
+            \textbf{Dem Promotionsausschuss der\\
+                Technischen Universität Hamburg}\\[1ex]
+            zur Erlangung des akademischen Grades\\[1ex]
+            Doktor-Ingenieurin (Dr.-Ing.)\\[5ex]
+            vorgelegte Dissertation
+            
+            \vspace{1.5cm}
+            von\\ \@author
+            
+            \vspace{2cm}
+            aus\\ Wedel
+            
+            \vspace{2cm}
+            \@date
+        \end{center}
+        \vfill
+        Betreuer: Prof.\ Dr.\ Herbert Werner
+    \end{titlepage}
+    \makeatother
+    
+\clearpage
+\thispagestyle{empty}
+~
+\clearpage
+
+    
+    \begin{abstract}
+        
+             Over the past two decades, wind turbines have significantly increased in size. Ensuring their economic, fully automatic operation in varying wind conditions has become more challenging due to larger towers and rotors with longer, more slender blades. The increasing number of turbines in wind farms, sometimes over a hundred, and their close spacing, as areas suitable for wind energy are limited, further complicate this task. Not only is individual wind turbine control difficult, but wind farm control is even more so, as efficient use of space necessitates accounting for wake interactions.
+        
+        In this thesis, Model Predictive Control (MPC) is used to design algorithms for wind turbine and wind farm control, aiming to minimize the Levelized Cost of Energy~(LCoE). The goal is to maximize power yield while minimizing mechanical loads and keeping actuator movements within their limits and as small as possible. For individual Wind Energy Conversion Systems~(WECS), this involves maximizing energy extraction up to the rated wind speed and pitching the blades above this speed to lower mechanical loads and maintain constant power output.
+        
+        A novel velocity-based quasi-linear Parameter Varying Model Predictive Control (qLMPC) algorithm is applied to wind turbines as a Multiple-Input Multiple-Output (MIMO) controller for the whole operating range of the turbine for the first time within the context of this thesis. A quasi-linear Parameter Varying~(qLPV) mathematical model is derived using Lagrange's equation for controller synthesis. This new qLMPC strategy is compared to state-of-the-art Collective Pitch Control~(CPC) and Individual Pitch Control~(IPC) using Damage Equivalent Loads~(DEL) for evaluation. Additionally, an enhanced turbine model with Trailing Edge Flaps (TEF) is developed, combining IPC and TEF control for improved performance.
+        
+        For wind farm control, a data-driven approach models wake interactions between turbines. Data from a simulation model is used to construct a Koopman Matrix, a finite-dimensional representation of the Koopman Operator, to design quasi-linear and linear models for qLMPC and linear  MPC of two turbines. Basis functions are carefully selected based on physical relationships governing wind and wake interactions. The qLPV model of wake interaction reduces the number of measurement points from several per turbine to one in front of the first turbine while maintaining excellent grid power reference tracking. An efficient online adaptive controller is demonstrated, showing that Wake Redirection Control (WRC) enables the turbines to produce more power consistently compared to the greedy baseline approach. Both wind turbine and wind farm control designs are formulated as Quadratic Programming (QP) problems to ensure real-time capability.  
+        
+    \end{abstract}
+    
+    \clearpage
+    \thispagestyle{empty}
+    ~
+    \clearpage
+    
+    
+    \tableofcontents
+\makeatletter
+\begingroup
+\let\addcontentsline\@gobblethree
+
+%\listoffigures
+%\listoftables
+\endgroup
+\makeatother
+
+
+    \include{chapters/00_Abbreviations}
+    \include{chapters/01_Introduction_CapitalLetters}
+    \include{chapters/02_Background_03}
+    \include{chapters/03_WindTurbineqLPVmodel_01}
+    \include{chapters/04_WindTurbineControl_02_notBold}
+    \include{chapters/06_ApplicationWindFarmControl_03}
+    \include{chapters/07_Conclusion_02}
+    \appendix
+    \include{chapters/document}
+    
+    
+    \bibliography{chapters/myLiterature_with_dois}
+\end{document}          

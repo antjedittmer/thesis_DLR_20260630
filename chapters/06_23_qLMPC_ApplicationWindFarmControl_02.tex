@@ -1,0 +1,227 @@
+\subsection{qLMPC Design for Thrust Control}
+The aim of wind farm control is good power reference tracking with minimal changes in control inputs, as discussed in, e.g., \cite{vali2019adjoint}, and our works on AIC proof of concepts in WFSim, \cite{sharan2022Koopman, dittmer2022data}.
+
+\subsubsection{Model Derivation and Cost Function}
+As mentioned in Section~\ref{Subsection:Windfarmcontrol}, the main difference to the NMPC that ships with WFSim is that the effective wind speeds are estimated with a qLPV model. This has the advantage that for the first iteration of the MPC, the effective wind speeds are calculated using EDMD based on data acquired in open-loop WFSim simulations, thus adapting over the prediction horizon instead of being kept constant. Concretely, the model utilizes the wind speed in front of the first turbine $V_1$, the two thrust control signals $C_{T1}^{\prime}$ and $C_{T2}^{\prime}$, and the resulting effective wind speeds. Before applying EDMD, the data is modified with non-linear lifting functions, an idea inspired by Koopman theory, which applies the Koopman matrix as discussed in detail in Section~\ref{KoopmanIdentification}.
+
+For the qLMPC design for adaptive AIC, the same discrete-time wind farm model is used as in the original WFSim NMPC algorithm described in Section~\ref{Subsection:Windfarmcontrol} in Equations~\ref{eqPowerWT} to~\ref{eqLinWF}. The procedure used to calculate the evolution of the wind farm power over a prediction horizon is repeated here for ease of understanding, with the only difference being that the yaw angle is fixed to zero. The state-space model of the $i^{\text{th}}$ turbine, assuming no yaw control or misalignment, is given by:
+\begin{align} \label{eqPowerWTAIC_vector}
+    \underbrace{
+        \begin{bmatrix}
+            P_i(k+1) \\[0.8mm]
+            F_{T,ri}(k+1) \\[0.8mm]
+            \hat{C}_{Ti}^\prime(k+1)
+    \end{bmatrix}}_{\bm{x}_{\text{WT},i}(k+1) \in {\mathbb{R}}^{3\times 1}}
+    &=
+    \underbrace{(1-\tau)\,\bm{I}_{3\times3}}_{\bm{A}_{\text{WT},i} \in {\mathbb{R}}^{3\times 3}}
+    \begin{bmatrix}
+        P_i(k) \\[0.8mm]
+        F_{T,ri}(k) \\[0.8mm]
+        \hat{C}_{Ti}^\prime(k)
+    \end{bmatrix}
+    +
+    \underbrace{\tau
+        \begin{bmatrix}
+            \tfrac{1}{2}\rho_a A_r V_{ri}^3 \\[0.8mm]
+            \tfrac{1}{2}\rho_a A_r V_{ri}^2 \\[0.8mm]
+            1
+    \end{bmatrix}}_{\bm{B}_{\text{WT},i}(V_{ri}) \in {\mathbb{R}}^{3\times 1}} \, C_{Ti}^\prime(k),
+\end{align}
+where $k$ is the discrete sample time index and the constant $\tau$ is the discrete-time filter coefficient. The coefficient $\tau$ determines the weighting between the current state and the new input at each time step, thereby controlling the response speed of the turbine states. The state vector is defined as
+\begin{align*}
+    \bm{x}_{\text{WT},i} = [P_i \quad F_{T,ri} \quad \hat{C}_{Ti}^\prime]^T,
+\end{align*}
+where $P_i$ is the power, $F_{T,ri}$ is the thrust force of the $i^{\text{th}}$ turbine, and $\hat{C}_{Ti}^\prime$ is the filtered thrust control signal. 
+
+The individual turbine models are concatenated into a qLPV system with the vector of all effective wind speeds $\bm{V}_r$ as the scheduling parameter vector:
+\begin{align} \label{eqLinWFAIC}
+    \bm{x}_{\text{WF}}(k+1) &= \bm{A}_{\text{WF}} \bm{x}_{\text{WF}}(k) + \bm{B}_{\text{WF}}(\bm{V}_r) \, \bm{C}_{T}^\prime(k),\\
+    P_{\text{WF}}(k) & = \underbrace{\bm{1}_{1 \times n_{\text{WT}} } \otimes [1 \quad 0 \quad 0]}_{\bm{C}_{\text{WF}} \in {\mathbb{R}}^{1 \times 3n_\text{WT}}} \, \bm{x}_{\text{WF}}(k), \label{eqLinWFAIC2}
+\end{align}
+where $\bm{A}_{\text{WF}} \in {\mathbb{R}}^{3n_\text{WT} \times 3n_\text{WT}}$ is a block-diagonal matrix and $\bm{B}_{\text{WF}}(\bm{V}_r) \in {\mathbb{R}}^{3n_\text{WT} \times n_\text{WT}}$ is a vertical concatenation of the turbine input matrices. The wind farm power $P_{\text{WF}}$ is the sum of all individual turbine powers, $P_{\text{WF}} = \sum_{i=1}^{n_{\text{WT}}} P_i$.
+
+The farm-level state and input vectors are defined as:
+\begin{align*}
+    \bm{x}_{\text{WF}} &= [\bm{x}_{\text{WT}1}^T \quad \bm{x}_{\text{WT}2}^T \quad \dots \quad \bm{x}_{\text{WT} n_{\text{WT}}}^T ]^T \in {\mathbb{R}}^{3n_\text{WT}},\\
+    \bm{C}_{T}^\prime &= [C_{T1}^\prime \quad C_{T2}^\prime \quad \dots \quad C_{T n_{\text{WT}}}^\prime ]^T \in {\mathbb{R}}^{n_\text{WT}},\\
+    \bm{V}_r &= [V_{r1} \quad V_{r2} \quad \dots \quad V_{r n_\text{WT}}]^T \in {\mathbb{R}}^{n_\text{WT}}.
+\end{align*}
+These vectors are used in combination with the parameter-dependent Toeplitz-like matrices built from $\bm{A}_{\text{WF}}$, $\bm{B}_{\text{WF}}$, and  $\bm{C}_{\text{WF}}$ to predict the farm power trajectory similarly to the approach discussed in Section~\ref{sec:qLMPCOptimizationAlgo} and Equation~\eqref{eq:nearlyToeplitzMat}.
+
+The cost function $J(\bm{U})$ is formulated to minimize the tracking error $\bm{E}$ and control increments $\Delta \bm{U}$:
+\begin{align} \label{eq:NMPCcostAIC}
+    J(\bm{U}) = \underbrace{\bm{E}^T Q \bm{E}}_{J_Q (\bm{U})} + \underbrace{\Delta \bm{U}^T R \Delta \bm{U} }_{J_R ( \bm{U})},
+\end{align}
+with weighting matrices $Q = q \cdot \bm{I}_{n_h \times n_h}$ and $R = r \cdot \bm{I}_{n_{hu}\times n_{hu}}$. The tracking error trajectory $\bm{E}(k)$ is defined as:
+\begin{equation}\label{eq:errortraject}
+    \begin{aligned}
+        \bm{E}(k) &= P_{\text{ref}}(k) \cdot \bm{1}_{n_h \times 1} - \bm{P}_{\text{WF}}(k) \\
+        &= [ e(k) \quad e(k+1) \quad \dots \quad e(k + n_h-1) ]^T \in \mathbb{R}^{n_h \times 1},
+    \end{aligned}
+\end{equation}
+where $e = P_{\text{ref}} - P_{\text{WF}}$. Assuming a constant power reference over the horizon, we define $\bm{P}_{\text{ref}} = P_{\text{ref}} \cdot \bm{1}_{n_h \times 1}$. The predicted power and control trajectories are given by:
+\begin{equation} \label{eq:UandDUAIC} 
+    \begin{aligned} 
+        \bm{P}_{\text{WF}}(k) &= [ P_{\text{WF}}(k) \quad \dots \quad P_{\text{WF}}(k + n_h-1)]^T, \\
+        \bm{U}(k) &= [ U^T (k) \quad \dots \quad U^T (k+n_h-1) ]^T \in \mathbb{R}^{n_{hu}\times 1}, \\
+        \Delta \bm{U}(k) &= [ (U(k) - U(k-1))^T \quad \dots \quad (U(k+n_h-1) - U(k+n_h-2))^T ]^T,
+    \end{aligned} 
+\end{equation}
+where $U = [C_{T1}^\prime \quad \dots \quad C_{Tn_{\text{WT}}}^\prime]^T$. For the two-turbine case with $n_h = 10$, this yields $\bm{E} \in \mathbb{R}^{10\times 1}$ and $\bm{U}, \Delta \bm{U} \in \mathbb{R}^{20\times 1}$.
+
+Finally, the constrained optimization problem is stated as:
+\begin{align} \label{eq:ObjFunAIC}
+    \begin{array}{l} 
+        \underset{\bm{U}(k)}{\text{minimize }} J(\bm{U}(k)) = \bm{E}(k)^T Q \bm{E}(k) + \Delta \bm{U}(k)^T R \Delta \bm{U}(k) \\
+        \text{subject to }\\
+        \bm{x}_{\text{WF}}(k+j+1) = \bm{A}_{\text{WF}} \bm{x}_{\text{WF}}(k+j) + \bm{B}_{\text{WF}}(\bm{V}_r) \bm{C}_{T}^\prime(k+j) \\
+        P_{\text{WF}}(k+j) = \bm{C}_{\text{WF}} \bm{x}_{\text{WF}}(k+j), \quad j = 0, \dots, n_h-1.
+    \end{array}
+\end{align}
+
+\subsubsection{QP Formulation and Gradient Derivation}
+Note that, unlike the velocity-based wind turbine qLMPC described in Equation~\eqref{eq:ObjFunWT}, the optimization parameters are the elements of the control vector trajectory $\bm{U}$, and not their differences over time, i.e., $\Delta \bm{U}$. Consequently, the penalty term on the control input, $J_R$, must be reformulated to depend on the trajectory $\bm{U}$ rather than the differences $\Delta \bm{U}$.
+
+Directly substituting the linear model into the terms of the tracking error and input trajectories yields
+\begin{equation} \label{eq:cost_termsAIC} \begin{aligned} J_Q(\bm{U}(k)) &= \big(\bm{P}_{\text{ref}}(k) - (\tilde{L} \bm{x}_{\text{WF}}(k) + \tilde{S} \bm{U}(k))\big)^T  Q \big(\bm{P}_{\text{ref}}(k) - (\tilde{L} \bm{x}_{\text{WF}}(k) + \tilde{S} \bm{U}(k))\big), \\[1ex] J_R(\bm{U}(k)) &= \big(\mathcal{D} \bm{U}(k) + \mathcal{C} U(k-1)\big)^T  R \big(\mathcal{D} \bm{U}(k) + \mathcal{C} U(k-1)\big), \end{aligned} 
+\end{equation}
+with the matrices $\mathcal{D}$ and $\mathcal{C}$ providing the linear relation $\Delta \bm{U}(k) = \bm{\mathcal{D}} \bm{U}(k) + \bm{\mathcal{C}} U(k-1)$. The current state vector $\bm{x}_{\text{WF}}(k)$, which is used to initialize the trajectory, is calculated from the state and input at the previous sample time $k-1$. The optimal control input trajectory $\bm{U}(k)$ is found by solving a QP algorithm, similar to the one used for individual wind turbines.
+%
+
+The matrices $\tilde{L} \in \mathbb{R}^{n_h \times 3n_{\text{WT}}}$ and $\tilde{S} \in \mathbb{R}^{n_h \times n_{hu}}$ calculate the predicted power trajectory $\bm{P}_{\text{WF}}(k) = [P_{\text{WF}}(k+1), \dots, P_{\text{WF}}(k+n_h)]^T$ based on the state-space model:
+\begin{equation} \label{eq:ltildeWF}
+    \begin{aligned} 
+        \tilde{L} &= 
+        \begin{bmatrix} 
+            C_{\text{WF}} A_{\text{WF}} \\ C_{\text{WF}} A_{\text{WF}}^2 \\ \vdots \\ C_{\text{WF}} A_{\text{WF}}^{n_h} 
+        \end{bmatrix}, \quad 
+        \tilde{S}(\bm{V}_r) &= 
+        \begin{bmatrix} 
+            C_{\text{WF}} B_{\text{WF}}(\bm{V}_r) & 0 & \cdots & 0 \\ 
+            C_{\text{WF}} A_{\text{WF}} B_{\text{WF}} (\bm{V}_r)  & C_{\text{WF}} B_{\text{WF}}(\bm{V}_r)  & \cdots & 0 \\ 
+            \vdots & \vdots & \ddots & \vdots \\ 
+            C_{\text{WF}} A_{\text{WF}}^{n_h-1} B_{\text{WF}}(\bm{V}_r)  & C_{\text{WF}} A_{\text{WF}}^{n_h-2} B_{\text{WF}} (\bm{V}_r) & \cdots & C_{\text{WF}} B_{\text{WF}} (\bm{V}_r) 
+        \end{bmatrix}.
+    \end{aligned}
+\end{equation}
+The matrices $\bm{\mathcal{D}}$ and $\bm{\mathcal{C}}$ can be written in terms of the optimization variable $\bm{U}(k)$:
+\begin{align*}
+    \bm{\mathcal{D}} &= \bm{I}_{n_{hu} \times n_{hu}} - 
+    \begin{bmatrix}
+        \bm{0}_{n_u \times n_u(n_h-1)} & \bm{0}_{n_u \times n_u} \\ 
+        \bm{I}_{n_u(n_h-1) \times n_u(n_h-1)} & \bm{0}_{n_u(n_h-1) \times n_u}
+    \end{bmatrix}, \\
+    \bm{\mathcal{C}} &= -\begin{bmatrix} \bm{I}_{n_u \times n_u} \\ \bm{0}_{n_u(n_h-1) \times n_u} \end{bmatrix}.
+\end{align*} 
+This block-shift structure ensures that each control increment is calculated as the difference between a turbine's current input and its input at the previous time step. For a wind farm with $n_u = 2$ and a horizon $n_h = 10$, the matrices $\bm{\mathcal{D}} \in \mathbb{R}^{20 \times 20}$ and $\bm{\mathcal{C}} \in \mathbb{R}^{20 \times 2}$ are defined as:
+\begin{align*}
+    \bm{\mathcal{D}} &= \begin{bmatrix} 
+        1 & 0 & 0 & 0 & \cdots & 0 \\
+        0 & 1 & 0 & 0 & \cdots & 0 \\
+        -1 & 0 & 1 & 0 & \cdots & 0 \\
+        0 & -1 & 0 & 1 & \cdots & 0 \\
+        \vdots & \vdots & \ddots & \ddots & \ddots & \vdots \\
+        0 & 0 & \cdots & -1 & 0 & 1
+    \end{bmatrix}, \quad
+    \bm{\mathcal{C}} = \begin{bmatrix} 
+        -1 & 0 \\
+        0 & -1 \\
+        0 & 0 \\
+        0 & 0 \\
+        \vdots & \vdots \\
+        0 & 0
+    \end{bmatrix}.
+\end{align*}
+%In this structure, $\bm{\mathcal{D}}$ is an identity matrix with a negative identity block $\bm{-I}_{2 \times 2}$ starting at the $(3,1)$ position. This ensures that the difference is taken between the same turbine's control input at consecutive time steps.
+%
+In addition to the filtered matrices $\tilde{L}$ and $\tilde{S}(V_r)$, corresponding unfiltered matrices $L \in \mathbb{R}^{3n_h n_{\text{WT}} \times 3n_{\text{WT}}}$ and $S(V_r) \in \mathbb{R}^{3n_h n_{\text{WT}} \times n_{hu}}$ are defined. These matrices map the current state $\bm{x}_{\text{WF}}(k)$ and the control input trajectory $\bm{U}(k)$ to the predicted state trajectory over the horizon:
+\begin{align*}
+    \bm{X}_{\text{WF}}(k +1) = \begin{bmatrix} \bm{x}_{\text{WF}}(k+1) \\ \vdots \\ \bm{x}_{\text{WF}}(k+n_h) \end{bmatrix} = L \bm{x}_{\text{WF}}(k) + S(V_r) \bm{U}(k) \in \mathbb{R}^{3 n_h n_{\text{WT}} \times 1}.
+\end{align*}
+The unfiltered matrices are utilized for predicting the evolution of the effective wind speeds. Specifically, the future effective wind speeds are estimated via the filtered thrust control inputs, which are extracted from the predicted state trajectory $\bm{X}_{\text{WF}}$.
+
+The cost function from Equation~\eqref{eq:ObjFunAIC} is reformulated as a sequence of quadratic sub-problems, following the approach in \cite{gonzalez2020nonlinear}. For a cost $J(\bm{U})$ subject to constraints $g(\bm{U}) \leq 0$, the quadratic sub-problem at the $l$-th iteration is:
+\begin{equation} \label{eq:ObjFunAICapprox}
+    \begin{aligned} 
+        \underset{ \tilde{\bm{U}}} {\text{minimize}} \quad & \frac{1}{2}\tilde{\bm{U}}^T \nabla^2 J(\bm{U}^l) \tilde{\bm{U}} + \nabla J(\bm{U}^l)^T \tilde{\bm{U}} \\
+        \text{subject to} \quad & \nabla g(\bm{U}^l) \tilde{\bm{U}} + g(\bm{U}^l) \leq 0,
+    \end{aligned}
+\end{equation}
+where $\bm{U}^l$ is the current estimate and $\tilde{\bm{U}} = \bm{U} - \bm{U}^l$ is the optimization variable. The gradients of the cost terms are:
+\begin{align*} 
+    \nabla J_Q (\bm{U}) &= 2 \tilde{S}^T Q \left( (\tilde{L} \bm{x}_{\text{WF}}(k) + \tilde{S} \bm{U}^l) - \bm{P}_{\text{ref}}(k+1) \right), \\
+    \nabla J_R(\bm{U}) &= 2 \bm{\mathcal{D}}^T R (\bm{\mathcal{D}} \bm{U}^l + \bm{\mathcal{C}} U(k-1)),
+\end{align*} 
+and the corresponding Hessians are constant:
+\begin{equation*} 
+    \nabla^2 J_Q = 2 \tilde{S}^T Q \tilde{S}, \quad \nabla^2 J_R = 2 \bm{\mathcal{D}}^T R \bm{\mathcal{D}}.
+\end{equation*} 
+
+The control trajectory is subject to the constraints $\bm{U}_{\min} \leq \bm{U} \leq \bm{U}_{\max}$, where $\bm{U}_{\min}$ and $\bm{U}_{\max}$ are vectors containing the limits $u_{\min} = 0.1$ and $u_{\max} = 2$ from Table~\ref{table:WfSim}. In standard QP form, these are expressed as $A_{\text{const}} \bm{U} \leq b_{\text{const}}$, with:
+\[
+A_{\text{const}} = \begin{bmatrix} I \\ -I \end{bmatrix}, \qquad b_{\text{const}} = \begin{bmatrix} \bm{U}_{\max} \\ -\bm{U}_{\min} \end{bmatrix}.
+\]
+For the sub-problem in $\tilde{\bm{U}}$, the constraints are shifted relative to the current estimate $\bm{U}^l$:
+\[
+A_{\text{const}} \tilde{\bm{U}} \le \underbrace{b_{\text{const}} - A_{\text{const}} \bm{U}^l}_{\bm{b}_{\text{shifted}}}.
+\]%\[
+%\bm{U}_{\min} \le \bm{U}_\ell \le \bm{U}_{\max},
+%\]
+%otherwise the QP problem will be infeasible.
+The implementation of the controller is summarized in Algorithm~\ref{algo:qLPVMPCAIC}. 
+\begin{algorithm} \caption{Adaptive qLMPC for AIC}\label{algo:qLPVMPCAIC}
+    \begin{algorithmic}[1]
+        \Procedure{qLMPC\_AIC}{$P_{\text{ref}}, V_1 (k), \bm{x}_{\text{WF}}(k), \bm{u}(k-1), \mathcal{X}_{\nu}$}
+        \State Initialize farm model, weight matrices $\bm{Q}, \bm{R}$, and horizon $n_h$
+        \State Initialize data matrices $\mathbf{L}_u$ and $\mathbf{L}_+$ from \eqref{eq:G_Gplus_datamatrices}
+        \State $k \gets 0$
+        \While{$k < T_{\text{end}}$}
+        \State \textbf{Adaptive Model Update:}
+        \If{$k > h$ \textbf{and} criterion \eqref{eq:add_data} exceeds $\nu$ using buffer $\mathcal{X}_{\nu}$}
+        \State Update $\mathbf{L}_+$ and $\mathbf{L}_u$ with new data from $\mathcal{X}_{\nu}$
+        \State $\hat{\bm{K}} \gets \mathbf{L}_+ (\mathbf{L}_u)^\dagger$ \Comment{Recalculate Koopman operator}
+        \EndIf
+        \State $l \gets 0$
+        \While{stop criterion not met} \Comment{Successive QP iterations}
+        \State Estimate $\bm{V}_r$ trajectory using $\hat{\bm{K}}$, $V_1(k)$, and $\bm{x}_{\text{WF}}(k)$
+        \State Compute batch matrices $L, S, \tilde{L}, \tilde{S}$ based on estimated $\bm{V}_r$
+        \State Solve QP \eqref{eq:ObjFunAICapprox} to obtain optimal trajectory $\bm{U}^l(k)$
+        \State Predict $\bm{X}_{\text{WF}}^{l}(k+1) = L \bm{x}_{\text{WF}}(k) + S \bm{U}^l(k)$
+        \State $l \gets l + 1$
+        \EndWhile
+        \State Apply first control $\bm{u}(k)$ from $\bm{U}^l(k)$ to the system
+        \State \textbf{Update Buffer:}
+        \State $\mathcal{X}_{\nu} \gets$ update with $\{\bm{x}_{\text{WF}}(k), \bm{u}(k)\}$ and slide window
+        \State $k \gets k + 1$
+        \EndWhile
+        \EndProcedure
+    \end{algorithmic}
+\end{algorithm}
+
+The primary distinction between this approach and the individual turbine control in Algorithm~\ref{algo:qLPVMPC} is the integration of the data-driven wind speed predictor. The Koopman-based model is updated online whenever the discrepancy between historical predictions and the actual states, defined by the criterion in \eqref{eq:add_data}, exceeds the threshold $\nu$.
+
+At each sample time $k$, the controller requires a set of external signals and internally stored variables to compute the optimal control sequence:
+\begin{enumerate}
+    \item The reference power trajectory $\bm{P}_{\text{ref}}(k)$ and the current measured wind speed $V_{1}(k)$ at the upstream turbine must be provided.
+    \item The algorithm utilizes the current state vector $\bm{x}_{\text{WF}}(k)$ and the previous control $\bm{u}(k-1)$. Additionally, it maintains the buffer $\mathcal{X}_{\nu}$ containing the most recent $h+1$ state-input pairs, which are mapped through the extended lifting $\bm{\tilde{\varphi}}$ to evaluate the discrepancy criterion in \eqref{eq:add_data}.
+\end{enumerate}
+
+
+%
+% &= 2R [(\Delta U_1 - \Delta U_2),(\Delta U_3 - \Delta U_2),..., \Delta U_N]^T  
+%  \nabla J(\bm{U}_l)&= 2 (\tilde{S} ^T   Q (\lambda \zeta_{d,k}+\tilde{S} \bm{U}_l - \bm{P}_{ref}) + \mathcal{D}^T   R (\mathcal{D}\bm{U}_l + \mathcal{C}) + R_{\gamma} \bm{U}_l) \text{ and }  H J_Q(\bm{U}_l) = 2(S^T  QS+\mathcal{D}^T  R\mathcal{D} + R_\gamma).
+
+
+%\label{eq:Koop_G_Gplus_datamatrices}
+%\hat{\bm{K}} = \begin{bmatrix} \bm{A}_{\hat{K}} & \bm{B}_{\hat{K}}   
+    %$\mathbf{L}_u$ and $\mathbf{L}_+$ correspond to the original data matrices $\mathbf{G}_w$ and $\mathbf{G}_+$ introduced in Equations~\eqref{eq:G_Gplus_datamatrices} to~\eqref{eq:Koop_G_Gplus_datamatrices}.
+    %Therefore, the matrices of the quadratic sub-problem constraints are \\
+    %\begin{align*} \label{eqn:constraint}
+    %    A_{const} = [I_{N\cdot n_T },- I_{N\cdot n_T }]^T  , \quad
+    %    b_{const} = [-u_M \mathbf{1}^{1\times N\cdot n_T}, u_m \mathbf{1}^{1\times N\cdot n_T}]^T  
+    %     \end{align*}
+%In the EIODMD approach based on $\hat{K}_2$ the power $P_{\text{WF}}$ is estimated directly. The result is a linear MPC as this omits the effective wind speeds as scheduling parameters. For this second control algorithm, the stacked Toeplitz matrices $\Lambda_{K}$ and $S_{K}$ are based on the matrices $A_{K}$, $B_{K}$, $C_{K}$ and $D_{K}$ as
+% {\scriptsize
+    %}
+%For EIODMD $P_{\text{WF}}$ is estimated directly, so there is $\tilde{L}_{K} = \Lambda_{K}$ and $\tilde{S}_{K} = S_{K}$.\\
+%

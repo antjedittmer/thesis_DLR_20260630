@@ -1,0 +1,52 @@
+\chapter{Conclusions and Outlook} \label{Conclusions}
+This dissertation develops qLPV and structured low-order control schemes, as well as data-driven control approaches, for the optimization of wind energy conversion systems at both the individual turbine and wind farm levels. The overarching challenge addressed is the mitigation of adverse mechanical loads and the maximization of power yield in the context of increasingly larger and slimmer turbine structures and dense wind farm layouts. To manage the challenges due to non-linearity of wind turbine models and the high dimensionality of ODE approximating wake interaction in wind farms, this work proposes velocity-based qLMPC for turbine control and MPC algorithms based on Koopman operator theory, aiming to minimize the Levelized Cost of Energy (LCoE) by balancing control efficiency with structural integrity. All control algorithms in this work are real-time capable, converging well below the sample time of turbine controllers, which is typically around 10 ms.
+
+A central contribution of this thesis is the derivation and validation of qLPV wind turbine models that achieve a high level of fidelity relative to the widely used FAST simulation environment. Two specific model architectures were investigated: a model capturing rotor speed and tower movement, and an augmented version incorporating blade out-of-plane, generator and slip angle states. While the latter demonstrated superior open-loop fit in single-axis comparisons, closed-loop evaluations revealed only marginal performance gains. Nevertheless, the more complex model was selected for the final MPC synthesis, as its implementation did not incur a measurable computational penalty and provided a more suitable foundation for adapting a velocity-based qLMPC design from established literature.
+
+In the individual turbine control domain, a velocity-based MIMO qLMPC design was benchmarked against a collective pitch and torque SISO baseline. The investigation further extended to modern load alleviation techniques, incorporating Individual Pitch Control (IPC) and aerodynamically modeled Trailing Edge Flap Control (TEFC). The results demonstrate that all configurations maintain identical power yields and lower the mechanical Damage Equivalen Loads (DELs) acting on the tower and blades compared to the baseline. However, the qLMPC approach shows the most significant DEL reductions and is the only approach to also significantly lower the power standard deviation. Another result is that qLMPC achieves a higher degree of DEL reduction for the same level of actuator activity compared to augmented baseline schemes, underlining the potential of this algorithm.
+
+At the wind farm level, this thesis introduces an adaptive control framework within the WFSim environment to manage wake interactions. The transition to farm-level control necessitated the development of a data-driven algorithm based on Dynamic Mode Decomposition (DMD) and Koopman-inspired lifting functions. A data-driven, adaptive Active Induction Control (AIC) allows the controller to estimate effective wind speeds and track power references that were unattainable for a non-adaptive scheme trained on the same data set that was deliberately chosen not to cover the whole operating range. By selectively updating the model only when significant discrepancies are detected, the framework maintains a high Variance-Accounted-For (VAF) of approximately 90\% in both open- and closed-loop scenarios.
+%
+Furthermore, the integration of Wind Redirection Control (WRC) was explored through two distinct methodologies. The first approach leverages the analytical Bastankah-Gaussian wake model to pre-optimize yaw misalignment, while the second utilizes a combined WRC-AIC Koopman MPC to simultaneously optimize thrust and yaw in a unified multivariable formulation. This simultaneous optimization proved particularly effective in simulations, demonstrating that data-driven models can accurately capture the effects of induction and redirection to optimize total farm yield.
+
+Despite the promising results, several idealized assumptions within the simulation framework 
+must be addressed to transition toward real-world application. The individual turbine 
+simulations were conducted under the assumption that the wind at the turbine is perfectly 
+known. While wind estimators are routinely used in industry, their accuracy is inherently 
+sensitive to turbine parameters that inevitably change as the system ages. The integration 
+of sensors such as spinner anemometers and lidar offers an alternative, and 
+future work should explore lidar-based wind preview to enhance both CPC and IPC MPC schemes, 
+particularly for gust alleviation. Both pitch and generator 
+torque dynamics were modeled using first-order transfer functions with constant parameters. 
+In practice, these mechanical responses are subject to degradation over time, suggesting 
+that learning and adapting to changed actuator behavior is a necessary research extension.
+
+The study focused primarily on wind steps and normal turbulent conditions. The results 
+presented in~\cite{dittmer2026koopman} extend the WFSim environment to support turbulent 
+inflow using the Kaimal Normal Turbulence Model, demonstrating that while turbulence reduces 
+the potential gains from Wake Redirection Control compared to steady-state predictions, the 
+combined WRC-AIC scheme still outperforms baseline AIC, reducing power tracking error 
+considerably under realistic, time-varying wind conditions. However, gust alleviation and 
+load evaluation under WRC-induced yaw misalignment remain open problems, and the use of 
+WFSim's quasi-static turbine representation obscures the dynamic behavior required to fully 
+evaluate power demand following and structural fatigue. Transitioning to environments such 
+as FAST.Farm would allow for the inclusion of dynamic turbine behavior, a comprehensive 
+evaluation of loads during WRC, and the investigation of Dynamic Induction Control~(DIC) 
+alongside AIC and WRC. To prove industrial validity, the framework should ultimately be 
+tested on a higher number of turbines under realistic, varying wind directions using either 
+measurement data or high-fidelity simulations.
+
+A significant research opportunity lies in defining a concrete financial advantage for load 
+alleviation against the disadvantage of increased actuator wear. Quantifying this trade-off 
+is essential for determining the optimal LCoE in a commercially viable controller.
+
+On the modeling side, the physically motivated lifting functions selected in this thesis 
+were shown to yield accurate Koopman models for wind farm control. Subsequent 
+work~\cite{sharan2024autoencoder, sharan2026tcn}, to which the author contributed, has 
+explored neural network-based lifting functions as an alternative, suggesting that learned 
+observables can outperform manually selected polynomial functions, particularly under varying 
+operating conditions. This direction is promising for larger farms and more complex inflow 
+scenarios, where the physical relationships underpinning the polynomial observables used 
+here become harder to specify a priori.
+
+%The proposed methodologies reveal a great potential for data-driven multivariable control to solve the increasingly complex trade-offs in modern wind energy production. By interpreting these control laws as a combination of structured low-order loops and high-level predictive optimization, the path toward an industrial-scale implementation of adaptive wind farm control becomes clearer and more computationally accessible.

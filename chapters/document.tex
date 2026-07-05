@@ -1,0 +1,193 @@
+\chapter{Turbine and Controller Parameters} \label{appendixA}
+%\section{NREL 5MW Parameters}
+\begin{table}[htbp]
+    \centering
+    \caption{NREL 5MW Parameters from FAST documentation \protect\cite{jonkman2009definition}}
+    \label{table:1}
+    %\small % Slightly smaller font to guarantee it stays on one page
+    \begin{tabular}{l l r l l}
+        \toprule
+        Description & Parameter & Value & Unit & Source \\
+        \midrule
+        Generator inertia & $J_{g}$ & 534.116 & kg m$^2$ & Table 5-1\\
+        Gearbox ratio & $N_g$ & 97 & - & Table 5-1 \\
+        Transmission damping & $B_s$ & 6,215,000 & Nm/rad/s & Table 5-1\\
+        Transmission stiffness & $K_s$ & 867,637,000 & Nm/rad$^2$ & Table 5-1\\
+        Rotor inertia & $J_{r}$ & 35,443,926 & kg m$^2$ & ED sum file\\
+        Rotor radius & $R_{r}$ & 63 & m & Table 1-1 \\
+        Dist. hub to aero. center & $r_{b}$ & 47.25 & m & $0.75 R_{r}$ \\
+        Blade weight & $m_{\text{blade}}$ & 17,740 & kg & Table 2-2\\ 
+        Blade modal mass & $m_b$ & 4,435 & kg & $0.25 M_b$\\ 
+        Blade damping ratio & $\zeta_b$ & 0.477465 & \% & Table 2-2 \\
+        1$^{\text{st}}$ Blade flap frequency & $f_{nb}$ & 0.6993 & Hz & Table 9-1\\ 
+        Blade damping & $B_{b}$ & 186.0838 & kg/s & $2\zeta_b (2 \pi f_{nb}) m_b$ \\ 
+        Blade stiffness & $K_{b}$ & 85,621.024 & kg/s$^2$ & $(2 \pi f_{nb})^2 m_b$ \\
+        Rotor weight & $m_{\text{rotor}}$ & 110,000 & kg & Table 1-1 \\ 
+        Nacelle weight & $m_{\text{nacelle}}$ & 240,000 & kg & Table 1-1 \\     
+        Tower weight & $m_{\text{tower}}$ & 347,460 & kg & Table 1-1 \\ 
+        Tower modal mass & $m_t$ & 436,865 & kg & Calc. note* \\
+        Tower damping ratio & $\zeta_t$ & 1 & \% & Table 6-2\\
+        1$^{\text{st}}$ Tower FA frequency & $f_{nt}$ & 0.324 & Hz & Table 9-1\\
+        Tower FA damping & $B_{t}$ & 17,786.9763 & kg/s & $2\zeta_t(2 \pi f_{nt}) m_t$ \\ 
+        Tower FA stiffness & $K_{t}$ & 1,810,493.6635 & kg/s$^2$ & $(2 \pi f_{nt})^2 m_t$ \\  
+        1$^{\text{st}}$ Tower SS frequency & $f_{nt,\text{sw}}$ & 0.312 & Hz & Table 9-1\\
+        Tower SS damping & $B_{t,\text{sw}}$ & 17,128.1994 & kg/s & $2\zeta_t(2 \pi f_{nt}) m_t$ \\ 
+        Tower SS stiffness & $K_{t,\text{sw}}$ & 1,678,866.5521 & kg/s$^2$ & $(2 \pi f_{nt})^2 m_t$ \\  
+        Tower height & $H_t$ & 90 & m & Table 1-1\\
+        \bottomrule
+        \specialrule{0pt}{1pt}{1pt}
+        \multicolumn{5}{l}{\footnotesize * $0.25m_{\text{tower}} + m_{\text{rotor}} + m_{\text{nacelle}}$}
+    \end{tabular}
+\end{table}
+\begin{table}[htbp]
+    \centering
+    \caption{FASTTool controller parameters for the NREL 5-MW \cite{mulders2020wind}}
+    \label{table:pitch_ctrl}
+    \setlength{\aboverulesep}{1pt}
+    \setlength{\belowrulesep}{1.2pt}
+    \begin{tabular}{l l r l}
+        \toprule
+        Description & Parameter & Value & Unit \\
+        \midrule
+        \multicolumn{4}{l}{\textit{Generator torque parameters}} \\
+        \midrule
+        Rated generator torque    & $T_{g,\text{rated}}$  & 43{,}529   & Nm \\
+        
+        Torque limit              & $T_{g,\text{lim}}$    & 47{,}403   & Nm \\
+        Torque slew rate          & $\Delta{T}_{g,\text{max}}$ & 20{,}000 & Nm/s \\
+        Optimal gain ($k\omega^2$)& $K^*$                 & 2.3323     & Nm\,s$^2$/rad$^2$ \\
+        Minimum torque            & $T_{g,\text{min}}$    & 200        & Nm \\
+        Low-pass cutoff frequency & $f_{\text{LP}}$       & 3          & rad/s \\
+        \midrule
+        \multicolumn{4}{l}{\textit{Generator speed breakpoints}} \\
+        \midrule
+        Region I\,1/2 lower speed & $\omega_{g,A}$ & 670  & rpm \\
+        Region II lower speed     & $\omega_{g,B}$ & 871  & rpm \\
+        Region II\,1/2 lower speed& $\omega_{g,B2}$& 1{,}136 & rpm \\
+        Rated speed               & $\omega_{g,C}$ & 1{,}162 & rpm \\
+        \midrule
+        \multicolumn{4}{l}{\textit{Blade pitch parameters)}} \\
+        \midrule
+        Fine pitch angle          & $\beta_{\text{fine}}$        & 0.106    & rad \\
+        Minimum pitch angle       & $\beta_{\min}$               & $-2$     & deg \\
+        Maximum pitch angle       & $\beta_{\max}$               & 90       & deg \\
+        Minimum pitch rate        & $\Delta{\beta}_{\min}$         & $-13$    & deg/s \\
+        Maximum pitch rate        & $\Delta{\beta}_{\max}$         & 13       & deg/s \\
+        Proportional gain (fixed) & $K_P$                        & $-0.003$ & -- \\
+        Integral gain (fixed)     & $K_I$                        & $-0.001$ & -- \\
+        Gain scheduling enabled   & --                           & yes      & -- \\
+        Low-pass filter order     & --                           & 1        & -- \\
+        Low-pass cutoff frequency & $f_{\text{LP}}$              & 3        & rad/s \\
+        Startup pitch angle       & $\beta_{\text{start}}$       & 45       & deg \\
+        Startup pitch rate        & $\dot{\beta}_{\text{start}}$ & 1        & deg/s \\
+        Startup speed             & $\omega_{\text{start}}$      & 0.25     & rad/s \\
+        \midrule
+        \multicolumn{4}{l}{\textit{PI gain-scheduled values (14 operating points)}} \\
+        \midrule
+        Scheduled pitch angles & $\beta_{\text{GS}}$ &
+        \makecell[r]{0.0706, 0.1168, 0.1524,\\
+            0.183, 0.2116, 0.2385,\\
+            0.263, 0.286, 0.308,\\
+            0.3284, 0.3488, 0.3691,\\
+            0.3895, 0.4083} & rad \\[6pt]
+        Scheduled prop.\ gains & $K_{P,\text{GS}}$ &
+        \makecell[r]{$-$0.0164, $-$0.0107, $-$0.0083,\\
+            $-$0.0068, $-$0.0057, $-$0.0049,\\
+            $-$0.0043, $-$0.0037, $-$0.0033,\\
+            $-$0.0028, $-$0.0026, $-$0.0023,\\
+            $-$0.0020, $-$0.0017} & -- \\[6pt]
+        Scheduled int.\ gains  & $K_{I,\text{GS}}$ &
+        \makecell[r]{$-$0.0027, $-$0.0027, $-$0.0026,\\
+            $-$0.0025, $-$0.0024, $-$0.0024,\\
+            $-$0.0024, $-$0.0023, $-$0.0023,\\
+            $-$0.0023, $-$0.0023, $-$0.0023,\\
+            $-$0.0023, $-$0.0023} & -- \\
+        \bottomrule
+        \specialrule{0pt}{1pt}{1pt}
+        \multicolumn{4}{l}{\footnotesize All notch filter parameters ($\beta_{1}$,
+            $\beta_{2}$, $\omega_n$) are zero and omitted.}\\
+        \multicolumn{4}{l}{\footnotesize Low-pass cutoff frequency is constant
+            across all operating points ($f_{\text{LP},\text{GS}} = 3$\,rad/s).}
+    \end{tabular}
+\end{table}
+
+
+% \chapter{Wind Turbine Coordinate Systems}
+% \label{appendixB}
+% Several coordinate systems are used to describe the signals used for wind turbine control. The FAST User Guide \cite{jonkman2005fast} lists, among others, the Inertial Frame Coordinate System, Tower-Base Coordinate System, Tower-Top/Base-Plate Coordinate System, Nacelle/Yaw Coordinate System, Coned Coordinate Systems, and Blade Coordinate Systems. For IPC, measurements have to be converted from the rotating to the fixed coordinate system with the Coleman transformation. Note that the sensors for the blade root moments are mounted on the blades and rotate with them. To convert moments measured in the blade coordinate system into the rotor coordinate system for wind turbines and helicopters, the following conventions are followed.
+% %
+% The rotating Blade Coordinate System is a local coordinate system fixed to each blade, with axes typically defined as follows:
+% \begin{description}[itemsep=0.25em, parsep=0em]
+    %     \item[-] $x_b$: Perpendicular to the blade and orthogonal to the other axes resulting in an edgewise moment
+    %     \item[-] $y_b$: On the blade surface resulting in a flapwise moment, pointing towards the trailing edge of the 
+    %     blade and parallel to the blade chord 
+    %     \item[-] $z_b$: pitch axis along the blade length (from blade root towards
+    %     the blade tip (pitching moments).
+    % \end{description}
+% The rotating Rotor Coordinate System is a coordinate system fixed to the rotor hub, with axes typically defined as follows:
+% \begin{description}[itemsep=0.25em, parsep=0em]
+    %     \item[-] $x_r$: Perpendicular to the rotor plane nd orthogonal to the other axes, resulting in in-plane moment.
+    %     \item[-] $y_r$: Pointing towards the trailing edge of the blades for zero-pitch and zero-twist , resulting in  out-of plane moments
+    %     \item[-] $z_r$: Pitching moments, same moment in both coordinate system.
+    % \end{description}
+% 
+% The transformation between the blade coordinate system and the rotor coordinate system involves using either a rotation matrix based on Euler angles or quaternions. For simplicity and intuitiveness, the use of Euler angles as a transformation matrix are given below. The blade coordinate system is offset from the rotating rotor coordinate system by the blade pitch angle $\beta$. The blade pitch angle is defined as the angle between the chord line of a blade (an imaginary line between the leading and trailing blade edges) and the rotor plane (the plane in which the rotor blades rotate). This results in a matrix that rotates the blade coordinate system about the \(z_r\)-axis:
+% 
+% \[ R(\beta) = \begin{bmatrix}
+    %     \cos(\beta) & \sin(\beta) & 0 \\
+    %     -\sin(\beta) & \cos(\beta) & 0 \\
+    %     0 & 0 & 1
+    % \end{bmatrix} \]
+% 
+% The moments are then transformed by multiplication: with \(\mathbf{M}_b\) being the moment vector in the blade coordinate system \([M_{xb}, M_{yb}, M_{zb}]^T\), the moment vector in the rotor coordinate system \(\mathbf{M}_r\) is obtained by:
+% 
+% \[ \mathbf{M}_r = R(\beta) \cdot \mathbf{M}_b \]
+% 
+% Note that in FAST, the rotor-based moments of the coned Coordinate system, called in-plane and out-of plane moments, are available and are used in this work, thus making this specific transformation unnecessary. However, for sensor measurements of sensors attached to the blade, this transformation would be needed to transform the blade-fixed flapwise and edgewise moment into the in- and out-of plane moments of the coned coordinate system.
+% 
+\chapter{WFSim Profiler Results}
+\label{appendixC}
+
+Tables~\ref{tab:profile_nmpc} and~\ref{tab:profile_qlmpc} show the top eight functions from the MATLAB profiler output after simulating the test case defined in \texttt{controlSet\_\allowbreak sowfa\_\allowbreak 2turb\_\allowbreak alm\_\allowbreak turbl.m}. Both runs were conducted in MATLAB R2023a on a laptop equipped with an 11th Gen Intel(R) Core(TM) i7-11850H @ 2.50\,GHz processor. %The data confirm that the transition to a QP-based formulation eliminated the significant overhead caused by redundant solver re-initializations, e.g., \texttt{sdpsettings}). This optimization reduced the controller's share of the total simulation time from roughly 86\% to 19\%.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Profiling results for the original NMPC implementation.}
+    \label{tab:profile_nmpc}
+    \begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}l r r r}
+        \toprule
+        \textbf{Function Name} & \textbf{Calls} & \textbf{Total Time (s)} & \textbf{Self Time (s)} \\ 
+        \midrule
+        \texttt{WFSim\_demo}                      & 1      & 177.204 & 0.226 \\
+        \texttt{\textbf{NMPCcontroller}}          & 1200   & $\bm{152.566}$ & 2.455 \\
+        \texttt{sdpsettings}                      & 2400   & 83.404  & 3.234 \\
+        \texttt{sdpsettings>appendOptionNames}    & 163200 & 49.843  & 10.286 \\
+        \texttt{sdpsettings>recursivefieldnames}  & 175200 & 39.028  & 26.950 \\
+        \texttt{optimize}                         & 2400   & 33.979  & 0.100 \\
+        \texttt{solvesdp}                         & 2400   & 33.879  & 1.490 \\
+        \texttt{WFSim\_timestepping}              & 1201   & 23.741  & 0.104 \\
+        \bottomrule
+    \end{tabular*}
+\end{table}
+
+\begin{table}[htbp]
+    \centering
+    \caption{Profiling results for the optimized qLMPC implementation.}
+    \label{tab:profile_qlmpc}
+    \begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}l r r r}
+        \toprule
+        \textbf{Function Name} & \textbf{Calls} & \textbf{Total Time (s)} & \textbf{Self Time (s)} \\ 
+        \midrule
+        \texttt{WFSim\_demo}               & 1      & 26.197 & 0.166 \\
+        \texttt{WFSim\_timestepping}       & 1201   & 20.159 & 0.079 \\
+        \texttt{Computesol}                & 1201   & 14.493 & 14.493 \\
+        \texttt{Make\_Ax\_b}               & 1201   & 5.354  & 0.475 \\
+        \texttt{\textbf{qLMPCcontroller}}  & 1200   & $\bm{5.041}$  & 0.510 \\
+        \texttt{MakingSparseMatrix}        & 2402   & 3.122  & 0.214 \\
+        \texttt{spdiags}                   & 12014  & 2.897  & 0.078 \\
+        \texttt{spdiags>makeSparseGeneral} & 12014  & 2.819  & 2.819 \\
+        \bottomrule
+    \end{tabular*}
+\end{table}
+
+%The angle hence determines the angle of attack of the blade with respect to the incoming wind. 

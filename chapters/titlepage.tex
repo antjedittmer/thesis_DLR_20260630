@@ -1,0 +1,36 @@
+\makeatletter
+% Store PDF metadata
+\hypersetup{
+    pdftitle    = {\@title\ifdefempty{\@subtitle}{}{: \@subtitle}},
+    pdfauthor   = {\@author}
+}
+
+% Print titlepage
+\begin{titlepage}
+    \begin{center}
+        \vspace*{1cm}
+        \LARGE
+        \textbf{\@title}
+
+        \large
+        \textbf{\@subtitle}
+
+        \vspace{2.5cm}
+        \textbf{Dem Promotionsausschuss der\\Technischen Universität Hamburg}\\[1ex]
+        zur Erlangung des akademischen Grades\\[1ex]
+        Doktor-Ingenieurin (Dr.-Ing.)\\[5ex]
+        vorgelegte Dissertation
+
+        \vspace{1.5cm}
+        von\\ \@author
+
+        \vspace{2cm}
+        aus\\ Wedel
+
+        \vspace{2cm}
+        \@date
+    \end{center}
+    \vfill
+    Betreuer: Prof. Dr. Herbert Werner
+\end{titlepage}
+\makeatother
