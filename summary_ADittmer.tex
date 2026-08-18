@@ -1,0 +1,24 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage[margin=2.5cm]{geometry}
+
+\pagestyle{empty}
+
+\begin{document}
+    
+    \begin{center}
+        {\Large \textbf{Quasi-Linear Parameter-Varying and Koopman Model Predictive Control for Wind Energy Systems}}\\[0.5cm]
+        Antje Dittmer
+    \end{center}
+    
+    \section*{Summary}
+    
+        Over the past two decades, wind turbines have significantly increased in size. Ensuring their economic, fully automatic operation in varying wind conditions has become more challenging due to larger towers and rotors with longer, more slender blades. The increasing number of turbines in wind farms, sometimes over a hundred, and their close spacing, as areas suitable for wind energy are limited, further complicate this task. Not only is individual wind turbine control difficult, but wind farm control is even more so, as efficient use of space necessitates accounting for wake interactions.
+   
+   In this thesis, Model Predictive Control (MPC) is used to design algorithms for wind turbine and wind farm control, aiming to minimize the Levelized Cost of Energy~(LCoE). The goal is to maximize power yield while minimizing mechanical loads and keeping actuator movements within their limits and as small as possible. For individual Wind Energy Conversion Systems~(WECS), this involves maximizing energy extraction up to the rated wind speed and pitching the blades above this speed to lower mechanical loads and maintain constant power output.
+   
+   A novel velocity-based quasi-linear Parameter Varying Model Predictive Control (qLMPC) algorithm is applied to wind turbines as a Multiple-Input Multiple-Output (MIMO) controller for the whole operating range of the turbine for the first time within the context of this thesis. A quasi-linear Parameter Varying~(qLPV) mathematical model is derived using Lagrange's equations for controller synthesis. This new qLMPC strategy is compared to state-of-the-art Collective Pitch Control~(CPC) and Individual Pitch Control~(IPC) using Damage Equivalent Loads~(DEL) for evaluation. Additionally, an enhanced turbine model with Trailing Edge Flaps (TEF) is developed, combining IPC and TEF control for improved performance.
+   
+   For wind farm control, a data-driven approach models wake interactions between turbines. Data from a simulation model is used to construct a Koopman matrix, a finite-dimensional representation of the Koopman operator, to design quasi-linear and linear models for qLMPC and linear  MPC of two turbines. Basis functions are carefully selected based on physical relationships governing wind and wake interactions. The qLPV model of wake interaction reduces the number of measurement points from several per turbine to one in front of the first turbine while maintaining excellent grid power reference tracking. An efficient online adaptive controller is demonstrated, showing that Wake Redirection Control (WRC) enables the turbines to produce more power consistently compared to the greedy baseline approach. Both wind turbine and wind farm control designs are formulated as Quadratic Programming (QP) problems to ensure real-time capability.  
+       
+\end{document}
