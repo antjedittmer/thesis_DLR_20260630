@@ -1,5 +1,38 @@
+%\chapter{Wind Turbine qLPV Models} \label{sec:WindTurbineqLPVModels}
+%A wind turbine is a highly complex mechanical system. However, control-oriented models only aim to represent the dynamics that either provide information to the controller or are influenced by the actuator settings commanded by the controller. Therefore, the resulting models are of relatively low order. In Section  \ref{sec:MechanicalAerodynamicSubsystemModel}, the physical equations that serve as the basis for building a Simulink model of the turbine dynamics, and for the underlying models for the qLMPC algorithm discussed in the next chapter, are presented. The two first-principle models derived in this chapter are compared in Section \ref{sec:qLPVModelVerificationwithFAST0} in the time and frequency domains against the wind turbine simulation code FAST. The presented models have been published in \cite{dittmer2021velocity}.
+
 \chapter{Wind Turbine qLPV Models} \label{sec:WindTurbineqLPVModels}
-A wind turbine is a highly complex mechanical system. However, control-oriented models only aim to represent the dynamics that either provide information to the controller or are influenced by the actuator settings commanded by the controller. Therefore, the resulting models are of relatively low order. In Section  \ref{sec:MechanicalAerodynamicSubsystemModel}, the physical equations that serve as the basis for building a Simulink model of the turbine dynamics, and for the underlying models for the qLMPC algorithm discussed in the next chapter, are presented. The two first-principle models derived in this chapter are compared in Section \ref{sec:qLPVModelVerificationwithFAST0} in the time and frequency domains against the wind turbine simulation code FAST. The presented models have been published in \cite{dittmer2021velocity}.
+A wind turbine is a highly complex mechanical system. However, control-oriented models only
+aim to represent the dynamics that either provide information to the controller or are influenced
+by the actuator settings commanded by the controller. Therefore, the resulting models are of
+relatively low order.
+
+In Section~\ref{sec:MechanicalAerodynamicSubsystemModel}, the physical equations are presented
+that serve as the basis for building a Simulink model of the turbine dynamics, and for the
+underlying models for the qLMPC algorithm discussed in the next chapter. Two qLPV models are
+derived from physical first principles, extending the control-oriented turbine models of
+\cite{schlipf2013nonlinear, mulders2020preventing, Bianchi2007}: a 5th order model comprising
+rotor speed and tower motion, and a 9th order model that additionally resolves out-of-plane blade
+deflection and generator speed, obtained from Lagrange's equations.
+Both include the side-to-side tower direction. While side-to-side tower motion has been addressed
+in dedicated load estimation and damping schemes \cite{pamososuryo2022loadestimation,
+    pamososuryo2022individual, fonseca2024windTurbineSideSide}, it is typically omitted from
+first-principles control-oriented models, which cover the fore-aft direction alone
+\cite{schlipf2013nonlinear}. The corresponding in-plane lumped force is
+derived here by cantilever equivalence from the in-plane moment, i.e., the difference between the
+aerodynamic torque and the generator torque referred to the low-speed shaft. This extends the
+fore-aft lumped-force modeling of \cite{schlipf2013nonlinear, Bianchi2007} to the side-to-side
+tower motion.
+%
+The two models are verified systematically in
+Section~\ref{sec:qLPVModelVerificationwithFAST0}, against each other and against linearized
+FAST reference models, over the complete operating range from 4\,m/s to 25\,m/s: in the frequency
+domain using open-loop linearizations, and in the time domain in closed loop with the
+baseline PI controller. This comparison quantifies which dynamics are lost with the lower-order
+design and thus which model is adequate for the qLMPC designs of
+Chapter~\ref{sec:Application to Wind Turbine Control4}.
+The presented models have been published in \cite{dittmer2021velocity}.
+
 
 \section{Nonlinear Models for qLMPC Design} \label{sec:MechanicalAerodynamicSubsystemModel}
 Figure~\ref{fig:SchWTDefl} illustrates the movements and deflections of the tower and blades as a result of the forces and moments acting on them.
@@ -25,7 +58,7 @@ The geometric parameters depicted are the hub height $H_t$ and the rotor radius 
 Two qLPV designs are introduced in this section: the first models the rotor speed and the tower movement, while the second additionally accounts for the generator speed and the blade deflection. Both models use the three inputs rotor torque, generator torque, and thrust force.
 
 The five states of the first model considered are the fore-aft and side-to-side tower deflections at hub height, $x_t$ and $y_t$, as well as their derivatives, $\dot{x}_t$ and $\dot{y}_t$, i.e., the fore-aft and side-to-side velocities, and the angular rotor speed $\omega_r$.
-The state vector of the second model additionally contains the angular generator speed $\omega_g$ and the angular flapwise blade deflection $\delta_b$. Note that both the wind speed and the resulting force act in a distributed manner over the rotor disk. The vectors $V_r$ and $F_{T,r}$ give an equivalent one dimensional wind and force vector of the two dimensional wind field distributed over the rotor disk area and the forces acting at the segments of the blades.
+The state vector of the second model additionally contains the angular generator speed $\omega_g$ and the angular out-of-plane blade deflection $\delta_b$. Note that both the wind speed and the resulting force act in a distributed manner over the rotor disk. The vectors $V_r$ and $F_{T,r}$ give an equivalent one dimensional wind and force vector of the two dimensional wind field distributed over the rotor disk area and the forces acting at the segments of the blades.
 
  The thrust $F_{T,r}$ is the sum of the accumulated forces acting on the blades of the turbines, with the accumulated force per blade denoted $F_{T,bi}$ for the $i$th blade and with $n_b$ as the number of blades. To model the hub's movement and the resulting mechanical moments from the thrust force $F_{T,r}$, these forces are consolidated into a single force acting at a specific point on the blade, which is located at a distance $r_b$ from the rotor hub. This uses the same modeling as in \cite{Bianchi2007} where "the thrust forces distributed along each blade were
  replaced by a lumped force $F_T$ applied at a distance $r_b$ from the axis of rotation". 
@@ -97,7 +130,7 @@ and hence depends on the rotor radius $R_r$, the rotor angular speed $\omega_{r}
 \subfloat[Thrust coefficient $c_T$]{%
     \includegraphics[width=0.49\textwidth]{figures/figDirECC21/Ct_NRRLFAST5MW.eps}
 }
-\caption{Lookup tables of power, torque and thrust coefficients with respect to blade pitch angle and tip speed ratio for the NREL 5MW model.}
+\caption{Aerodynamic power, torque and thrust coefficient surfaces with respect to blade pitch angle and tip speed ratio for the NREL 5MW model.} % Lookup tables of power, torque and thrust coefficients with respect to blade pitch angle and tip speed ratio for the NREL 5MW model
 \label{fig:CPCT}
 \end{figure}
 %

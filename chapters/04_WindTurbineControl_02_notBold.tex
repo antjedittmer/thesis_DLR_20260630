@@ -1,9 +1,48 @@
 \chapter{Wind Turbine Control}  \label{sec:Application to Wind Turbine Control4}
 
-Modern megawatt wind turbines are both speed-controlled and pitch-controlled \cite{pao2011control, mulders2018delft, elkodama2023control}. Controllers and their parameters are often fine-tuned to fit not only a specific wind turbine type but also individual turbines, taking into account factors such as manufacturing and installation variations, including rotor blade weight imbalances and aging processes \cite{en14238083}. These conventional feedback control designs, typically relying solely on generator speed as input and controlling the blade pitch angles collectively, are well-engineered and technologically mature. However, further reduction of the cost of energy production can be achieved by introducing additional control inputs or sensors. Moreover, using a predictive scheme like qLMPC allows leveraging wind measurements or estimates and incorporating this information over a prediction horizon. It also accounts for how the system states, e.g., the rotor and generator speed, are expected to react to the wind trajectory and future control inputs within that horizon. This chapter investigates control strategies that leverage such improvements: a qLMPC design, which incorporates preview wind information, and PI Individual Pitch Control (IPC), the latter both as a standalone method and in combination with Trailing Edge Flap Control (TEFC), aimed at reducing mechanical loads. These control approaches are evaluated in terms of power reference tracking, actuator activity, and mechanical loads.
-
-In Section~\ref{sec:quasiLPVMPCDesign}, the design of a velocity-based qLMPC controller based on a first-principles model is presented. Section~\ref{section:Individal Pitch PI Control} introduces IPC, explaining the multi-blade coordinate transformation and comparing IPC simulation results to those from baseline Collective Pitch Control (CPC). Section~\ref{sec:CombinedIPC-TrailingEdgeFlapControl} describes the combination of IPC and TEFC, including the necessary model extensions and the achieved load reductions on the blades and tower. A brief comparison and conclusion section summarizes the results obtained with the three wind turbine controller designs. The results for the qLMPC controller have been published in \cite{dittmer2021velocity}, and the TEFC control strategy in \cite{dittmer2024combined}.
+%Modern megawatt wind turbines are both speed-controlled and pitch-controlled \cite{pao2011control, mulders2018delft, elkodama2023control}. Controllers and their parameters are often fine-tuned to fit not only a specific wind turbine type but also individual turbines, taking into account factors such as manufacturing and installation variations, including rotor blade weight imbalances and aging processes \cite{en14238083}. These conventional feedback control designs, typically relying solely on generator speed as input and controlling the blade pitch angles collectively, are well-engineered and technologically mature. However, further reduction of the cost of energy production can be achieved by introducing additional control inputs or sensors. Moreover, using a predictive scheme like qLMPC allows leveraging wind measurements or estimates and incorporating this information over a prediction horizon. It also accounts for how the system states, e.g., the rotor and generator speed, are expected to react to the wind trajectory and future control inputs within that horizon. This chapter investigates control strategies that leverage such improvements: a qLMPC design, which incorporates preview wind information, and PI Individual Pitch Control (IPC), the latter both as a standalone method and in combination with Trailing Edge Flap Control (TEFC), aimed at reducing mechanical loads. These control approaches are evaluated in terms of power reference tracking, actuator activity, and mechanical loads.
+%In Section~\ref{sec:quasiLPVMPCDesign}, the design of a velocity-based qLMPC controller based on a first-principles model is presented. Section~\ref{section:Individal Pitch PI Control} introduces IPC, explaining the multi-blade coordinate transformation and comparing IPC simulation results to those from baseline Collective Pitch Control (CPC). Section~\ref{sec:CombinedIPC-TrailingEdgeFlapControl} describes the combination of IPC and TEFC, including the necessary model extensions and the achieved load reductions on the blades and tower. A brief comparison and conclusion section summarizes the results obtained with the three wind turbine controller designs. The results for the qLMPC controller have been published in \cite{dittmer2021velocity}, and the TEFC control strategy in \cite{dittmer2024combined}.
 %  
+Modern megawatt wind turbines are both speed-controlled and pitch-controlled \cite{pao2011control,
+    mulders2018delft, elkodama2023control}. Controllers and their parameters are often fine-tuned to
+fit not only a specific wind turbine type but also individual turbines, taking into account factors
+such as manufacturing and installation variations, including rotor blade weight imbalances and
+aging processes \cite{en14238083}. These conventional feedback control designs, typically relying
+solely on generator speed as input and controlling the blade pitch angles collectively, are
+well-engineered and technologically mature. However, further reduction of the cost of energy
+production can be achieved by introducing additional control inputs or sensors. Moreover, using a
+predictive scheme like qLMPC allows leveraging wind measurements or estimates and incorporating
+this information over a prediction horizon. It also accounts for how the system states, e.g., the
+rotor and generator speed, are expected to react to the wind trajectory and future control inputs
+within that horizon. This chapter investigates control strategies that leverage such improvements:
+a qLMPC design, which incorporates preview wind information, and PI Individual Pitch Control
+(IPC), the latter both as a standalone method and in combination with Trailing Edge Flap Control
+(TEFC), aimed at reducing mechanical loads. These control approaches are evaluated in terms of
+power reference tracking, actuator activity, and mechanical loads.
+
+In Section~\ref{sec:quasiLPVMPCDesign}, the design of a velocity-based qLMPC controller based on
+the first-principles model of Chapter~\ref{sec:WindTurbineqLPVModels} is presented. Where qLMPC
+has so far been applied to wind turbines as a SISO scheme \cite{mulders2020preventing, pamososuryo2022individual,
+    fonseca2024windTurbineSideSide}, the design presented here actuates generator torque and
+collective pitch simultaneously as a MIMO scheme, covering the entire operating range. It is
+reformulated as a QP and solved via a linear complementarity formulation with Lemke's algorithm
+\cite{cisneros2020velocity}, yielding mean solver times below 2\,ms at a controller sampling time
+of 8\,ms and thus real-time capability.
+%
+Section~\ref{section:Individal Pitch PI Control} introduces IPC, explaining the multi-blade
+coordinate transformation and comparing IPC simulation results to those from baseline Collective
+Pitch Control (CPC). The simulation environment is also used to tune the IPC gains, by a grid
+search followed by a Nelder-Mead simplex optimization of the blade root DEL.
+%
+Section~\ref{sec:CombinedIPC-TrailingEdgeFlapControl} describes the combination of IPC and TEFC,
+including the necessary model extensions and the achieved load reductions on the blades and tower.
+Whereas earlier studies combining the two actuation principles report results for single mean wind
+speeds \cite{wilson2009combined, henriksen2013model, he2018combined}, the controller presented
+here is demonstrated across Regions II and III, using one training data set and two independent
+verification data sets. A final comparison section evaluates qLMPC, IPC, and AALC against each
+other, showing the trade-off between DEL reduction and actuator activity relative to the PI CPC
+baseline. The results for the qLMPC controller have been published in \cite{dittmer2021velocity},
+and the TEFC control strategy in \cite{dittmer2024combined}.
 \section{qLMPC Design and Application}\label{sec:quasiLPVMPCDesign}
 Wind turbine controller design in above rated region focuses on smooth power control and in the below rated region on power optimization, as described in \cite{Bianchi2007}. Generator speed reference tracking is achieved using two control inputs: the collective blade pitch angle $\beta_{0,\text{ref}}$ and the generator torque reference $T_{g,\text{ref}}$. The baseline controller consists of two SISO controllers, one for generator torque and one for blade pitch control, see Section~\ref{sec:WindTurbineControl}. These can be replaced by a MIMO qLMPC power controller, see Figure \ref{fig:BlockMPC}. The qLMPC is designed to track rotor and generator speed references while minimizing changes in the control inputs, resulting in smoother power output and reduced tower movement compared to the baseline. DEL reduction is not an explicit objective of the qLMPC design. However, the five evaluation criteria used to compare all control strategies introduced in Section~\ref{subsection Control Objectives}, i.e., blade and tower DEL, power mean and variance, and actuator activity, are also calculated for this controller to enable a direct comparison with the IPC and AALC designs.
 
@@ -143,7 +182,7 @@ Generally, the steady-state vector $\bm{x}_{s} \in \mathbb{R}^{n_x \times 1}$ an
 %
 where $\bm{e}_s(t) \in \mathbb{R}^{n_y \times 1}$ is the steady-state error, $\bm{r} \in \mathbb{R}^{n_y \times 1}$ is the reference signal, $\bm{C} \in \mathbb{R}^{n_y \times n_x}$ is the output matrix, and $T_s$ is the sampling time. This leads to the steady-state solution:
 \begin{align} \label{eq:steadystatevec}
-    \bm{x}_{\text{MPC}^\prime,s} =  \begin{bmatrix}r_{T_g} & r_{\beta} & 0 & 0 & 0 & 0 & 0 \end{bmatrix}^T, \quad
+    \bm{x}_{\text{MPC}^\prime,s} =  \begin{bmatrix} r_{T_g} & r_{\beta} & 0 & 0 & 0 & 0 & 0 \end{bmatrix}^T, \quad
     \Delta{\bm{u}}_{\text{Mdl},s} = \begin{bmatrix} 0 & 0 \end{bmatrix}^T.
 \end{align}
 where \(r_{T_g}\) and \(r_{\beta}\) denote the reference generator torque and pitch, respectively, and $\Delta{\bm{u}}_{\text{Mdl},s} \in \mathbb{R}^{2 \times 1}$ is the deviation of the corresponding steady-state control input $\bm{u}_{\text{Mdl},s}$. This deviation should be zero in steady state. All elements of the vector in Equation~\eqref{eq:steadystatevec} that represent state deviations are therefore set to zero, i.e., the third to seventh elements, corresponding to the state vector in Equation~\eqref{eq:stateMPC}.  

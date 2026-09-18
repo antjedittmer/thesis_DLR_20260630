@@ -1,12 +1,52 @@
 \chapter{Wind Farm Control} \label{sec:ApplicationtoWindFarmControl}
 
 Wind turbines are grouped into farms to efficiently use locations suitable for wind energy harvesting. Within a wind farm, as many turbines as economically viable are installed, with their number limited by wake interactions. A higher turbine density per area reduces the cost of grid connection per turbine and lowers operation and maintenance costs. However, closely spaced turbines experience wake interactions, causing power losses due to reduced energy availability and increased mechanical loads on downstream turbines.
-%
-In \cite{houck2022review} wind farm control methods are surveyed, including Axial Induction Control (AIC), Wake Redirection Control (WRC), and Dynamic Induction Control (DIC). These methods have shown advantages in simulations of varying fidelity, and AIC and WRC have also demonstrated benefits in some field tests. MPC schemes have been proposed in various studies, such as \cite{spudic2014distMPC_https://doi.org/10.1002/oca.2136, zhao2016coordinated, bay2018active, vali2019adjoint}. 
-%
-Unlike individual turbine dynamics, wake interactions in a wind farm cannot be accurately captured by low-order ODEs. Therefore, the approach applied to wind turbine control in Chapter~\ref{sec:Application to Wind Turbine Control4}, i.e., deriving nonlinear differential equations, creating a qLPV model, and using it for qLMPC control, is not applicable to wind farms. Nonetheless, MPC can be utilized by leveraging data-driven models. Recently, Koopman operator-based methods have proven successful \cite{castillo2020wind, cassamo2021model}. By applying Koopman lifting functions to open-loop simulation data and performing Dynamic Mode Decomposition (DMD), state-space models suitable for MPC algorithms can be obtained. AIC strategies have been developed to handle stationary \cite{sharan2022Koopman} and non-stationary inflow conditions \cite{dittmer2022data}, and a combined WRC-AIC scheme has shown potential for tracking high power demands \cite{dittmer2023koopman}.
+In \cite{houck2022review} wind farm control methods are surveyed, including Axial Induction Control (AIC), Wake Redirection Control (WRC), their combination, and active wake control. These methods have shown advantages in simulations of varying fidelity, and WRC has also demonstrated benefits in field tests. MPC schemes have been proposed in various studies, such as \cite{spudic2014distMPC_https://doi.org/10.1002/oca.2136, zhao2016coordinated, bay2018active, vali2019adjoint}. Unlike individual turbine dynamics, wake interactions in a wind farm cannot be accurately captured by low-order ODEs. Therefore, the approach applied to wind turbine control in Chapter~\ref{sec:Application to Wind Turbine Control4}, i.e., deriving nonlinear differential equations, creating a qLPV model, and using it for qLMPC control, is not applicable to wind farms. Nonetheless, MPC can be utilized by leveraging data-driven models. Recently, Koopman operator-based methods have proven successful \cite{castillo2020wind, cassamo2021model}. By applying Koopman lifting functions to open-loop simulation data and performing Dynamic Mode Decomposition (DMD), state-space models suitable for MPC algorithms can be obtained. AIC strategies have been developed to handle stationary \cite{sharan2022Koopman} and non-stationary inflow conditions \cite{dittmer2022data}, and a combined WRC-AIC scheme has shown potential for tracking high power demands \cite{dittmer2023koopman}.
 
 Section \ref{sec:WindFarmSimulationWFSim} revisits the design of WFSim, the wind farm simulation tool used in this thesis, describing the modifications and enhancements necessary to model wind speed variations and to represent thrust and power output for turbines with intentional yaw misalignment. Section \ref{sec:AdaptiveWindFarmqLMPCforAIC} presents an adaptive AIC algorithm capable of handling changes in free-stream wind speed. Section \ref{sec:WindFarmLinearMPCforWRC-AIC} first demonstrates wind farm power increases achieved with WRC, followed by a combined WRC-AIC algorithm for grid reference tracking under high power demands. The results of the adaptive AIC scheme have been published in \cite{dittmer2022data}, and those of the combined WRC-AIC algorithm in \cite{dittmer2023koopman}.
+
+%Wind turbines are grouped into farms to efficiently use locations suitable for wind energy
+% harvesting. Within a wind farm, as many turbines as economically viable are installed, with their
+% number limited by wake interactions. A higher turbine density per area reduces the cost of grid
+% connection per turbine and lowers operation and maintenance costs. However, closely spaced
+% turbines experience wake interactions, causing power losses due to reduced energy availability and
+% increased mechanical loads on downstream turbines. In \cite{houck2022review} wind farm control methods are surveyed, including Axial Induction Control (AIC), Wake Redirection Control (WRC), and Dynamic Induction Control (DIC). These
+% methods have shown advantages in simulations of varying fidelity, and WRC has also
+% demonstrated benefits in field tests. MPC schemes have been proposed in various studies,
+% such as \cite{spudic2014distMPC_https://doi.org/10.1002/oca.2136, zhao2016coordinated, bay2018active, vali2019adjoint}. Unlike individual turbine dynamics, wake interactions in a wind farm cannot be accurately captured by low-order ODEs. Therefore, the approach applied to wind turbine control in
+% Chapter~\ref{sec:Application to Wind Turbine Control4}, i.e., deriving nonlinear differential
+% equations, creating a qLPV model, and using it for qLMPC control, is not applicable to wind farms.
+% Nonetheless, MPC can be utilized by leveraging data-driven models. Recently, Koopman
+% operator-based methods have proven successful \cite{castillo2020wind, cassamo2021model}. By
+% applying Koopman lifting functions to open-loop simulation data and performing Dynamic Mode
+% Decomposition (DMD), state-space models suitable for MPC algorithms can be obtained. AIC
+% strategies have been developed to handle stationary \cite{sharan2022Koopman} and non-stationary
+% inflow conditions \cite{dittmer2022data}, and a combined WRC-AIC scheme has shown potential for
+% tracking high power demands \cite{dittmer2023koopman}.
+% 
+% Section \ref{sec:WindFarmSimulationWFSim} revisits the design of WFSim, the wind farm simulation
+% tool used in this thesis, describing the modifications and enhancements necessary to model wind
+% speed variations and to represent thrust and power output for turbines with intentional yaw
+% misalignment. In its public release \cite{boersma2018control}, WFSim fixes the boundary conditions
+% of the 2D wind field and uses constant thrust and power coefficients. Both restrictions are removed
+% here: time-varying boundary conditions are introduced, without which an adaptive AIC algorithm
+% cannot be demonstrated, and the actuator logic is extended by a look-up table reproducing the
+% decrease of the power coefficient under yaw misalignment \cite{hulsman2022}, without which the
+% power-loss trade-off inherent in wake redirection would not be represented. Section \ref{sec:AdaptiveWindFarmqLMPCforAIC} presents an adaptive AIC algorithm capable of
+% handling changes in free-stream wind speed. The underlying Koopman model predicts the effective
+% wind speeds at both turbines from a single point wind measurement upstream of the first turbine
+% together with the thrust control signals, i.e., from signals available on a real wind farm, without
+% requiring knowledge of the flow field. Building on this model, the adaptive scheme updates the
+% Koopman matrix only when past predictions and measurements diverge, and thereby maintains power
+% reference tracking under changing inflow conditions and power demands. 
+% Section \ref{sec:WindFarmLinearMPCforWRC-AIC} first demonstrates wind farm power increases
+% achieved with WRC, followed by a combined WRC-AIC algorithm for grid reference tracking under high
+% power demands. Treating the yaw angle as an active control input rather than an offline optimized
+% parameter is shown to improve tracking of highly variable, high power references, both over AIC
+% with a yaw angle pre-optimized using the Gaussian wake model of \cite{bastankhah2016experimental}
+% and, more markedly, over baseline AIC at zero at zero yaw. The results of the adaptive AIC scheme have
+%been published in \cite{dittmer2022data}, and those of the combined WRC-AIC algorithm in
+%\cite{dittmer2023koopman}.
 
 \section{Wind Farm Simulation with WFSim} \label{sec:WindFarmSimulationWFSim}
 The wind farm simulation environment WFSim \cite{boersma2017tutorial} is employed both for generating open-loop data and for closed-loop controller testing. A short introduction to WFSim is provided in Section~\ref{sec:WakeModels}, which outlines the background on wind farm models and control. The 2D Navier–Stokes equations (NSE) are described in Section~\ref{Subsection:WindFarmSimulationModels}, and the actuator-disk turbine model is introduced in Section~\ref{Subsection:Windfarmcontrol}. WFSim allows the user to either choose from pre-existing layout definitions and sets of control signals, which may be used in open loop, or introduce new sets. A pre-existing layout of a two-turbine farm was selected, but several excitation signal sets were specifically designed for the studies on which this thesis is based as foundations for Koopman system identification. Similar to the easily interchangeable layout and control signal settings, the environment facilitates the integration of custom controller designs. While the flow and pressure calculations are utilized as intended, the applications in this thesis require significant modifications to the internal signal flow of the original MATLAB code.
@@ -202,7 +242,7 @@ With this simulation setup and the code modifications described in Section~\ref{
 \section{Adaptive Wind Farm qLMPC with Thrust Control} \label{sec:AdaptiveWindFarmqLMPCforAIC}
 Accurately describing the complex turbulence evolution caused by wakes using closed-form low-order ODEs is infeasible. Consequently, the standard MPC controller available in the open-source WFSim environment explicitly models only the turbine dynamics. Wake interactions are accounted for implicitly by utilizing the effective wind speeds at the turbines as inputs to the model. This architecture is illustrated in the block diagram in Figure~\ref{figBlockDiagramFarm}, presented in Section~\ref{Subsection:Windfarmcontrol}, which provides an overview of the WFSim MPC framework.
 
-In this section, the data generation process for both open-loop training and closed-loop controller testing is described. This is followed by a discussion of the data handling procedures required to derive an External Dynamic Mode Decomposition (EDMD) model, along with a review of the resulting wind farm model and the MPC algorithm itself. Finally, simulation results for both open-loop wind estimation and closed-loop adaptive control are presented. These results demonstrate the capability of the adaptive algorithm to learn dynamics that were not present in the initial training data.
+In this section, the data generation process for both open-loop training and closed-loop controller testing is described. This is followed by a discussion of the data handling procedures required to derive an Extended Dynamic Mode Decomposition (EDMD) model, along with a review of the resulting wind farm model and the MPC algorithm itself. Finally, simulation results for both open-loop wind estimation and closed-loop adaptive control are presented. These results demonstrate the capability of the adaptive algorithm to learn dynamics that were not present in the initial training data.
 
 \subsection{Simulation Setup for Thrust Control}
 Figure~\ref{fig:WFSimFlowAIC} visualizes the data flow of the qLMPC scheme for the two-turbine wind farm. The upstream turbine is denoted WT1 and the downstream turbine WT2. A key distinction from the original WFSim implementation is that the effective wind speeds of the turbines are not fed back directly to the controller. Instead, they are estimated using the EDMD-based model introduced in the previous work~\cite{sharan2022Koopman}. While the freestream wind speed was held constant in that study, in this work the longitudinal component $V_\infty = v_{x,\infty}$ is varied, while the lateral component $v_{y,\infty}$ remains zero.

@@ -754,7 +754,7 @@ which introduces the need for a new observable \( \varphi_2 = x^4 \). Continuing
 \end{equation}
 and so on, yields an infinite sequence of new observables. Therefore, a finite-dimensional Koopman operator cannot capture the dynamics of this system. The lifted space is, in this example, infinite-dimensional.
 
-In cases where the Koopman operator is infinite-dimensional, one approach is to approximate it with a finite matrix using a suitable set of observables. Alternatively, DMD can be used to extract dominant dynamics directly from data. This method of building the Koopman matrix does not depend on the availability of a closed-form ODE, making it applicable to wind farm control, where the wind flow and wakes are described by the Navier-Stokes equations, and hence, a PDE.
+In cases where the Koopman operator is infinite-dimensional, one approach is to approximate it with a finite matrix using a suitable set of observables. This Koopman matrix can be identified directly from data by DMD, without requiring a closed-form model of the underlying dynamics. This makes the approach applicable to wind farm control, where the flow and wake dynamics are governed by the Navier-Stokes equations, for which no general analytical solution is known and whose discretisation yields a state dimension far too large for an analytical lifting.
 
 
 \subsubsection{Koopman Matrix for Wind Farm Modeling}\label{KoopmanIdentification}
