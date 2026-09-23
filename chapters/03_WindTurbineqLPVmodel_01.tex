@@ -11,23 +11,24 @@ In Section~\ref{sec:MechanicalAerodynamicSubsystemModel}, the physical equations
 that serve as the basis for building a Simulink model of the turbine dynamics, and for the
 underlying models for the qLMPC algorithm discussed in the next chapter. Two qLPV models are
 derived from physical first principles, extending the control-oriented turbine models of
-\cite{schlipf2013nonlinear, mulders2020preventing, Bianchi2007}: a 5th order model comprising
+\cite{schlipf2013nonlinear, Bianchi2007}: a 5th order model comprising
 rotor speed and tower motion, and a 9th order model that additionally resolves out-of-plane blade
 deflection and generator speed, obtained from Lagrange's equations.
 Both include the side-to-side tower direction. While side-to-side tower motion has been addressed
-in dedicated load estimation and damping schemes \cite{pamososuryo2022loadestimation,
-    pamososuryo2022individual, fonseca2024windTurbineSideSide}, it is typically omitted from
-first-principles control-oriented models, which cover the fore-aft direction alone
-\cite{schlipf2013nonlinear}. The corresponding in-plane lumped force is
-derived here by cantilever equivalence from the in-plane moment, i.e., the difference between the
-aerodynamic torque and the generator torque referred to the low-speed shaft. This extends the
-fore-aft lumped-force modeling of \cite{schlipf2013nonlinear, Bianchi2007} to the side-to-side
-tower motion.
+in dedicated load estimation and damping schemes \cite{mulders2020preventing,
+    pamososuryo2022loadestimation, pamososuryo2022individual, fonseca2024windTurbineSideSide}, these
+works do not state how the in-plane force follows from the control inputs, i.e., from generator
+torque, rotor torque and blade pitch. This relationship is derived here by cantilever equivalence
+from the in-plane moment, i.e., the difference between the aerodynamic torque and the generator
+torque referred to the low-speed shaft, extending the fore-aft lumped mass modeling of \cite{schlipf2013nonlinear, Bianchi2007}
+to the side-to-side direction. Making the input dependence explicit is what allows the side-to-side dynamics to be compared
+against linearized FAST models in the frequency domain and the qLPV simulation results to be
+compared against the nonlinear FAST model in the time domain.
 %
 The two models are verified systematically in
 Section~\ref{sec:qLPVModelVerificationwithFAST0}, against each other and against linearized
 FAST reference models, over the complete operating range from 4\,m/s to 25\,m/s: in the frequency
-domain using open-loop linearizations, and in the time domain in closed loop with the
+domain using open-loop linearization, and in the time domain in closed loop with the
 baseline PI controller. This comparison quantifies which dynamics are lost with the lower-order
 design and thus which model is adequate for the qLMPC designs of
 Chapter~\ref{sec:Application to Wind Turbine Control4}.

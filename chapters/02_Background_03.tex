@@ -24,17 +24,21 @@ Mean wind speed also varies with height above ground level as surface roughness 
 \end{equation}
 where $z$ is the height above ground, $z_{\text{ref}}$ is a reference height, often 10\,m, and $\alpha_{\text{shear}}$ is the wind shear exponent. In \cite{Bianchi2007}, values for sand, mown and high grass, and suburban areas are given, varying from 0.10 to 0.32. In this work, the commonly used surface roughness exponent $\alpha_{\text{shear}} = 0.2$ is used.
 
-While turbulence has a minor influence on Annual Energy Capture (AEC), it significantly impacts aerodynamic loads and power variance. Power variance is often called power quality, as maintaining a smooth power output is important, especially in smaller networks.
+While turbulence has a minor influence on Annual Energy Production (AEP), it significantly impacts aerodynamic loads and power variance. Power variance is relevant to power quality, as maintaining a smooth power output is important, especially in smaller networks.
 
 Turbulence is stochastically described by its power spectrum. Two widely used models are the von K\'arm\'an and Kaimal spectra:
 \begin{equation}
-    \Phi_{\text{K\'arm\'an}}(\omega) = \frac{K_V}{(1 +(\omega T_V)^2)^{5/6}} \quad \text{and} \quad \Phi_{\text{Kaimal}}(\omega) = \frac{K_V}{(1 +\omega T_V)^{5/3}}
-\end{equation} 
-where $\omega$ is the angular frequency, $T_V$ is the frequency bandwidth of the turbulence, and $K_V$ describes the turbulence power. For the von K\'arm\'an spectrum, they are approximated as:
+    \Phi_{\text{K\'arm\'an}}(\omega) = \frac{K_V}{(1 +(\omega T_V)^2)^{5/6}} \quad \text{and} \quad
+    \Phi_{\text{Kaimal}}(\omega) = \frac{K_V}{(1 +\omega T_V)^{5/3}}
+\end{equation}
+where $\omega$ is the angular frequency, $T_V$ is a time constant whose inverse determines the
+ turbulence bandwidth, and $K_V$ scales the turbulence power. The two parameters take
+different values in the two modes. For the von K\'arm\'an spectrum, they are approximated as:
 \begin{equation}
     K_V = 0.475 I_v^2 \frac{L_v}{\bar{V}(z)} \quad \text{and} \quad T_V = \frac{L_v}{\bar{V}(z)}
 \end{equation}
 with the turbulence intensity $I_v$, which represents the ratio of the standard deviation of wind speed fluctuations to the mean wind speed, and the correlation length $L_v$, which indicates the scale of turbulence in space. The von K\'arm\'an model is implemented in the FASTTool, and therefore all the turbulent wind model test cases presented in this thesis leverage it.
+
 
 The turbulence intensity, which depends on the height of the turbine and the terrain of a potential site, is an important factor in site selection. Higher turbulence intensity leads to increased aerodynamic loads on turbine structures, influencing the durability and performance of wind turbines.
 
