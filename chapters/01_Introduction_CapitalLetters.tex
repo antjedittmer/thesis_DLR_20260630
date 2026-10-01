@@ -4,9 +4,7 @@
 \section{Motivation} %Wind Energy Conversion System Control} 
 Wind energy plays a significant role in Germany's renewable energy landscape and provides a critical contribution to the national energy transition, with the share of electricity production from wind having increased from 1.6\% in 2000 to 27.2\% in~2025~\cite{EmberEI2026}. Wind turbines, also called Wind Energy Conversion Systems (WECS), help to meet a still increasing power demand sustainably. Unlike conventional energy sources, they neither emit greenhouse gases nor produce radioactive waste. A trend toward larger wind turbines maximizes energy yield per unit, thus enhancing the economic feasibility of wind power by lowering the Levelized Cost of Energy (LCoE). However, larger wind turbines necessitate efforts to minimize structural loads. This can be achieved both through optimized tower and blade designs~\cite{modelling2010006, Jasa_2022} as well as efficient control strategies~\cite{pao2011control}. %\cite{irena2023renewable}.  8.4\% in 2013
 
-Apart from its low life-cycle carbon emissions, onshore wind energy had the lowest global
-weighted-average LCoE of all renewable generation technologies in 2024, at USD~0.034/kWh, a
-decrease of 70\% since 2010~\cite{IRENA2025}. In Germany, onshore wind and ground-mounted
+Apart from its low life-cycle carbon emissions, onshore wind energy has the additional advantage of having a very low LCoE value. It had the lowest global weighted-average cost of all renewable generation technologies in 2024, at USD~0.034/kWh, a decrease of 70\% since 2010~\cite{IRENA2025}. In Germany, onshore wind and ground-mounted
 photovoltaics are the lowest-cost options among all new power plants: the mean costs of gas,
 coal and nuclear generation are two to five times higher~\cite{Kost2024LCOE}. Moreover,
 simulations and field tests show that improved turbine and wind farm operation offers the
@@ -16,14 +14,15 @@ decreasing structural loads, or by both~\cite{vali2017adjointbasedmodel, houck20
 The research wind farm WiValdi, shown in Figure~\ref{fig:WiValdi}, is instrumented to measure wind turbine and wind farm behaviour under real inflow conditions. It is operated by the German Aerospace Center (Deutsches Zentrum für Luft- und Raumfahrt, DLR) together with its partners in the Research Alliance Wind Energy (Forschungsverbund Windenergie). Load-alleviation methods at the turbine and farm levels and increased farm-level power output are among the research
 topics, see~\cite{WiValdiResearchTopics}. The studies presented in this thesis address these two objectives through simulations. Turbine
 control is investigated on a single 5\,MW reference turbine, comparable in scale to the
-E-115~EP3~E4 machines installed at WiValdi, which are rated at 4.26\,MW. For wind farm control simulations,
+E-115~EP3~E4 machines installed at WiValdi, which are rated at 4.26\,MW. For wind farm simulations,
 two such turbines are placed in line along the main wind direction at a spacing of five rotor
-diameters, matching the arrangement of the two turbines at WiValdi.
+diameters, matching the arrangement of the WiValdi turbines.
 
 \begin{figure}[ht]
     \center
     \includegraphics[width=0.76\textwidth,trim={0cm 0.3cm 3.5cm 0.4cm},clip]{figures/Figures_ADi/Forschungspark WiValdi in der Dämmerung.jpg}
-      \caption{Research wind farm WiValdi: OPUS~1, an Enercon E-115~EP3~E4 wind tubine, is shown in the
+      \caption[Research wind farm WiValdi: OPUS~1, an Enercon E-115~EP3~E4 wind tubine, is shown in the
+      foreground.]{Research wind farm WiValdi: OPUS~1, an Enercon E-115~EP3~E4 wind tubine, is shown in the
        foreground. In the background are the three meteorological measurement masts and OPUS~2,
        the second E-115~EP3~E4. Credit: DLR (CC BY-NC-ND 3.0).}
     \label{fig:WiValdi}
@@ -32,7 +31,6 @@ diameters, matching the arrangement of the two turbines at WiValdi.
 Model Predictive Control (MPC) is a promising approach for managing aerodynamic and structural loads in wind turbines for several reasons, particularly due to its ability of making control decisions that account for future known or estimated events. This is highly beneficial for turbine control as wind conditions can vary rapidly. Another advantage of MPC is its capability to handle multiple control objectives. For wind turbines, these objectives include maximizing power output, minimizing mechanical loads to extend the turbine's lifespan, and maintaining system stability. MPC also excels in dealing with constraints on control actions and state variables, ensuring that all turbine operations remain within safe limits~\cite{Holm2013, pamososuryo2021loadcontrol}.
 
 MPC is additionally well-suited for wind farm control as it can anticipate future wind conditions and turbine responses and is able to optimize the performance of multiple interconnected turbines while considering various operational constraints and objectives~\cite{boersma2017tutorial, meyers2022windfarmflow}. The predictive model of MPC allows the control system to make informed decisions about adjusting turbine settings before changes in wind speed and direction occur, maximizing energy production and reducing the risk of turbine wear due to abrupt changes in operating conditions in a farm~\cite{vali2017adjointbasedmodel}. In a wind farm, wakes can significantly reduce the wind speed downstream of a turbine and hence impact the performance of other turbines. MPC can control individual turbines in a coordinated manner to optimize the overall wind farm performance, taking into account the interactions between turbines due to wake effects~\cite{meyers2022windfarmflow}. Through coordinated control, MPC can manage the power output of each turbine to maximize the total energy production of the wind farm. It can intelligently reduce power output from certain turbines to mitigate wake effects on downstream turbines, thereby increasing the overall efficiency of the wind farm~\cite{vali2017adjointbasedmodel}.
-
 In this work, physics-based MPC is applied for controlling individual turbines and data-driven MPC for wind farms. Individual turbines benefit from physics-based MPC because these models can capture the dynamics of turbine mechanics, aerodynamics, and their interactions with the wind. These models are based on first principles and well-understood physical laws, making them very accurate for predicting the performance and structural stresses on individual turbines.
 
 Data-driven MPC is well-suited to model wake effects in wind farms. It can use large amounts of data, either directly or through data-driven models, to understand and predict the impact of these interactions better than purely theoretical models. The use of the Koopman Operator \cite{koopman1931hamiltonian} to build the model for a data-driven MPC offers an efficient, real-time-capable method for handling the complexities and dynamics of wind farms.

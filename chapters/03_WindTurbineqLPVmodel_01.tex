@@ -17,10 +17,9 @@ deflection and generator speed, obtained from Lagrange's equations.
 Both include the side-to-side tower direction. While side-to-side tower motion has been addressed
 in dedicated load estimation and damping schemes \cite{mulders2020preventing,
     pamososuryo2022loadestimation, pamososuryo2022individual, fonseca2024windTurbineSideSide}, these
-works do not state how the in-plane force follows from the control inputs, i.e., from generator
-torque, rotor torque and blade pitch. This relationship is derived here by cantilever equivalence
+works do not state how the in-plane force follows from the three inputs of control-oriented models, i.e., the generator torque, the blade pitch and the rotor-effective wind speed. This relationship is derived here by cantilever equivalence
 from the in-plane moment, i.e., the difference between the aerodynamic torque and the generator
-torque referred to the low-speed shaft, extending the fore-aft lumped mass modeling of \cite{schlipf2013nonlinear, Bianchi2007}
+torque referred to the low-speed shaft, extending the fore-aft lumped force modeling of \cite{schlipf2013nonlinear, Bianchi2007}
 to the side-to-side direction. Making the input dependence explicit is what allows the side-to-side dynamics to be compared
 against linearized FAST models in the frequency domain and the qLPV simulation results to be
 compared against the nonlinear FAST model in the time domain.
@@ -31,8 +30,7 @@ FAST reference models, over the complete operating range from 4\,m/s to 25\,m/s:
 domain using open-loop linearization, and in the time domain in closed loop with the
 baseline PI controller. This comparison quantifies which dynamics are lost with the lower-order
 design and thus which model is adequate for the qLMPC designs of
-Chapter~\ref{sec:Application to Wind Turbine Control4}.
-The presented models have been published in \cite{dittmer2021velocity}.
+Chapter~\ref{sec:Application to Wind Turbine Control4}. The presented models have been published in \cite{dittmer2021velocity}.
 
 
 \section{Nonlinear Models for qLMPC Design} \label{sec:MechanicalAerodynamicSubsystemModel}
@@ -41,8 +39,6 @@ These structural deflections are associated with specific turbine modes, which r
 
 Figure~\ref{fig:SchWTLPV} depicts the inputs, states, and geometric parameters utilized in the qLPV model of the wind turbine. Following the NREL 5MW documentation \cite{jonkman2009definition}, the tower-base coordinate system is defined with the x-axis pointing downwind, the y-axis transverse to the wind direction, and the z-axis vertical from tower base to yaw bearing. 
 The blade coordinate system is defined according to the FAST documentation \cite{jonkman2005fast}: For each blade \(i = 1, 2, 3\), the axis definitions are as follows: the \(x_{bi}\)-axis is orthogonal to the \(y_{bi}\)- and \(z_{bi}\)-axes such that the three form a right-handed coordinate system, the \(y_{bi}\)-axis points toward the trailing edge of blade \(i\) and is parallel to the chord line at the zero-twist blade station, and the \(z_{bi}\)-axis points along the pitch axis toward the tip of blade \(i\). Consequently, the \(x_{bi}\)-axis denotes flapwise blade motion, the \(y_{bi}\)-axis edgewise motion, and torsion of the blade is defined as the rotation about the \(z_{bi}\)-axis. 
-
-The geometric parameters depicted are the hub height $H_t$ and the rotor radius $R_r$. The model inputs are the rotor and generator torques, $T_r$ and $T_g$, as well as the rotor thrust $F_{T,r}$, which results from the wind acting on the wind turbine, $V_r$, which is perpendicular to its rotor. 
 \begin{figure}[H]
     \centering
     \begin{minipage}[b]{11.5pc}
@@ -56,6 +52,7 @@ The geometric parameters depicted are the hub height $H_t$ and the rotor radius 
     \end{minipage}
 \end{figure}
 %\noindent
+The geometric parameters depicted are the hub height $H_t$ and the rotor radius $R_r$. The model inputs are the rotor and generator torques, $T_r$ and $T_g$, as well as the rotor thrust $F_{T,r}$, which results from the wind acting on the wind turbine, $V_r$, which is perpendicular to its rotor. 
 Two qLPV designs are introduced in this section: the first models the rotor speed and the tower movement, while the second additionally accounts for the generator speed and the blade deflection. Both models use the three inputs rotor torque, generator torque, and thrust force.
 
 The five states of the first model considered are the fore-aft and side-to-side tower deflections at hub height, $x_t$ and $y_t$, as well as their derivatives, $\dot{x}_t$ and $\dot{y}_t$, i.e., the fore-aft and side-to-side velocities, and the angular rotor speed $\omega_r$.
@@ -231,7 +228,7 @@ The system and input matrices are
       \frac{k_{T_r,V}(\bm{\rho}_{\Rho})}{J_s} & -\frac{N_g}{J_s} &  \frac{k_{T_r,\beta}(\bm{\rho}_{\Rho})}{J_s}
 \end{bmatrix}  \in \mathbb{R}^{5 \times 3}\\
 \end{align*} \enlargethispage{\baselineskip}
-with the scheduling parameter vector $\bm{\rho}_{\Rho} = \left[V_{\infty}\quad \omega_r \quad \beta_0\right]$.The turbine parameters used for this model are those of the NREL 5MW reference turbine, as implemented in FAST v8.16 \cite{jonkman2016fast}. 
+with the scheduling parameter vector $\bm{\rho}_{\Rho} = \left[V_{\infty}\quad \omega_r \quad \beta_0\right]$. The turbine parameters used for this model are those of the NREL 5MW reference turbine, as implemented in FAST v8.16 \cite{jonkman2016fast}. 
 %
 This 5th-order model is compared to linearized FAST models linearized at different freestream wind speeds in the frequency domain for a frequency range relevant for wind turbines. The above-described nonlinear dynamics are implemented in Simulink; both the FAST S-Function and the Simulink implementation are run in closed loop with a baseline PI controller. The results are compared with a closed-loop FAST model to verify the Simulink model. Actuator dynamics for torque and pitch are included in the simulation as a separate Simulink model.
 %
