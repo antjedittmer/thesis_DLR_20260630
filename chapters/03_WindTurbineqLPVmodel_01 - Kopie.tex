@@ -82,7 +82,7 @@ with the transmission inertia $J_s$. The extracted power $P_{g}$ is the product 
 \begin{align}\label{eq:pg}
     P_{g}(t) = \eta_{g} T_{g}(t) \omega_{g}(t),
 \end{align}
-since equation set~\eqref{eq:DrvTr} shows that the product of the rotor's angular speed and torque equals that of the generator in steady-state. Therefore, setting the torque of the generator directly influences the power output of the turbine.
+since equations \eqref{eq:DrvTr} show that the product of the rotor's angular speed and torque equals that of the generator in steady-state. Therefore, setting the torque of the generator directly influences the power output of the turbine.
 %\noindent
 %
 The torque actuator can be regarded as the power conditioning unit of the turbine, and its dynamics can be modeled as a first-order differential equation \cite{odgaard2013fault}:
@@ -99,9 +99,9 @@ Although the pitch system is often modeled as a second-order differential equati
 \begin{align*}
     \ddot{\beta_0}(t) = -2\zeta_{\beta_0} \omega_{n,\beta} \dot{\beta}_0(t) - {\omega_{n,\beta}}^2 \beta_0(t) + {\omega_{n,\beta}}^2 \beta_{0,\text{ref}}(t),
 \end{align*}
-the simplified representation as a first order system is made here since the relatively fast actuator dynamics have little influence on the investigated control objectives, which are consistent power output despite wind fluctuations and minimal tower movement. Note that the actuator dynamics, as provided in Equations~\eqref{eq:Tact} and \eqref{eq:betaact}, result in low pass filtered signals of the commanded control output signals being applied to the turbine. However, the turbine dynamics, as modeled here in the aerodynamic and mechanical subsystem sections below, operate at much lower frequency and have greater impact on the power output as presented in equation~\eqref{eq:pg}.
+the simplified representation as a first order system is made here since the relatively fast actuator dynamics have little influence on the investigated control objectives, which are consistent power output despite wind fluctuations and minimal tower movement. Note that the actuator dynamics, as provided in equations~\eqref{eq:Tact} and \eqref{eq:betaact}, result in low pass filtered signals of the commanded control output signals being applied to the turbine. However, the turbine dynamics, as modeled here in the aerodynamic and mechanical subsystem sections below, operate at much lower frequency and have greater impact on the power output as presented in equation~\eqref{eq:pg}.
 \subsection{Aerodynamic Model}
-The aerodynamic model represents the conversion of the available kinetic energy in the wind into mechanical energy using the rotor blades. Based on blade actuator disc theory, the mathematical equations for the rotor torque $T_{r}$, the aerodynamic power captured by the rotor $P_{r}$, and the thrust force $F_{T,r}$ can be derived from Equations~\eqref{eq:PwPt} and~\eqref{eq:Ft}, used in Section~\ref{sec:WindTurbines} to provide the relationship between wind speed, thrust force and power, as
+The aerodynamic model represents the conversion of the available kinetic energy in the wind into mechanical energy using the rotor blades. Based on blade actuator disc theory, the mathematical equations for the rotor torque $T_{r}$, the aerodynamic power captured by the rotor $P_{r}$, and the thrust force $F_{T,r}$ can be derived from equations~\eqref{eq:PwPt} and~\eqref{eq:Ft}, used in Section~\ref{sec:WindTurbines} to provide the relationship between wind speed, thrust force and power, as
 \begin{equation}\label{eq:aero}
     \begin{split}
         P_{r}(t) & = c_P(\lambda,\beta_0) P_{w}(t) = \frac{1}{2} \rho_a A_r c_P(\lambda,\beta_0) V_r(t)^3, \\
@@ -140,37 +140,20 @@ In this section, two modeling approaches are presented. They are based on previo
 Models for controller design only need to capture the main dynamics of a system. Hence, the first model uses only the rotor speed, tower displacements and velocities as states. Based on the equations given above, the relationship between the forces and moments acting on the turbine, the inputs, and the rotor speed and tower movements, the states, can be expressed as
 \begin{equation}\label{eq:Mdl1NonLin}
     \begin{split} 
-        \dot{\omega}_r(t) &= \frac{1}{J_r + N_g^2 J_g}(T_r(t) - N_{g}T_{g}(t)) = \frac{1}{J_s}(T_r(t) - N_{g}T_{g}(t)),   \\
+        \dot{\omega_r}(t) &= \frac{1}{J_r + N_g^2 J_g}(T_r(t) - N_{g}T_{g}(t)) = \frac{1}{J_s}(T_r(t) - N_{g}T_{g}(t)),   \\
         \ddot{x}_{t}(t) & = \frac{1}{m_{t}}(-B_{t}\dot{x}_{t}(t) - K_{t}{x}_{t}(t) + F_{T,r}(t)), \\
-        \ddot{y}_{t}(t) &= \frac{1}{m_{t}}(-B_{t,\text{sw}} \dot{y}_{t}(t) - K_{t,\text{sw}}{y}_{t}(t) + F_{T,y}(t)),       
+        \ddot{y}_{t}(t) &= \frac{1}{m_{t}}(-B_{t,\text{sw}} \dot{y}_{t}(t) - K_{t,\text{sw}}{y}_{t}(t)  + \frac{3}{2H_t}(T_r(t) - N_gT_g(t))),       
     \end{split}
 \end{equation}
-where $\omega_r$ is the rotor speed and $x_t$ and $y_t$ represent the fore-aft and side-to-side tower displacements, respectively. The calculation of the side-to-side force acting on the nacelle in dependence on the rotor and generator torque is detailed below. The transmission inertia $J_s$ is the combined inertia of the rotor and the generator, see equation~\eqref{eq:Tr1_background}. The values for the modal tower mass $m_{t}$, fore-aft and side-to-side damping and stiffness terms $B_t$, $B_{t,\text{sw}}$, $K_t$ and $K_{t,\text{sw}}$, and hub height $H_t$ are provided in Table~\ref{table:1}. They are derived from the documentation of the NREL 5MW research turbine \cite{jonkman2009definition}.
-
-The side-to-side force is caused by the torsional nacelle moment $M_x$:
+where $\omega_r$ is the rotor speed and $x_t$ and $y_t$ represent the fore-aft and side-to-side tower displacements, respectively. The transmission inertia $J_s$ is the combined inertia of the rotor and the generator, see equation \ref{eq:Tr1_background}. The values for the modal tower mass $m_{t}$, fore-aft and side-to-side damping and stiffness terms  $B_t$, $B_{t,\text{sw}}$, $K_t$ and $K_{t,\text{sw}}$, and hub height $H_t$ are provided in Table \ref{table:1}. The values in this table are taken from the documentation of the NREL 5MW research turbine \cite{jonkman2009definition}. 
+The calculation of the side-to-side force as
 \begin{equation}
-    F_{T,y}(t) = -\frac{3}{2H_t}M_x(t).
+    F_{T,y} = \frac{3}{2H_t}(T_r(t) - N_gT_g(t))
 \end{equation}
-This relationship follows from a lumped-force excitation analogous to the fore-aft force in \cite{Bianchi2007}, extended here to the in-plane direction. The reasoning is as follows: the moment $M_x$ acts on the nacelle at hub height $H_t$. The tower can be regarded as a cantilever beam fixed at the base, with its free end located at hub height. Since the qLPV model captures the tower as a single-degree-of-freedom system represented by the hub-height displacement $y_t$, the equivalent lumped force $F_{T,y}$ is obtained by requiring it to produce the same tip deflection as the applied moment. For a cantilever of length $H_t$, a tip moment $M_x$ produces a tip deflection of $M_x H_t^2/(2EI)$, while a tip point force $F_{T,y}$ produces a tip deflection of $F_{T,y} H_t^3/(3EI)$, where $E$ is the modulus of elasticity of the tower material and $I$ is the second moment of area of the tower cross-section. Setting the two equal gives $|F_{T,y}|\,(2/3)\,H_t = |M_x|$. The negative sign results from the definition of $y_t$ pointing to the left when looking downwind: a moment $M_x$ in the direction of rotor rotation deflects the tower top in negative $y_t$-direction.
-
-The torsional moment $M_x$ is the sum of the generator torque and the reaction moment at the gearbox housing. The latter is the difference between the low-speed shaft torque and the high-speed shaft torque. Assuming an ideal, massless gearbox and a generator rotating in the same direction as the rotor, the moment balance yields
-\begin{align*}
-    M_x(t) = T_{\text{lss}}(t) - T_{\text{hss}}(t) + T_g(t).
-\end{align*}
-With the generator equation and the rotor equation from the equation set~\eqref{eq:DrvTr} as well as the rigid-drivetrain assumption $\dot{\omega}_g = N_g\dot{\omega}_r$, the torsional moment can be expressed in terms of the rotor torque and the rotor acceleration as
-\begin{align*}
-    M_x(t) &= T_{\text{lss}}(t) - J_g\dot{\omega}_g(t)\\
-    &= T_r(t) - J_r\dot{\omega}_r(t) - J_g\dot{\omega}_g(t)\\
-    &= T_r(t) - \left(J_r + N_g J_g\right)\dot{\omega}_r(t).
-\end{align*}
-This moment is hence the aerodynamic torque minus the rate of change of the angular momentum of the rotating parts. Note that the generator inertia enters with $N_g J_g$ and not with the reflected inertia $N_g^2 J_g$ contained in $J_s$. Replacing the change in rotor speed with $\dot{\omega}_r = (T_r - N_g T_g)/J_s$ yields
-\begin{align}\label{eq:Mx}
-    M_x(t) = (1-c_{M_x})\,T_r(t) + c_{M_x}N_g T_g(t), \qquad c_{M_x} = \frac{J_r + N_g J_g}{J_r + N_g^2 J_g},
-\end{align}
-with a resulting coefficient         $c_{M_x} \approx 0.877$ for the NREL 5MW turbine. In steady state, where $T_r = N_gT_g$ and $\dot{\omega}_r = 0$ hold, the moment $M_x$ equals the rotor torque $T_r$.
-
-While the fore-aft lumped-force model is established in the literature \cite{Bianchi2007}, the side-to-side counterpart presented here is, to the best of the author's knowledge, original. The validity of this simplified assumption is confirmed against linearized FAST models in Section~\ref{subsec:ResultsqLPVModel}, where the side-to-side tower response is shown to capture the FAST reference reasonably well around the frequency of the first tower mode, see Figures~\ref{fig:Bode4} and~\ref{fig:Bode12}. 
-
+follows from a lumped-force excitation analogous to the fore-aft force in \cite{Bianchi2007}, extended here to the in-plane direction. The reasoning is as follows: the net in-plane torque $\Delta T = T_r - N_g T_g$ acts as a moment at hub height $H_t$. The tower can be regarded as a cantilever beam fixed at the base, with its free end located at hub height. Since the qLPV model captures the tower as a single-degree-of-freedom system represented by the hub-height displacement $y_t$, the equivalent lumped force $F_{T,y}$ is obtained by requiring it to produce the same tip deflection as the applied moment. For a cantilever of length $H_t$, a tip moment $\Delta T$ produces a tip deflection of $\Delta T H_t^2/(2EI)$, while a tip point force $F_{T,y}$ produces a tip deflection of $F_{T,y} H_t^3/(3EI)$,  where $E$ is the modulus of elasticity of the tower material and $I$ is the second moment of area of the tower cross-section. Equating the two gives $F_{T,y}\cdot\tfrac{2}{3}H_t = \Delta T$, which yields the expression above. 
+%
+While the fore-aft lumped-force model is established in the literature \cite{Bianchi2007} and adopted with minor variations in \cite{mulders2020preventing}, the side-to-side counterpart presented here is, to the author's knowledge, original. The validity of this simplified assumption is confirmed against linearized FAST models in Section~\ref{subsec:ResultsqLPVModel}, where the side-to-side tower response is shown to capture the FAST reference reasonably well around the frequency of the first tower mode, see Figures~\ref{fig:Bode4} and~\ref{fig:Bode12}. 
+%
 The tower modal mass \( m_t \) is calculated from the total tower weight \( m_{\text{tower}} \), the total nacelle weight \( m_{\text{nacelle}} \), the total hub weight \( m_{\text{hub}} \), and the total blade weight \( m_{\text{blade}} \) as  
 \begin{align} \label{eq:modalMass}
     m_t = \frac{1}{4}m_{\text{tower}} + m_{\text{nacelle}} + m_{\text{hub}} + n_b m_{\text{blade}}.
@@ -229,38 +212,21 @@ These derivatives are used to implement the qLPV models in this section and the 
 \end{align*}
 and the values and derivatives of the thrust and torque coefficients are deduced from the calculated lookup tables depicted in Figure \ref{fig:CPCT}.
 The system and input matrices are
-% \begin{align*}
-    % \bm{A}_{\text{Mdl1}} &= \begin{bmatrix}
-        %     0 & 0 & 1 & 0 & 0 \\
-        %     0 & 0 & 0 & 1 & 0 \\
-        %    - \frac{K_t}{m_t} & 0 & -\frac{B_t+ k_{F_T,V}(\bm{\rho}_{\Rho})}{m_t} & 0 & \frac{B_{F_T}(\bm{\rho}_{\Rho})}{m_t} \\
-        %     0 &  - \frac{K_{t,\text{sw}}}{m_t}  & -\frac{3k_{T_r,V}(\bm{\rho}_{\Rho})}{2 m_t H_t} & - \frac{B_{t,\text{sw}}}{m_t} & \frac{3B_{T_r}(\bm{\rho}_{\Rho})}{2 m_t H_t} \\
-        %     0 & 0 & - \frac{k_{T_r,V}(\bm{\rho}_{\Rho})}{J_s} & 0 & \frac{B_{T_r}(\bm{\rho}_{\Rho})}{J_s}
-        % \end{bmatrix}  \in \mathbb{R}^{5 \times 5},\\% \text{ and}\\
-    % \bm{B}_{\text{Mdl1}} &= \begin{bmatrix}
-        %     0 & 0 & 0 \\
-        %     0 & 0 & 0 \\
-        %     \frac{k_{F_T,V}(\bm{\rho}_{\Rho})}{m_t} & 0 & \frac{k_{F_T,\beta}(\bm{\rho}_{\Rho})}{m_t} \\
-        %     \frac{3k_{T_r,V}(\bm{\rho}_{\Rho})}{2 m_t H_t} & -\frac{3 N_g}{2 m_t H_t} &  \frac{3k_{T_r,\beta}(\bm{\rho}_{\Rho})}{2 m_t H_t}\\
-        %       \frac{k_{T_r,V}(\bm{\rho}_{\Rho})}{J_s} & -\frac{N_g}{J_s} &  \frac{k_{T_r,\beta}(\bm{\rho}_{\Rho})}{J_s}
-        % \end{bmatrix}  \in \mathbb{R}^{5 \times 3}\\
-    % \end{align*} \enlargethispage{\baselineskip}
-    
 \begin{align*}
-    \bm{A}_{\text{Mdl1}} &= \begin{bmatrix}
-        0 & 0 & 1 & 0 & 0 \\
-        0 & 0 & 0 & 1 & 0 \\
-        - \frac{K_t}{m_t} & 0 & -\frac{B_t+ k_{F_T,V}(\bm{\rho}_{\Rho})}{m_t} & 0 & \frac{B_{F_T}(\bm{\rho}_{\Rho})}{m_t} \\
-        0 &  - \frac{K_{t,\text{sw}}}{m_t}  & \frac{3(1-c_{M_x})k_{T_r,V}(\bm{\rho}_{\Rho})}{2 m_t H_t} & - \frac{B_{t,\text{sw}}}{m_t} & -\frac{3(1-c_{M_x})B_{T_r}(\bm{\rho}_{\Rho})}{2 m_t H_t} \\
-        0 & 0 & - \frac{k_{T_r,V}(\bm{\rho}_{\Rho})}{J_s} & 0 & \frac{B_{T_r}(\bm{\rho}_{\Rho})}{J_s}
-    \end{bmatrix}  \in \mathbb{R}^{5 \times 5},\\
-    \bm{B}_{\text{Mdl1}} &= \begin{bmatrix}
-        0 & 0 & 0 \\
-        0 & 0 & 0 \\
-        \frac{k_{F_T,V}(\bm{\rho}_{\Rho})}{m_t} & 0 & \frac{k_{F_T,\beta}(\bm{\rho}_{\Rho})}{m_t} \\
-        -\frac{3(1-c_{M_x})k_{T_r,V}(\bm{\rho}_{\Rho})}{2 m_t H_t} & -\frac{3 c_{M_x} N_g}{2 m_t H_t} &  -\frac{3(1-c_{M_x})k_{T_r,\beta}(\bm{\rho}_{\Rho})}{2 m_t H_t}\\
-        \frac{k_{T_r,V}(\bm{\rho}_{\Rho})}{J_s} & -\frac{N_g}{J_s} &  \frac{k_{T_r,\beta}(\bm{\rho}_{\Rho})}{J_s}
-    \end{bmatrix}  \in \mathbb{R}^{5 \times 3}
+\bm{A}_{\text{Mdl1}} &= \begin{bmatrix}
+    0 & 0 & 1 & 0 & 0 \\
+    0 & 0 & 0 & 1 & 0 \\
+   - \frac{K_t}{m_t} & 0 & -\frac{B_t+ k_{F_T,V}(\bm{\rho}_{\Rho})}{m_t} & 0 & \frac{B_{F_T}(\bm{\rho}_{\Rho})}{m_t} \\
+    0 &  - \frac{K_{t,\text{sw}}}{m_t}  & -\frac{3k_{T_r,V}(\bm{\rho}_{\Rho})}{2 m_t H_t} & - \frac{B_{t,\text{sw}}}{m_t} & \frac{3B_{T_r}(\bm{\rho}_{\Rho})}{2 m_t H_t} \\
+    0 & 0 & - \frac{k_{T_r,V}(\bm{\rho}_{\Rho})}{J_s} & 0 & \frac{B_{T_r}(\bm{\rho}_{\Rho})}{J_s}
+\end{bmatrix}  \in \mathbb{R}^{5 \times 5},\\% \text{ and}\\
+\bm{B}_{\text{Mdl1}} &= \begin{bmatrix}
+    0 & 0 & 0 \\
+    0 & 0 & 0 \\
+    \frac{k_{F_T,V}(\bm{\rho}_{\Rho})}{m_t} & 0 & \frac{k_{F_T,\beta}(\bm{\rho}_{\Rho})}{m_t} \\
+    \frac{3k_{T_r,V}(\bm{\rho}_{\Rho})}{2 m_t H_t} & -\frac{3 N_g}{2 m_t H_t} &  \frac{3k_{T_r,\beta}(\bm{\rho}_{\Rho})}{2 m_t H_t}\\
+      \frac{k_{T_r,V}(\bm{\rho}_{\Rho})}{J_s} & -\frac{N_g}{J_s} &  \frac{k_{T_r,\beta}(\bm{\rho}_{\Rho})}{J_s}
+\end{bmatrix}  \in \mathbb{R}^{5 \times 3}\\
 \end{align*} \enlargethispage{\baselineskip}
 with the scheduling parameter vector $\bm{\rho}_{\Rho} = \left[V_{\infty}\quad \omega_r \quad \beta_0\right]$. The turbine parameters used for this model are those of the NREL 5MW reference turbine, as implemented in FAST v8.16 \cite{jonkman2016fast}. 
 %
@@ -283,12 +249,12 @@ where \(E_k\) and \(E_p\) are the kinetic and potential energies, respectively, 
 %
 These terms can be described as
 \begin{align*}
-    E_k(t) & = \frac{1}{2}\left(m_{t,\text{fa}}\dot{x}_t(t)^2 + n_b m_b(r_b\dot{\delta}_b(t) + \dot{x}_t(t))^2 + m_t\dot{y}_t(t)^2 + J_r\omega_r(t)^2 + J_{gr}\omega_{gr}(t)^2\right),\\
+    E_k(t) & = \frac{1}{2}\left(m_t\dot{x}_t(t)^2 + n_b m_b(r_b\dot{\delta}_b(t) + \dot{x}_t(t))^2 + m_t\dot{y}_t(t)^2 + J_r\omega_r(t)^2 + J_{gr}\omega_{gr}(t)^2\right),\\
     E_d(t)  & = \frac{1}{2}\left(B_t\dot{x}_t(t)^2 + n_b B_b(r_b\dot{\delta}_b(t))^2 + B_{t,\text{sw}}\dot{y}_t(t)^2 + B_{sr}(\omega_r(t) - \omega_{gr}(t))^2\right),\\
     E_p(t)  & = \frac{1}{2}\left(K_t{x}_t(t)^2 + n_b K_b(r_b{\delta}_b(t))^2 + K_{t,\text{sw}}{y}_t(t)^2 + K_{sr}(\theta_r(t) - \theta_{gr}(t))^2\right),
 \end{align*}
-with tower displacements \(x_t\) and \(y_t\) defined as above\footnote{Note that the terms \(E_k\) and \(E_p\) represent energies in the unit Joules, but \(E_d\) corresponds to a dissipation function representing power in the unit Watts. The coefficients \(B_t\), \(B_b\), and \(B_{t,\text{sw}}\) are linear damping coefficients with units of~\(\text{kg}/\text{s}\), representing force per linear velocity. The rotational damping coefficient \(B_{sr}\) has units of \(\text{kg}\cdot \text{m}^2/\text{s}\), representing torque per angular velocity. The linear stiffness coefficients \(K_t\), \(K_b\), and \(K_{t,\text{sw}}\) have units of \(\text{N}/\text{m}\) (equivalently \(\text{kg}/\text{s}^2\)), and the torsional stiffness coefficient \(K_{sr}\) has units of \(\text{N}\cdot\text{m}/\text{rad}\). Since radians are dimensionless in SI, the product \(K_{sr}(\theta_r - \theta_{gr})^2\) has units of energy, \( \text{N}\cdot\text{m} =\text{kg} \cdot \text{m}^2 / \text{s}^2\).}. The fore-aft modal tower mass without the blades is $m_{t,\text{fa}} = m_t - n_b m_{\text{blade}}$, since the blades are accounted for separately by their modal mass $m_b$. The number of blades is $n_b=3$, \(\delta_b\) the out-of-plane blade angle, $r_b$ the radial distance between rotor hub and the application point of the lumped aerodynamic force, and \(\theta_r\), \(\omega_r\), \(\theta_{gr}\), and \(\omega_{gr}\) the rotor and generator angles and angular speeds, all measured on the low-speed shaft rotor side.
-
+with tower displacements \(x_t\) and \(y_t\) defined as above\footnote{Note that the terms \(E_k\) and \(E_p\) represent energies in the unit Joules, but \(E_d\) corresponds to a dissipation function representing power in the unit Watts. The coefficients \(B_t\), \(B_b\), and \(B_{t,\text{sw}}\) are linear damping coefficients with units of~\(\text{kg}/\text{s}\), representing force per linear velocity. The rotational damping coefficient \(B_{sr}\) has units of \(\text{kg}\cdot \text{m}^2/\text{s}\), representing torque per angular velocity. The linear stiffness coefficients \(K_t\), \(K_b\), and \(K_{t,\text{sw}}\) have units of \(\text{N}/\text{m}\) (equivalently \(\text{kg}/\text{s}^2\)), and the torsional stiffness coefficient \(K_{sr}\) has units of \(\text{N}\cdot\text{m}/\text{rad}\). Since radians are dimensionless in SI, the product \(K_{sr}(\theta_r - \theta_{gr})^2\) has units of energy, \( \text{N}\cdot\text{m} =\text{kg} \cdot \text{m}^2 / \text{s}^2\).}. The number of blades is $n_b=3$ , \(\delta_b\) the out-of-plane angular blade angle displacement, $r_b$ the radial distance between rotor hub and the application point of the lumped aerodynamic force, and \(\theta_r\), \(\omega_r\), \(\theta_{gr}\), and \(\omega_{gr}\) as the rotor and generator angles and angular speeds, all measured on the low-speed shaft rotor side. 
+ 
 The relationship between generator angle and speed measured on the low-speed shaft rotor side to the ones in the high-speed shaft generator side is $\theta_{gr} = N_g \theta_{g}$ and  $\omega_{gr} = N_g \omega_{g}$. The modal blade mass $m_b = 1/4\; m_{\text{blade}}$ is calculated from the blade weight $m_{\text{blade}}$. The factor of 1/4 is used in this thesis, as it is commonly utilized as an approximation for the modal mass of a uniform cantilever beam when considering its first bending mode. Note that this is also the motivation for applying this factor for calculating the modal tower mass $m_t$, see equation~\eqref{eq:modalMass}. Moreover, this approximated modal mass provides a good fit to the linearized FAST models around the first flapwise frequency of approximately 0.7\,Hz. 
 
 The damping and stiffness of the blade, $B_b$ and $K_b$ are derived from the blade eigenfrequency as described in equation~\eqref{eq:DampingStiffness}. %
@@ -298,32 +264,25 @@ The inertia of the rotor \(J_r\) and the generator \(J_{gr}\) are linked by the 
     B_{sr} = B_{s}{N_g}^2, \quad K_{sr} = K_{s}{N_g}^2, \quad T_{gr}(t) = T_{g}(t)N_g.
 \end{align*}
 %
-Assuming that the force \(F_{T,r}\) is the total force acting on the nacelle, summing up all the forces acting on the blades, $T_r$ the resulting aerodynamic rotor moment, and $T_{gr} = N_g T_g$ the generator moment on the rotor side, i.e., the low-speed shaft side, the model state \(\bm{q}\) and the generalized force vector \(\mathbf{Q}\) from Equation~\eqref{eqLagrange} are:
+Assuming that the force \(F_{T,r}\) is the total force acting on the nacelle, summing up all the forces acting on the blades, $T_r$ the resulting aerodynamic rotor moment, and $T_{gr}$ the generator moment on the rotor side, i.e., the low-speed shaft side, the model state \(\bm{q}\) and the force vector \(\mathbf{Q}\) from equation~\eqref{eqLagrange} are:
 \begin{align*}
     \bm{q}& = [x_t \quad \delta_b \quad y_t \quad \theta_r \quad \theta_{gr}]^T  \in \mathbb{R}^{5 \times 1},\\
-    \mathbf{Q} & = [n_b F_{T,b} \quad n_b F_{T,b}r_b \quad F_{T,y} \quad T_r \quad -T_{gr}]^T \in \mathbb{R}^{5 \times 1}\\
-    & = \left[F_{T,r} \quad r_bF_{T,r} \quad -\tfrac{3}{2H_t}M_x\quad T_r \quad -N_g T_g\right]^T,
+    \mathbf{Q} & = [n_b F_{T,b} \quad n_b F_{T,b}r_b \quad F_{x_t} \quad T_r \quad -T_{gr}]^T \in \mathbb{R}^{5 \times 1}\\
+    & = [F_{T,r} \quad r_bF_{T,r} \quad \frac{3}{2H_t}(T_r - N_g T_g)\quad T_r \quad -N_g T_g]^T.
 \end{align*}
-where the blade thrust is assumed to act at the blade's center of mass at radius $r_b$.
-%For the flexible drivetrain, the torsional nacelle moment follows from the low-speed shaft torque as
-%$\begin{align*}
-%    M_x = \left(1 - \frac{1}{N_g}\right)\left(K_s(\theta_r - \theta_{gr}) + B_s(\dot{\theta}_r - \dot{\theta}_{gr})\right) + T_g,
-%\end{align*}
-%see Equation~\eqref{eq:Mx} for the rigid case. This moment is added as an external excitation.
-
-The time derivatives of the partial derivatives of the kinetic energy yield the inertia terms $\mathbf{M}_5\ddot{\bm{q}}$:
+The second derivatives of the kinetic energy result in the mass matrix \(\mathbf{M}_5\) and are calculated as:
 % For \( F_T \) see page 34 Bianchi Fig 3.4
 \begin{align*}
-    \frac{d}{dt} \left(\frac{\partial E_k(t)}{\partial \dot{x}_t(t)} \right) &= m_{t,\text{fa}}\ddot{x}_t(t) + n_b m_b(r_b\ddot{\delta}_b(t) + \ddot{x}_t(t)), \\
+    \frac{d}{dt} \left(\frac{\partial E_k(t)}{\partial \dot{x}_t(t)} \right) &= m_t\ddot{x}_t(t) + n_b m_b(r_b\ddot{\delta}_b(t) + \ddot{x}_t(t)), \\
     \frac{d}{dt} \left(\frac{\partial E_k(t)}{\partial \dot{\delta}_b(t)} \right) &= n_b m_b(r_b^2\ddot{\delta}_b(t) + r_b\ddot{x}_t(t)), \\
     \frac{d}{dt} \left(\frac{\partial E_k(t)}{\partial \dot{y}_t(t)} \right) &= m_t\ddot{y}_t(t), \\
     \frac{d}{dt} \left(\frac{\partial E_k(t)}{\partial \dot{\theta}_r(t)} \right) &= J_r\ddot{\theta}_r(t), \\
-    \frac{d}{dt} \left(\frac{\partial E_k(t)}{\partial \dot{\theta}_{gr}(t)} \right) &= J_{gr}\ddot{\theta}_{gr}(t),
+    \frac{d}{dt} \left(\frac{\partial E_k(t)}{\partial \dot{\theta}_{gr}(t)} \right) &= J_{gr}\ddot{\theta}_{gr}(t).
 \end{align*}
-with the generator inertia referred to the low-speed shaft $J_{gr} = N_g^2 J_g$ and the fore-aft modal mass $m_{t,\text{fa}} = m_t - n_b m_{\text{blade}}$, since the blade mass is accounted for separately by the flap degree of freedom. This results in the mass matrix
+This results in matrix $\mathbf{M}_5$:
 \[
 \mathbf{M}_5 = \begin{bmatrix}
-    m_{t,\text{fa}} + n_b m_b & n_b m_b r_b & 0 & 0 & 0 \\
+    m_t + n_b m_b & n_b m_b r_b & 0 & 0 & 0 \\
     n_b m_b r_b & n_b m_b r_b^2 & 0 & 0 & 0 \\
     0 & 0 & m_t & 0 & 0 \\
     0 & 0 & 0 & J_r & 0 \\
@@ -377,7 +336,7 @@ With the force input vector \(\bm{w}=  [F_{T,r} \quad T_r \quad T_{g} ]^T\) the 
 \mathbf{Q}_{5\times3} = \begin{bmatrix}
     1 & 0 & 0  \\
     r_b & 0 & 0  \\
-    0 & -\frac{3(1-c_{M_x})}{2H_t} & -\frac{3c_{M_x}N_g}{2H_t}\\
+    0 & \frac{3}{2H_t} & -\frac{3N_g}{2H_t}\\
     0 & 1 & 0 \\
     0 & 0 & -N_g
 \end{bmatrix} \in \mathbb{R}^{5 \times 3}.
@@ -422,19 +381,19 @@ with the effective wind speed $V_r = V_{\infty} -\dot{x}_t- r_b\dot{\delta}_b$ b
 The inverse of the mass matrix $\mathbf{M}_5$ is
 \[
 \mathbf{M}_5^{-1} = \begin{bmatrix}
-    \frac{1}{m_{t,\text{fa}}} & -\frac{1} {r_b m_{t,\text{fa}}} & 0 & 0 & 0\\
-    -\frac{1}{r_b m_{t,\text{fa}}} & \frac{m_{t,\text{fa}} +n_b m_b}{n_b m_b r^2_b m_{t,\text{fa}}} & 0 & 0 & 0\\
+    \frac{1}{m_t} & -\frac{1} {r_b m_t} & 0 & 0 & 0\\
+    -\frac{1}{r_b m_t} & \frac{m_t +n_b m_b}{n_b m_b r^2_b m_t} & 0 & 0 & 0\\
     0 & 0 & \frac{1}{m_t} & 0 &0\\
     0 & 0 & 0 & \frac{1}{J_r} & 0\\
     0 & 0 & 0 & 0 & \frac{1}{J_{gr}}
 \end{bmatrix} \in \mathbb{R}^{5 \times 5},
 \]
-and therefore the terms in Equation~\eqref{eq:7state} are 
+and therefore the terms in equation \eqref{eq:7state} are 
 \[
 \mathbf{M}_5^{-1}\tilde{\mathbf{K}}_{5 \times 4} =
-\begin{bmatrix}
-    \frac{K_t}{m_{t,\text{fa}}} &- \frac{n_b K_b r_b} {m_{t,\text{fa}}} & 0 & 0 \\
-    -\frac{K_t}{r_b m_{t,\text{fa}}} & \frac{K_b(m_{t,\text{fa}} + n_b m_b)}{m_b m_{t,\text{fa}}} & 0 & 0 \\
+ \begin{bmatrix}
+    \frac{K_t}{m_t} &- \frac{n_b K_b r_b} {m_t} & 0 & 0 \\
+    -\frac{K_t}{r_b m_t} & \frac{K_b(m_t + n_b m_b)}{m_b m_t} & 0 & 0 \\
     0 & 0 & \frac{K_{t,\text{sw}}}{m_t} & 0 \\
     0 & 0 & 0 & \frac{K_{sr}}{J_r} \\
     0 & 0 & 0 & -\frac{K_{sr}}{J_{gr}}
@@ -442,136 +401,136 @@ and therefore the terms in Equation~\eqref{eq:7state} are
 \]
 \[
 \mathbf{M}_5^{-1}\tilde{\mathbf{C}}_{5} = \begin{bmatrix}
-    \frac{B_t}{m_{t,\text{fa}}} & - \frac{n_b B_b r_b} {m_{t,\text{fa}}} & 0 & 0 & 0\\
-    -\frac{B_t}{r_b m_{t,\text{fa}}} & \frac{B_b(m_{t,\text{fa}} + n_b m_b)}{m_b m_{t,\text{fa}}} & 0 & 0 & 0\\
+    \frac{B_t}{m_t} & - \frac{n_b B_b r_b} {m_t} & 0 & 0 & 0\\
+    -\frac{B_t}{r_b m_t} & \frac{B_b(m_t + n_b m_b)}{m_b m_t} & 0 & 0 & 0\\
     0 & 0 & \frac{B_{t,\text{sw}}}{m_t} & 0 &0\\
     0 & 0 & 0 & \frac{B_{sr}}{J_r} & -\frac{B_{sr}}{J_r}\\
     0 & 0 & 0 & -\frac{B_{sr}}{J_{gr}} & \frac{B_{sr}}{J_{gr}}
 \end{bmatrix} \in \mathbb{R}^{5 \times 5},
 \]
+
 \[
 \mathbf{M}_5^{-1}\mathbf{Q}_{5 \times 3} = \begin{bmatrix}
-    0 & 0 & 0\\
+     0 & 0 & 0\\
     \frac{1}{n_b m_b r_b} & 0 & 0 \\
-    0 & -\frac{3(1-c_{M_x})}{2 H_t m_t} & -\frac{3 c_{M_x} N_g}{2 H_t m_t}\\
-    0 & \frac{1}{J_r} & 0\\
-    0 & 0 & -\frac{N_{g}}{J_{gr}}
+     0 & \frac{3}{2 H_t m_t} & -\frac{3 N_g}{2 H_t m_t}\\
+     0 & \frac{1}{J_r} & 0\\
+     0 & 0 & -\frac{N_{g}}{J_{gr}}
 \end{bmatrix} \in \mathbb{R}^{5 \times 3}.
 \]
-{\predisplaypenalty=0
-The equations described by the system matrices \(\bm{A}_{\text{Mdl2}}\) and \(\bm{B}_{\text{linMdl2}}\) in Equation~\eqref{eq:7state} are nonlinear with respect to the blade pitch \(\beta_0\), tip-speed ratio \(\lambda\), and wind speed \(V_r\), due to the nonlinear dependencies of the aerodynamic force \(F_{T,r}\) and aerodynamic torque~\(T_r\). However, note that the state equations are linear in the inputs $F_{T,r}$, $T_r$, and $T_g$. The state equations are shown below in compact matrix form, as in \cite{dittmer2021velocity}, as well as expanded with physical parameters for clarity:
+%
+The equations described by the system matrices \(\bm{A}_{\text{Mdl2}}\) and \(\bm{B}_{\text{linMdl2}}\) in equation~\eqref{eq:7state} are nonlinear with respect to the blade pitch \(\beta\), tip-speed ratio \(\lambda\), and wind speed \(V_r\), due to the nonlinear dependencies of the aerodynamic force \(F_{T,r}\) and aerodynamic torque~\(T_r\). However, note that the states are linear with respect to the inputs $F_{T,r}$, $T_r$, and $T_g$. The state equations are shown below in compact matrix form, as in \cite{dittmer2021velocity}, as well as expanded with physical parameters for clarity:
 \begin{align*}
-    \ddot{x}_t(t) &= \bm{A}_{\text{Mdl2}, 5, 1:9} \bm{x}_{\text{Mdl2}}(t) + \bm{B}_{\text{linMdl2}, 5, 1} F_{T,r}(\omega_r, \beta_0, V_r) \\
-    &= -\frac{K_t}{m_{t,\text{fa}}} x_t(t) + \frac{n_b K_b r_b}{m_{t,\text{fa}}} \delta_b(t)
-    - \frac{B_t}{m_{t,\text{fa}}} \dot{x}_t(t) + \frac{n_b B_b r_b}{m_{t,\text{fa}}} \dot{\delta}_b(t), \\[1ex]
+    \ddot{x}_t(t) &= \bm{A}_{\text{Mdl2}, 5, 1:9} \bm{x}_{\text{Mdl2}}(t)^T + \bm{B}_{\text{linMdl2}, 5, 1} F_{T,r}(\omega_r, \beta, V_r) \\
+    &= -\frac{K_t}{m_t} x_t(t) + \frac{n_b K_b r_b}{m_t} \delta_b(t)
+    - \frac{B_t}{m_t} \dot{x}_t(t) + \frac{n_b B_b r_b}{m_t} \dot{\delta}_b(t), \\[1ex]
     %
-    \ddot{\delta}_b(t) &= \bm{A}_{\text{Mdl2}, 6, 1:9} \bm{x}_{\text{Mdl2}}(t) + \bm{B}_{\text{linMdl2}, 6, 1} F_{T,r}(\omega_r, \beta_0, V_r) \\
-    &= \frac{K_t}{r_b m_{t,\text{fa}}} x_t(t) - \frac{K_b(m_{t,\text{fa}} + n_b m_b)}{m_{t,\text{fa}} m_b} \delta_b(t)
-    + \frac{B_t}{r_b m_{t,\text{fa}}} \dot{x}_t(t) - \frac{B_b(m_{t,\text{fa}} + n_b m_b)}{m_{t,\text{fa}} m_b} \dot{\delta}_b(t) \\
-    &\quad + \frac{1}{n_b m_b r_b} F_{T,r}(\omega_r, \beta_0, V_r), \\[1ex]
+    \ddot{\delta}_b(t) &= \bm{A}_{\text{Mdl2}, 6, 1:9} \bm{x}_{\text{Mdl2}}(t)^T + \bm{B}_{\text{linMdl2}, 6, 1} F_{T,r}(\omega_r, \beta, V_r) \\
+    &= \frac{K_t}{r_b m_t} x_t(t) - \frac{K_b(m_t + n_b m_b)}{m_t m_b} \delta_b(t)
+    + \frac{B_t}{r_b m_t} \dot{x}_t(t) - \frac{B_b(m_t + n_b m_b)}{m_t m_b} \dot{\delta}_b(t) \\
+    &\quad + \frac{1}{n_b m_b r_b} F_{T,r}(\omega_r, \beta, V_r), \\[1ex]
     %
-    \ddot{y}_t(t) &= \bm{A}_{\text{Mdl2}, 7, 1:9} \bm{x}_{\text{Mdl2}}(t)
-    + \bm{B}_{\text{linMdl2}, 7, 2} T_r(\omega_r, \beta_0, V_r)
-    + \bm{B}_{\text{linMdl2}, 7, 3} T_g(t) \\
+    \ddot{y}_t(t) &= \bm{A}_{\text{Mdl2}, 7, 1:9} \bm{x}_{\text{Mdl2}}(t)^T
+    + \bm{B}_{\text{linMdl2}, 7, 2} T_r(\omega_r, \beta, V_r)
+    + \bm{B}_{\text{linMdl2}, 7, 3} T_g \\
     &= -\frac{K_{t,\text{sw}}}{m_t} y_t(t) - \frac{B_{t,\text{sw}}}{m_t} \dot{y}_t(t)
-    - \frac{3(1-c_{M_x})}{2 H_t m_t} T_r(\omega_r, \beta_0, V_r)
-    - \frac{3 c_{M_x} N_g}{2 H_t m_t} T_g(t), \\[1ex]
+    + \frac{3}{2 H_t m_t} T_r(\omega_r, \beta, V_r)
+    - \frac{3 N_g}{2 H_t m_t} T_g, \\[1ex]
     %
-    \dot{\omega}_r(t) &= \bm{A}_{\text{Mdl2}, 8, 1:9} \bm{x}_{\text{Mdl2}}(t) + \bm{B}_{\text{linMdl2}, 8, 2} T_r(\omega_r, \beta_0, V_r) \\
-    &= -\frac{K_{sr}}{J_r} \theta_s(t) - \frac{B_{sr}}{J_r} \omega_r(t) + \frac{B_{sr}}{J_r} \omega_{gr}(t)
-    + \frac{1}{J_r} T_r(\omega_r, \beta_0, V_r), \\[1ex]
+    \dot{\omega}_r(t) &= \bm{A}_{\text{Mdl2}, 8, 1:9} \bm{x}_{\text{Mdl2}}(t)^T + \bm{B}_{\text{linMdl2}, 8, 2} T_r(\omega_r, \beta, V_r) \\
+    &= -\frac{K_{sr}}{J_r} \theta_s - \frac{B_{sr}}{J_r} \omega_r + \frac{B_{sr}}{J_r} \omega_{gr}
+    + \frac{1}{J_r} T_r(\omega_r, \beta, V_r), \\[1ex]
     %
-    \dot{\omega}_{gr}(t) &= \bm{A}_{\text{Mdl2}, 9, 1:9} \bm{x}_{\text{Mdl2}}(t) + \bm{B}_{\text{linMdl2}, 9, 3} T_g(t) \\
-    &= \frac{K_{sr}}{J_{gr}} \theta_s(t) + \frac{B_{sr}}{J_{gr}} \omega_r(t) - \frac{B_{sr}}{J_{gr}} \omega_{gr}(t)
-    - \frac{N_g}{J_{gr}} T_g(t).
-\end{align*}}
-{\predisplaypenalty=0
+    \dot{\omega}_{gr}(t) &= \bm{A}_{\text{Mdl2}, 9, 1:9} \bm{x}_{\text{Mdl2}}(t)^T + \bm{B}_{\text{linMdl2}, 9, 3} T_g \\
+    &= \frac{K_{sr}}{J_{gr}} \theta_s + \frac{B_{sr}}{J_{gr}} \omega_r - \frac{B_{sr}}{J_{gr}} \omega_{gr}
+    - \frac{N_g}{J_{gr}} T_g.
+\end{align*}
 Here, \(\bm{X}_{n,k}\) denotes the scalar element in the \(n^\text{th}\) row and \(k^\text{th}\) column of matrix \(\bm{X}\), and \(\bm{X}_{n:m, k:l}\) denotes the submatrix from rows \(n\) to \(m\) and columns \(k\) to \(l\). Note that the value $\bm{B}_{\text{linMdl2}, 5, 1}$, which indicates the influence of $F_{T,r}$ on the tower acceleration $\ddot{x}_t$, is zero. This means that there is no direct coupling between the rotor thrust and the fore-aft acceleration of the tower. However, $F_{T,r}$ still affects $\ddot{x}_t$ indirectly through its influence on the blade displacement $\delta_b$, which is coupled into the equation of motion for $\ddot{x}_t$.
 
-The equations above are reformulated in qLPV form to explicitly capture the dependence on the two control inputs, \(\beta_0\) and \(T_g\), as well as the disturbance input, the free-stream wind speed \(V_\infty\). Since the effective wind speed at the blade, \(V_r = V_\infty - \dot{x}_t - r_b\dot{\delta}_b\), depends on the tower and blade motion, the partial derivatives of the aerodynamic terms \(F_{T,r}\) and \(T_r\) with respect to the tower velocity \(\dot{x}_t\), the blade flap velocity \(\dot{\delta}_b\), and the rotor speed \(\omega_r\) are considered. These derivatives follow analogously to Equation~\eqref{eq:FTTRGrad}, which corresponds to a simplified model without blade dynamics. The complete set of derivatives affecting the states is collected in the matrix \(\mathbf{C}_{5,\text{aero}}\), which represents the aerodynamic damping associated with the tower fore-aft motion, blade deformation, and rotor speed:}
+The equations above are reformulated in qLPV form to explicitly capture the dependence on the two control inputs, \(\beta_0\) and \(T_g\), as well as the disturbance input, the wind speed \(V_r\). To this end, the partial derivatives of the aerodynamic terms \(F_{T,r}\) and \(T_r\) with respect to wind speed \(V_r\), tower motion \(\dot{x}_t\), and blade deflection \(\delta\) are considered. These derivatives are motivated by the expression given in Equation~\eqref{eq:FTTRGrad}, which corresponds to a simplified model without blade dynamics. The complete set of derivatives affecting the states is collected in the matrix \(\mathbf{C}_{5,\text{aero}}\), which represents the aerodynamic intrinsic damping associated with the tower fore-aft motion, blade deformation, and rotor speed:
 \begin{align*}
-    \mathbf{C}_{5,\text{aero}} =& 
-    \begin{bmatrix}
-        - \bm{B}_{\text{linMdl2}, 5, 1} \frac{\partial F_{T,r}}{\partial V_r} & - \bm{B}_{\text{linMdl2}, 5, 1} \frac{\partial F_{T,r}}{\partial V_r} r_b & 0 & \bm{B}_{\text{linMdl2}, 5, 1} \frac{\partial F_{T,r}}{\partial \omega_r} & 0\\
-        - \bm{B}_{\text{linMdl2}, 6, 1} \frac{\partial F_{T,r}}{\partial V_r} & -\bm{B}_{\text{linMdl2}, 6, 1} \frac{\partial F_{T,r}}{\partial V_r} r_b & 0 & \bm{B}_{\text{linMdl2}, 6, 1} \frac{\partial F_{T,r}}{\partial \omega_r} & 0\\
-        - \bm{B}_{\text{linMdl2}, 7, 2} \frac{\partial T_r}{\partial V_r} & -\bm{B}_{\text{linMdl2}, 7, 2} \frac{\partial T_r}{\partial V_r} r_b & 0 & \bm{B}_{\text{linMdl2}, 7, 2} \frac{\partial T_r}{\partial \omega_r} & 0\\
-        -\bm{B}_{\text{linMdl2}, 8, 2} \frac{\partial T_r}{\partial V_r} & -\bm{B}_{\text{linMdl2}, 8, 2} \frac{\partial T_r}{\partial V_r} r_b & 0 & \bm{B}_{\text{linMdl2}, 8, 2} \frac{\partial T_r}{\partial \omega_r} & 0\\
-        0 & 0 & 0 & 0 & 0
-    \end{bmatrix} \in \mathbb{R}^{5 \times 5}  \\
-    =&
-    \begin{bmatrix}
-        0 & 0 & 0 & 0 & 0 \\
-        -\frac{1}{n_b m_b r_b} \frac{\partial F_{T,r}}{\partial V_r} & -\frac{1}{n_b m_b} \frac{\partial F_{T,r}}{\partial V_r} & 0 & \frac{1}{n_b m_b r_b} \frac{\partial F_{T,r}}{\partial \omega_r} & 0 \\
-        \frac{3(1-c_{M_x})}{2 H_t m_t} \frac{\partial T_r}{\partial V_r} & \frac{3(1-c_{M_x}) r_b}{2 H_t m_t} \frac{\partial T_r}{\partial V_r} & 0 & -\frac{3(1-c_{M_x})}{2 H_t m_t} \frac{\partial T_r}{\partial \omega_r} & 0 \\
-        -\frac{1}{J_r} \frac{\partial T_r}{\partial V_r} & -\frac{r_b}{J_r} \frac{\partial T_r}{\partial V_r} & 0 & \frac{1}{J_r} \frac{\partial T_r}{\partial \omega_r} & 0 \\
-        0 & 0 & 0 & 0 & 0
-    \end{bmatrix}.
+\mathbf{C}_{5,\text{aero}} =& 
+\begin{bmatrix}
+    - \bm{B}_{\text{linMdl2}, 5, 1} \frac{\partial F_{T,r}}{\partial V_r} & - \bm{B}_{\text{linMdl2}, 5, 1} \frac{\partial F_{T,r}}{\partial V_r} r_b & 0 & \bm{B}_{\text{linMdl2}, 5, 1} \frac{\partial F_{T,r}}{\partial \omega_r} & 0\\
+    - \bm{B}_{\text{linMdl2}, 6, 1} \frac{\partial F_{T,r}}{\partial V_r} & -\bm{B}_{\text{linMdl2}, 6, 1} \frac{\partial F_{T,r}}{\partial V_r} r_b & 0 & \bm{B}_{\text{linMdl2}, 6, 1} \frac{\partial F_{T,r}}{\partial \omega_r} & 0\\
+    - \bm{B}_{\text{linMdl2}, 7, 2} \frac{\partial T_r}{\partial V_r} & -\bm{B}_{\text{linMdl2}, 7, 2} \frac{\partial T_r}{\partial V_r} r_b & 0 & \bm{B}_{\text{linMdl2}, 7, 2} \frac{\partial T_r}{\partial \omega_r} & 0\\
+    -\bm{B}_{\text{linMdl2}, 8, 2} \frac{\partial T_r}{\partial V_r} & -\bm{B}_{\text{linMdl2}, 8, 2} \frac{\partial T_r}{\partial V_r} r_b & 0 & \bm{B}_{\text{linMdl2}, 8, 2} \frac{\partial T_r}{\partial \omega_r} & 0\\
+    0 & 0 & 0 & 0 & 0
+\end{bmatrix} \in \mathbb{R}^{5 \times 5}  \\
+ =&
+\begin{bmatrix}
+    0 & 0 & 0 & 0 & 0 \\
+    -\frac{1}{n_b m_b r_b} \frac{\partial F_{T,r}}{\partial V_r} & -\frac{1}{n_b m_b} \frac{\partial F_{T,r}}{\partial V_r} & 0 & \frac{1}{n_b m_b r_b} \frac{\partial F_{T,r}}{\partial \omega_r} & 0 \\
+    -\frac{3}{2 H_t m_t} \frac{\partial T_r}{\partial V_r} & -\frac{3 r_b}{2 H_t m_t} \frac{\partial T_r}{\partial V_r} & 0 & \frac{3}{2 H_t m_t} \frac{\partial T_r}{\partial \omega_r} & 0 \\
+    -\frac{1}{J_r} \frac{\partial T_r}{\partial V_r} & -\frac{r_b}{J_r} \frac{\partial T_r}{\partial V_r} & 0 & \frac{1}{J_r} \frac{\partial T_r}{\partial \omega_r} & 0 \\
+    0 & 0 & 0 & 0 & 0
+\end{bmatrix}.
 \end{align*}
 %
 The influence of the two control inputs and the wind on the qLPV system is given by:
 \begin{align*}
-    \tilde{\mathbf{Q}}_{T_g} &= \begin{bmatrix}
-        0 \quad
-        0 \quad
-        \bm{B}_{\text{linMdl2}, 7, 3}  \quad
-        0 \quad \bm{B}_{\text{linMdl2}, 9, 3} 
-    \end{bmatrix}^T \in \mathbb{R}^{5 \times 1},\\
-    \tilde{\mathbf{Q}}_{\beta} &= \begin{bmatrix}
-        \bm{B}_{\text{linMdl2}, 5, 1} \frac{\partial F_{T,r}}{\partial{\beta_0}} \quad
-        \bm{B}_{\text{linMdl2}, 6, 1} \frac{\partial F_{T,r}}{\partial{\beta_0}} \quad
-        \bm{B}_{\text{linMdl2}, 7, 2} \frac{\partial T_r}{\partial{\beta_0}} \quad 
-        \bm{B}_{\text{linMdl2}, 8, 2} \frac{\partial T_r}{\partial{\beta_0}} \quad  0
-    \end{bmatrix}^T  \in \mathbb{R}^{5 \times 1}, \\
-    \tilde{\mathbf{Q}}_V &=\begin{bmatrix}
-        \bm{B}_{\text{linMdl2}, 5, 1} \frac{\partial F_{T,r}}{\partial{V_r }} \quad
-        \bm{B}_{\text{linMdl2}, 6, 1} \frac{\partial F_{T,r}}{\partial{V_r }} \quad
-        \bm{B}_{\text{linMdl2}, 7, 2} \frac{\partial T_r}{\partial{V_r }} \quad 
-        \bm{B}_{\text{linMdl2}, 8, 2} \frac{\partial T_r}{\partial{V_r }} \quad 0
-    \end{bmatrix}^T  \in \mathbb{R}^{5 \times 1}.
+\tilde{\mathbf{Q}}_{T_g} &= \begin{bmatrix}
+    0 \quad
+    0 \quad
+    \bm{B}_{\text{linMdl2}, 7, 3}  \quad
+    0 \quad \bm{B}_{\text{linMdl2}, 9, 3} 
+\end{bmatrix}^T \in \mathbb{R}^{5 \times 1},\\
+\tilde{\mathbf{Q}}_{\beta} &= \begin{bmatrix}
+    \bm{B}_{\text{linMdl2}, 5, 1} \frac{\partial F_{T,r}}{\partial{\beta }} \quad
+    \bm{B}_{\text{linMdl2}, 6, 1} \frac{\partial F_{T,r}}{\partial{\beta }} \quad
+    \bm{B}_{\text{linMdl2}, 7, 2} \frac{\partial T_r}{\partial{\beta }} \quad 
+    \bm{B}_{\text{linMdl2}, 8, 2} \frac{\partial T_r}{\partial{\beta }} \quad  0
+\end{bmatrix}^T  \in \mathbb{R}^{5 \times 1}, \\ %[10pt]
+\tilde{\mathbf{Q}}_V &=\begin{bmatrix}
+    \bm{B}_{\text{linMdl2}, 5, 1} \frac{\partial F_{T,r}}{\partial{V_r }} \quad
+    \bm{B}_{\text{linMdl2}, 6, 1} \frac{\partial F_{T,r}}{\partial{V_r }} \quad
+    \bm{B}_{\text{linMdl2}, 7, 2} \frac{\partial T_r}{\partial{V_r }} \quad 
+    \bm{B}_{\text{linMdl2}, 8, 2} \frac{\partial T_r}{\partial{V_r }} \quad 0
+\end{bmatrix}^T  \in \mathbb{R}^{5 \times 1}.
 \end{align*}
 Explicitly, using physical parameters and the lower non-zero block of \(\bm{B}_{\text{linMdl2}}\), given by \(\mathbf{M}_5^{-1} \mathbf{Q}_{5 \times 3}\), these vectors are:
 \begin{align*}
-    \tilde{\mathbf{Q}}_{T_g} &= 
+\tilde{\mathbf{Q}}_{T_g} &= 
     \begin{bmatrix}
-        0 \quad 0 \quad -\frac{3c_{M_x}N_g}{2H_t m_t} \quad 0 \quad -\frac{N_g}{J_{gr}}
+        0 \quad 0 \quad -\frac{3N_g}{2H_t m_t} \quad 0 \quad -\frac{N_g}{J_{gr}}
     \end{bmatrix}^T, \\
-    \tilde{\mathbf{Q}}_{\beta} &= 
+\tilde{\mathbf{Q}}_{\beta} &= 
     \begin{bmatrix}
         0 \quad
-        \frac{1}{n_b m_b r_b} \frac{\partial F_{T,r}}{\partial \beta_0} \quad
-        -\frac{3(1-c_{M_x})}{2 H_t m_t} \frac{\partial T_r}{\partial \beta_0} \quad
-        \frac{1}{J_r} \frac{\partial T_r}{\partial \beta_0} \quad
+        \frac{1}{n_b m_b r_b} \frac{\partial F_{T,r}}{\partial \beta} \quad
+        \frac{3}{2 H_t m_t} \frac{\partial T_r}{\partial \beta} \quad
+        \frac{1}{J_r} \frac{\partial T_r}{\partial \beta} \quad
         0
     \end{bmatrix}^T, \\
-    \tilde{\mathbf{Q}}_V &= 
+\tilde{\mathbf{Q}}_V &= 
     \begin{bmatrix}
         0 \quad
         \frac{1}{n_b m_b r_b} \frac{\partial F_{T,r}}{\partial V_r} \quad
-        -\frac{3(1-c_{M_x})}{2 H_t m_t} \frac{\partial T_r}{\partial V_r} \quad
+        \frac{3}{2 H_t m_t} \frac{\partial T_r}{\partial V_r} \quad
         \frac{1}{J_r} \frac{\partial T_r}{\partial V_r} \quad
         0
     \end{bmatrix}^T.
 \end{align*}
 %
-Adding two additional states, the actuator states \(T_g\) and \(\beta_0\), to the state vector in Equation~\eqref{eq:X7} yields the augmented state vector \(\bm{x}_{\text{Mdl2}^\prime}\):
-\[\bm{x}_{\text{Mdl2}^\prime} = \begin{bmatrix} x_t \quad \delta_b \quad y_t \quad \theta_s \quad \dot{x}_t \quad \dot{\delta}_b \quad \dot{y}_t \quad {\omega}_r \quad {\omega}_{gr} \quad T_g \quad \beta_0 \end{bmatrix}^T   \in \mathbb{R}^{11 \times 1},\]  
+Adding two additional states, the actuator states \(T_g\) and \(\beta_0\), to the state vector in equation \eqref{eq:X7} yields the augmented state vector \(\bm{x}_{\text{Mdl2}^\prime}\):
+\[\bm{x}_{\text{Mdl2}^\prime} = \begin{bmatrix} x_t \quad \delta_b \quad y_t \quad \theta_S \quad \dot{x}_t \quad \dot{\delta_b} \quad \dot{y}_t \quad {\omega}_r \quad {\omega}_{gr} \quad T_g \quad \beta_0 \end{bmatrix}^T   \in \mathbb{R}^{11 \times 1},\]  
 and results in the 11th-order system: 
 \begin{align*}
-    \dot{\bm{x}}_{\text{Mdl2}^{\prime}}(t) = \bm{A}_{\text{Mdl2}^{\prime}} \bm{x}_{\text{Mdl2}^{\prime}}(t) + \bm{B}_{\text{Mdl2}^{\prime}} \bm{w}_{\text{Mdl}^{\prime}}(t),
+\dot{\bm{x}}_{\text{Mdl2}^{\prime}}(t) = \bm{A}_{\text{Mdl2}^{\prime}} \bm{x}_{\text{Mdl2}^{\prime}}(t) + \bm{B}_{\text{Mdl2}^{\prime}} \bm{w}_{\text{Mdl}}(t),
 \end{align*}
-where \(\bm{w}_{\text{Mdl}^{\prime}} = [V_{\infty} \quad T_{g,\text{ref}}  \quad \beta_{0,\text{ref}}]^T\) and \(\bm{A}_{\text{Mdl2}^{\prime}}\) and \(\bm{B}_{\text{Mdl2}^{\prime}}\) are given by:
+where \(\bm{w}_{\text{Mdl}} = [V_{\infty} \quad T_g  \quad \beta_0]^T\) and \(\bm{A}_{\text{Mdl2}^{\prime}}\) and \(\bm{B}_{\text{Mdl2}^{\prime}}\) are given by:
 %
 \begin{equation} \label{eq:11thorder}
     \begin{aligned}
         \bm{A}_{\text{Mdl2}^{\prime}} &= \begin{bmatrix}
             \bm{0}_{4 \times 4} & \mathbf{L}_{4 \times 5} & \bm{0}_{4 \times 1} &  \bm{0}_{4 \times 1}\\
-            -\mathbf{M}_5^{-1}\tilde{\mathbf{K}}_{5 \times 4} & -\mathbf{M}_5^{-1}\tilde{\mathbf{C}}_5 + \mathbf{C}_{5,\text{aero}}(\bm{\rho}_{\Rho}) & \tilde{\mathbf{Q}}_{T_g} & \tilde{\mathbf{Q}}_{\beta}(\bm{\rho}_{\Rho})\\
+            -\mathbf{M}_5^{-1}\tilde{\mathbf{K}}_{5 \times 4} & -\mathbf{M}_5^{-1}\mathbf{C}_5 + \mathbf{C}_{5,\text{aero}}(\bm{\rho}_{\Rho}) & \Tilde{\mathbf{Q}}_{T_g} (\bm{\rho}_{\Rho}) & \Tilde{\mathbf{Q}}_{\beta}(\bm{\rho}_{\Rho})\\
             \bm{0}_{1 \times 4} & \bm{0}_{1 \times 5} & -\frac{1}{\kappa} & 0\\
             \bm{0}_{1 \times 4} & \bm{0}_{1 \times 5} & 0 & -\frac{1}{\tau}
         \end{bmatrix} \in \mathbb{R}^{11 \times 11},\\
         \bm{B}_{\text{Mdl2}^{\prime}} &= \begin{bmatrix}
             \bm{0}_{4 \times 1} & \bm{0}_{4 \times 1} & \bm{0}_{4 \times 1}\\
-            \tilde{\mathbf{Q}}_V (\bm{\rho}_{\Rho}) & \bm{0}_{5 \times 1} & \bm{0}_{5 \times 1}\\
+            \Tilde{\mathbf{Q}}_V (\bm{\rho}_{\Rho}) & \bm{0}_{5 \times 1} & \bm{0}_{5 \times 1}\\
             0 & \frac{1}{ \kappa} & 0\\
             0 & 0 & \frac{1}{\tau}
         \end{bmatrix} \in \mathbb{R}^{11 \times 3}

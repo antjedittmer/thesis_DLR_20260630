@@ -29,15 +29,17 @@ While turbulence has a minor influence on Annual Energy Production (AEP), it sig
 Turbulence is stochastically described by its power spectrum. Two widely used models are the von K\'arm\'an and Kaimal spectra:
 \begin{equation}
     \Phi_{\text{K\'arm\'an}}(\omega) = \frac{K_V}{(1 +(\omega T_V)^2)^{5/6}} \quad \text{and} \quad
-    \Phi_{\text{Kaimal}}(\omega) = \frac{K_V}{(1 +\omega T_V)^{5/3}}
+    \Phi_{\text{Kaimal}}(\omega) = \frac{K_V}{(1 +\omega T_V)^{5/3}},
 \end{equation}
-where $\omega$ is the angular frequency, $T_V$ is a time constant whose inverse determines the
- turbulence bandwidth, and $K_V$ scales the turbulence power. The two parameters take
-different values in the two modes. For the von K\'arm\'an spectrum, they are approximated as:
+where $\omega$ is the angular frequency, $T_V$ is a time constant whose inverse determines the turbulence bandwidth, and $K_V$ scales the turbulence power. The two parameters take different values in the two models. For the von K\'arm\'an spectrum, they are approximated as~\cite{Bianchi}
 \begin{equation}
-    K_V = 0.475 I_v^2 \frac{L_v}{\bar{V}(z)} \quad \text{and} \quad T_V = \frac{L_v}{\bar{V}(z)}
+    K_V = 0.475 I_v^2 \frac{L_v}{\bar{V}(z)} \quad \text{and} \quad T_V = \frac{L_v}{\bar{V}(z)},
 \end{equation}
-with the turbulence intensity $I_v$, which represents the ratio of the standard deviation of wind speed fluctuations to the mean wind speed, and the correlation length $L_v$, which indicates the scale of turbulence in space. The von K\'arm\'an model is implemented in the FASTTool, and therefore all the turbulent wind model test cases presented in this thesis leverage it.
+and for the Kaimal spectrum, following IEC~61400-1~\cite{IEC61400-1}, as
+\begin{equation}
+    K_V = \frac{2}{\pi} I_v^2 \frac{L_v}{\bar{V}(z)} \quad \text{and} \quad T_V = \frac{3}{\pi}\frac{L_v}{\bar{V}(z)},
+\end{equation}
+with the turbulence intensity $I_v$, which represents the ratio of the standard deviation of wind speed fluctuations to the mean wind speed, and the integral length scale $L_v$, which indicates the spatial scale of turbulence. Note that $L_v$ is defined differently in the two models. The Kaimal model is used by TurbSim, which generates the turbulent wind fields in FASTTool. Therefore, all turbulent wind test cases presented in this thesis are based on it.
 
 
 The turbulence intensity, which depends on the height of the turbine and the terrain of a potential site, is an important factor in site selection. Higher turbulence intensity leads to increased aerodynamic loads on turbine structures, influencing the durability and performance of wind turbines.
