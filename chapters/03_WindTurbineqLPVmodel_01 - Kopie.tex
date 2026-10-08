@@ -512,13 +512,13 @@ Explicitly, using physical parameters and the lower non-zero block of \(\bm{B}_{
     \end{bmatrix}^T.
 \end{align*}
 %
-Adding two additional states, the actuator states \(T_g\) and \(\beta_0\), to the state vector in equation \eqref{eq:X7} yields the augmented state vector \(\bm{x}_{\text{Mdl2}^\prime}\):
+Adding two additional states, the actuator signals \(T_g\) and \(\beta_0\), to the state vector in equation \eqref{eq:X7} yields the augmented state vector \(\bm{x}_{\text{Mdl2}^\prime}\):
 \[\bm{x}_{\text{Mdl2}^\prime} = \begin{bmatrix} x_t \quad \delta_b \quad y_t \quad \theta_S \quad \dot{x}_t \quad \dot{\delta_b} \quad \dot{y}_t \quad {\omega}_r \quad {\omega}_{gr} \quad T_g \quad \beta_0 \end{bmatrix}^T   \in \mathbb{R}^{11 \times 1},\]  
 and results in the 11th-order system: 
 \begin{align*}
-\dot{\bm{x}}_{\text{Mdl2}^{\prime}}(t) = \bm{A}_{\text{Mdl2}^{\prime}} \bm{x}_{\text{Mdl2}^{\prime}}(t) + \bm{B}_{\text{Mdl2}^{\prime}} \bm{w}_{\text{Mdl}}(t),
+\dot{\bm{x}}_{\text{Mdl2}^{\prime}}(t) = \bm{A}_{\text{Mdl2}^{\prime}} \bm{x}_{\text{Mdl2}^{\prime}}(t) + \bm{B}_{\text{Mdl2}^{\prime}} \bm{w}^\prime_{\text{Mdl}}(t),
 \end{align*}
-where \(\bm{w}_{\text{Mdl}} = [V_{\infty} \quad T_g  \quad \beta_0]^T\) and \(\bm{A}_{\text{Mdl2}^{\prime}}\) and \(\bm{B}_{\text{Mdl2}^{\prime}}\) are given by:
+where \(\bm{w}^\prime_{\text{Mdl}} = [V_{\infty} \quad T_{g,\text{ref}}  \quad \beta_{0,\text{ref}]^T\) leverages the commanded control signals. The system and output matrices \(\bm{A}_{\text{Mdl2}^{\prime}}\) and \(\bm{B}_{\text{Mdl2}^{\prime}}\) are given by:
 %
 \begin{equation} \label{eq:11thorder}
     \begin{aligned}

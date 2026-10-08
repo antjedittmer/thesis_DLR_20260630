@@ -514,11 +514,11 @@ The standard deviations of the pitch derivative, the rotor speed, the tower fore
         for turbulent wind with pitch rate limits. The PI controller is largely insensitive to the rate limit
         whereas the qLMPC uses higher rates for less rotor speed, tower movement and
         power variation. Values in brackets show the ratio to the standard
-        (8\,\textdegree/s) baseline PI value.}
+        (8\textdegree/s) baseline PI value.}
     \label{tab:stddev_unified}
     \begin{tabular}{ll rrr}
         \toprule
-        & & \multicolumn{3}{c}{Rate limit (\textdegree/s) (ratio to PI at 8\,\textdegree/s)} \\
+        & & \multicolumn{3}{c}{Rate limit (\textdegree/s) (ratio to PI at 8\textdegree/s)} \\
         \cmidrule(lr){3-5}
         Controller & Signal & low: 4\textdegree/s & standard: 8\textdegree/s & high: 13\textdegree/s \\
         \midrule
@@ -681,11 +681,11 @@ Table~\ref{tab:stddev_unified_IPC} summarizes the standard deviation of the sign
     \centering
    \caption[Standard deviation comparison: Baseline PI vs. IPC for turbulent wind with 
    different pitch rate limits.]{Standard deviation of IPC blade pitch rate and blade root 
-       OoP moment for turbulent wind with different pitch rate limits. Values in brackets show 
+       out-of-plane moment for turbulent wind with different pitch rate limits. Values in brackets show 
        the ratio to the PI baseline. Tower fore-aft acceleration, generated power, and rotor 
        speed standard deviations are identical to the PI baseline across all rate limits and are 
-       therefore omitted. PI baseline standard deviations differ only for the blade pitch rate (0.54\,\textdegree/s)
-       and blade root OoP moment (1628.85\,kNm).}
+       therefore omitted. PI baseline standard deviations differ only for the blade pitch rate (0.54\textdegree/s)
+       and blade root out-of-plane moment (1628.85\,kNm).}
     \label{tab:stddev_unified_IPC}
     \begin{tabular}{l rrr}
         \toprule

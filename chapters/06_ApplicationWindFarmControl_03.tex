@@ -680,7 +680,7 @@ The next section presents simulation results obtained in WFSim both in open-loop
 %b_{KMPMC2,const} = [b_{const}, \delta u_M \mathbf{1}^{1\times N\cdotn_T}, -\delta u_m \mathbf{1}^{1\times N\cdot n_T}]^T  
 
 %As the cost function is quadratic a reformulation of it as a QP problem gives a perfect reconstruction. Hence, we could show in \cite{adki2021MPC} that we get exactly the same results previously reported regarding power reference tracking performance in \cite{vali2019adjoint}, but with a 15 times speed-up.\\
-%The excellent tracking performance is obtained in both \cite{vali2019adjoint} and \cite{adki2021MPC} by providing the effective wind speed of all turbines to the centralized farm controller. As mentioned previously, wind speeds might not be available for all wind turbines of a wind farm. In section \ref{SimResults} it is demonstrated that leveraging only wind estimated via the Koopman model good tracking performance can be achieved without wind measurements using a physically motivated identified model.
+%The accurate tracking performance is obtained in both \cite{vali2019adjoint} and \cite{adki2021MPC} by providing the effective wind speed of all turbines to the centralized farm controller. As mentioned previously, wind speeds might not be available for all wind turbines of a wind farm. In section \ref{SimResults} it is demonstrated that leveraging only wind estimated via the Koopman model good tracking performance can be achieved without wind measurements using a physically motivated identified model.
 %The bounds of the first yaw angle, $u_{m,\gamma} = 0$ and $u_{M,\gamma} = 25$ are included in the vectors $u_m$ and $u_M$ that are used to form the input constraints $A_{c0,K2}$ and $B_{c0,K2}$, otherwise identically to $A_{c,K1}$ and $B_{c,K1}$.
 %Moreover, the rate limits $\delta u$ of the rates are included via calculating the differences in rates with $\Delta_R$ with all values of the diagonal set to 1 and all values of the third supra-diagonal set to -1 to subtract the next value of the prediction horizon. In the current design $U^l$ is constant. Hence, the difference between the values of $\tilde{U}$ and $U$ is identical. Therefore, the new constraint matrices are: %for the MATLAB function \textit{quadprog} with linear constraints $A_{c} x < b_{c}$:
 %\begin{align*} %\label{eqn:constraint}
@@ -830,7 +830,7 @@ an improvement of approximately 6\%, while the WFSim simulation indicated an inc
 around 10\%. These results are consistent with trends reported in related literature. Both the
 Bastankhah and the Navier--Stokes-equation-based WFSim models showed good agreement in
 terms of wake expansion and power prediction. The combination of increased power yield and
-accurate model representation resulted in excellent power reference tracking, even for reference
+precise model representation resulted in accurate power reference tracking, even for reference
 signals exceeding the greedy power. This outcome underscores the potential of Koopman-based
 WRC-AIC control strategies to enhance wind farm efficiency and support grid stability through
 more flexible and responsive power delivery.

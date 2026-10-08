@@ -138,7 +138,9 @@ In addition to the filtered matrices $\tilde{L}$ and $\tilde{S}(V_r)$, correspon
 \begin{align*}
     \bm{X}_{\text{WF}}(k +1) = \begin{bmatrix} \bm{x}_{\text{WF}}(k+1) \\ \vdots \\ \bm{x}_{\text{WF}}(k+n_h) \end{bmatrix} = L \bm{x}_{\text{WF}}(k) + S(V_r) \bm{U}(k) \in \mathbb{R}^{3 n_h n_{\text{WT}} \times 1}.
 \end{align*}
-The unfiltered matrices are utilized for predicting the evolution of the effective wind speeds. Specifically, the future effective wind speeds are estimated via the filtered thrust control inputs, which are extracted from the predicted state trajectory $\bm{X}_{\text{WF}}$.
+The unfiltered matrices are utilized for predicting the evolution of the state vector based on the estimated effective wind speeds, which are derived from the augmented Koopman matrix $\hat{\bm{K}}_{\text{aug}}$ from Equation~\eqref{eq:AugmentedKoopmanMPC}.
+
+Specifically, the future effective wind speeds are estimated via the filtered thrust control inputs, which are extracted from the predicted state trajectory $\bm{X}_{\text{WF}}$.
 
 The cost function from Equation~\eqref{eq:ObjFunAIC} is reformulated as a sequence of quadratic sub-problems, following the approach in \cite{gonzalez2020nonlinear}. For a cost $J(\bm{U})$ subject to constraints $g(\bm{U}) \leq 0$, the quadratic sub-problem at the $l$-th iteration is:
 \begin{equation} \label{eq:ObjFunAICapprox}
