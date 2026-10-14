@@ -17,7 +17,7 @@ a qLMPC design, which incorporates wind information, and PI Individual Pitch Con
 (IPC), the latter both as a standalone method and in combination with Trailing Edge Flap Control
 (TEFC), aimed at reducing mechanical loads. These control approaches are evaluated in terms of
 power reference tracking, actuator activity, and mechanical loads.
-
+%
 In Section~\ref{sec:quasiLPVMPCDesign}, the design of a velocity-based qLMPC controller based on
 the first-principles model of Chapter~\ref{sec:WindTurbineqLPVModels} is presented. Where qLMPC
 has so far been applied to wind turbines as a SISO scheme \cite{mulders2020preventing, pamososuryo2022individual,
@@ -26,12 +26,12 @@ collective pitch simultaneously as a MIMO scheme, covering the entire operating 
 reformulated as a QP and solved via a linear complementarity formulation with Lemke's algorithm
 \cite{cisneros2020velocity}, yielding mean solver times below 2\,ms at a controller sampling time
 of 8\,ms and thus real-time capability.
-
+%
 Section~\ref{section:Individal Pitch PI Control} introduces IPC, explaining the multiblade
 coordinate transformation and comparing IPC simulation results to those from baseline Collective
 Pitch Control (CPC). The simulation environment is also used to tune the IPC gains, by a grid
 search followed by a Nelder-Mead simplex optimization of the blade root DEL.
-
+%
 Section~\ref{sec:CombinedIPC-TrailingEdgeFlapControl} describes the combination of IPC and TEFC, in the following called Active Aerodynamic Load Control (AALC), including the necessary model extensions and the achieved load reductions on the blades and tower. Whereas earlier studies combining the two actuation principles report results for single mean wind
 speeds \cite{wilson2009combined, henriksen2013model, he2018combined}, the controller presented
 here is demonstrated across Regions II and III, using one training dataset and two independent
@@ -143,7 +143,6 @@ This continuous-time qLPV model needs to be discretized for its application in a
     \Delta \bm{x}_{\text{MPC}}(k+1) = \bm{A}_{d}(\bm{\rho}_\Rho)\Delta \bm{x}_{\text{MPC}}(k) + \bm{B}_{d}(\bm{\rho}_\Rho) \Delta \bm{w}_{\text{Mdl}^\prime}(k)
 \end{align}
 with the discretized system and input matrices $\bm{A}_d \in \mathbb{R}^{5 \times 5}$ and $\bm{B}_d \in \mathbb{R}^{5 \times 3}$ dependent on the scheduling parameter vector $\bm{\rho}_{\Rho}$ at the $k{\text{th}}$ sample.
-
 %
 %
 As in \cite{cisneros2019wide}, the discrete-time matrices $\bm{A}_d$ and $\bm{B}_d$ in Equation~\eqref{eq:zoh1} are approximated by truncating their series expansion after the fourth-order term. The discrete-time system and input matrices used here are therefore:
@@ -515,10 +514,12 @@ The controller algorithm requires the following inputs:
 Note that the plant model requires turbine parameters used to construct the system matrices \(\bm{A}_d\) and \(\bm{B}_d\), as well as the lookup table for the torque coefficient \(c_Q\). These parameters must be supplied to the controller, which is implemented as a MATLAB function integrated into the Simulink controller model. All required data is stored in a MATLAB data dictionary. In this thesis, the same data is used in both the Simulink controller and plant models. The results for two wind test cases, a stepped wind speed profile and a turbulent wind signal at above-rated conditions, are presented and discussed in the next section.
 
 \subsection{Results} \label{quasiLPVMPCResults}
-The velocity-based qLMPC is evaluated in two scenarios, similar to those used for model verification in Section~\ref{subsec:ResultsqLPVModel}. However, the test cases in this chapter only have a simulation time of 400\,s. While a simulation time of 660\,s would be required for controller certification, this duration is sufficient to demonstrate the impact of the proposed qLMPC design.  In the first scenario, the wind speed is increased stepwise from 4\,m/s to 23\,m/s in steps with a duration of 20\,s, with the first 15\,s discarded as a transient. In the second scenario, 400\,s of turbulent wind with a mean speed of 18\,m/s and IEC turbulence class B is used to assess controller performance under realistic wind conditions.  For quantitative comparison, the variance of the power tracking error and the variance of the tower fore-aft acceleration are used, see \cite{dittmer2021velocity}.
+The velocity-based qLMPC is evaluated in two scenarios, similar to those used for model verification in Section~\ref{subsec:ResultsqLPVModel}. As in \cite{dittmer2021velocity} the qLPV model Mdl2 is used, so there is no model mismatch. The test cases for comparison with the baseline PI have a simulation time of 400\,s. While a simulation time of 660\,s would be required for controller certification, this duration is sufficient to demonstrate the impact of the proposed qLMPC design with no model mismatch. In the first scenario, the wind speed is increased stepwise from 4\,m/s to 23\,m/s in steps with a duration of 20\,s, with the first 15\,s discarded as a transient. In the second scenario, 400\,s of turbulent wind with a mean speed of 18\,m/s and IEC turbulence class B is used to assess controller performance under realistic wind conditions.  For quantitative comparison, the variance of the power tracking error and the variance of the tower fore-aft acceleration are used, see \cite{dittmer2021velocity}.
 
 Figure~\ref{fig:CtrlCmpMdlSweep}(a) shows the controller comparison for the stepped wind sweep covering nearly the entire operating range. In below-rated wind conditions, the two controllers achieve comparable performance. In above-rated wind conditions, however, predictive pitch control considerably reduces tower fore-aft acceleration and power variance. Overall, the variance of the fore-aft acceleration is reduced by a factor of 3.13 and the power variance by 1.34, corresponding to standard deviation ratios of 1.77 and 1.16, as shown in Table~\ref{tab:ControllerComparisonMerged}.
-Figure~\ref{fig:CtrlCmpMdlSweep}(b) shows results for the turbulent wind. The improvements over the baseline PI are even more pronounced than in the stepped sweep case, particularly in above-rated conditions. Regarding the variance of the tower fore-aft acceleration and the power, the qLMPC reduces them by factors of 5.35 and 14.90, equivalent to standard deviation ratios of 2.31 and 3.86.
+%Figure~\ref{fig:CtrlCmpMdlSweep}(b) shows results for the turbulent wind. The improvements over the baseline PI are even more pronounced than in the stepped sweep case, particularly in above-rated conditions. Regarding the variance of the tower fore-aft acceleration and the power, the qLMPC reduces them by factors of 5.35 and 14.90, equivalent to standard deviation ratios of 2.31 and 3.86.
+%Overall, the standard deviation ratios for the tower fore-aft acceleration and power tracking error are 1.57 and 1.40 (corresponding to variance reduction factors of 2.46 and 1.96), as shown in Table~\ref{tab:ControllerComparisonMerged}.
+Figure~\ref{fig:CtrlCmpMdlSweep}(b) shows results for the turbulent wind. The improvements over the baseline PI are even more pronounced than in the stepped sweep case, particularly in above-rated conditions. Regarding the tower fore-aft acceleration and power tracking error, the qLMPC yields standard deviation ratios of 3.90 and 8.67 (equivalent to variance reduction factors of 15.21 and 75.17), as presented in Table~\ref{tab:ControllerComparisonMerged}.
 
 
 \begin{figure} [ht]
@@ -550,13 +551,14 @@ Table \ref{tab:ControllerComparisonMerged} summarizes this by displaying the afo
         {Standard Deviation of} & {Stepped wind sweep} & {Turbulent wind} \\
         {Signal (unit)} & \multicolumn{2}{c}{std PI / std qLMPC =  ratio} \\
         \midrule
-        Tower fore-aft acceleration (m/s$^2$) & $0.06 / 0.03 = 1.77$ & $0.17 / 0.07 = 2.31$ \\
-        Power tracking error (kW) & $169.01 / 146.26 = 1.16$ & $56.68 / 14.68 = 3.86$ \\
-        Generator torque rate (kNm/s) & $0.63 / 2.36 = 0.27$ & $0 / 0 = {-}$ \\
-        Blade pitch rate (\textdegree/s) & $0.22 / 0.81 = 0.27$ & $0.51 / 3.60 = 0.14$ \\
+        Tower fore-aft acc. (m/s$^2$)& $0.06 / 0.04 = 1.57$ & $0.30 / 0.08 = 3.90$ \\
+        Power tracking error (kW)& $161.29 / 115.20 = 1.40$ & $133.36 / 15.38 = 8.67$ \\
+        Generator torque rate (kNm/s) & $0.56 / 1.47 = 0.38$ & $0 / 0 = {-}$ \\
+        Blade pitch rate  (\textdegree/s)& $0.23 / 0.76 = 0.30$ & $1.50 / 4.47 = 0.34$ \\
         \bottomrule
     \end{tabular}
 \end{table}
+
 %
 %\\begin{tablenotes}
  %   \small

@@ -6,7 +6,7 @@ A wind turbine is a highly complex mechanical system. However, control-oriented 
 aim to represent the dynamics that either provide information to the controller or are influenced
 by the actuator settings commanded by the controller. Therefore, the resulting models are of
 relatively low order.
-
+%
 In Section~\ref{sec:MechanicalAerodynamicSubsystemModel}, the physical equations are presented
 that serve as the basis for building a Simulink model of the turbine dynamics, and for the
 underlying models for the qLMPC algorithm discussed in the next chapter. Two qLPV models are
@@ -18,8 +18,10 @@ Both include the side-to-side tower direction. While side-to-side tower motion h
 in dedicated load estimation and damping schemes \cite{mulders2020preventing,
     pamososuryo2022loadestimation, pamososuryo2022individual, fonseca2024windTurbineSideSide}, these
 works do not state how the in-plane force follows from the three inputs of control-oriented models, which are the generator torque, the blade pitch and the rotor-effective wind speed. 
-This relationship is derived here by cantilever equivalence from the torsional moment acting on the nacelle, i.e., the reaction moments at the gearbox housing and the generator stator, extending the fore-aft lumped force modeling of \cite{schlipf2013nonlinear, Bianchi2007} to the side-to-side direction.
-Making the input dependence explicit is what allows the side-to-side dynamics to be compared
+This relationship is derived here by cantilever equivalence from the moment about the fore-aft
+axis acting on the nacelle, i.e., the reaction moments at the gearbox housing and the generator
+stator, extending the fore-aft lumped-force modeling of \cite{schlipf2013nonlinear, Bianchi2007}
+to the side-to-side direction. Making the input dependence explicit is what allows the side-to-side dynamics to be compared
 against linearized FAST models in the frequency domain and the qLPV simulation results to be
 compared against the nonlinear FAST model in the time domain.
 %
@@ -153,11 +155,11 @@ The side-to-side force is caused by the torsional nacelle moment $M_x$:
 \end{equation}
 This relationship follows from a lumped-force excitation analogous to the fore-aft force in \cite{Bianchi2007}, extended here to the in-plane direction. The reasoning is as follows: the moment $M_x$ acts on the nacelle at hub height $H_t$. The tower can be regarded as a cantilever beam fixed at the base, with its free end located at hub height. Since the qLPV model captures the tower as a single-degree-of-freedom system represented by the hub-height displacement $y_t$, the equivalent lumped force $F_{T,y}$ is obtained by requiring it to produce the same tip deflection as the applied moment. For a cantilever of length $H_t$, a tip moment $M_x$ produces a tip deflection of $M_x H_t^2/(2EI)$, while a tip point force $F_{T,y}$ produces a tip deflection of $F_{T,y} H_t^3/(3EI)$, where $E$ is the modulus of elasticity of the tower material and $I$ is the second moment of area of the tower cross-section. Setting the two equal gives $|F_{T,y}|\,(2/3)\,H_t = |M_x|$. The negative sign results from the definition of $y_t$ pointing to the left when looking downwind: a moment $M_x$ in the direction of rotor rotation deflects the tower top in negative $y_t$-direction.
 
-The torsional moment $M_x$ is the sum of the generator torque and the reaction moment at the gearbox housing. The latter is the difference between the low-speed shaft torque and the high-speed shaft torque. Assuming an ideal, massless gearbox and a generator rotating in the same direction as the rotor, the moment balance yields
+The moment $M_x$ is the sum of the generator torque and the reaction moment at the gearbox housing around the fore-aft axis. The latter is the difference between the low-speed shaft torque and the high-speed shaft torque. Assuming an ideal, massless gearbox and a generator rotating in the same direction as the rotor, the moment balance yields
 \begin{align*}
     M_x(t) = T_{\text{lss}}(t) - T_{\text{hss}}(t) + T_g(t).
 \end{align*}
-With the generator equation and the rotor equation from the equation set~\eqref{eq:DrvTr} as well as the rigid-drivetrain assumption $\dot{\omega}_g = N_g\dot{\omega}_r$, the torsional moment can be expressed in terms of the rotor torque and the rotor acceleration as
+With the generator equation and the rotor equation from the equation set~\eqref{eq:DrvTr} as well as the rigid-drivetrain assumption $\dot{\omega}_g = N_g\dot{\omega}_r$, the moment $M_x$ can be expressed in terms of the rotor torque and the rotor acceleration as
 \begin{align*}
     M_x(t) &= T_{\text{lss}}(t) - J_g\dot{\omega}_g(t)\\
     &= T_r(t) - J_r\dot{\omega}_r(t) - J_g\dot{\omega}_g(t)\\

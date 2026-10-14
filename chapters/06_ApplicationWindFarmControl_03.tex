@@ -119,7 +119,7 @@ Following the matrix assembly, \textit{Computesol.m} solves the resulting system
     \item The optimal control signals are obtained by solving the resulting MPC problem via \textit{optimize.m}.
 \end{itemize}
 %
-In the modified structure (Figure~\ref{fig:WFSimFlow}b), this workflow is replaced by the \textit{qLPVMPCcontroller\_dU\_\allowbreak quadprog.m} function. This new controller utilizes matrices initialized in \textit{koopmanstateextensionWFSim.m} and initializes wind-dependent input matrices from \textit{MPCinit\_ctrl.m}. The functions \textit{wfmodel.m} and \textit{matsys.m} are modified to accommodate these changes and to construct the parameter-dependent Toeplitz-like matrices and boundary conditions for the QP formulation. These are passed to \textit{quadprog\_sol.m}, which calls the MATLAB solver \textit{quadprog.m}. While the original implementation performed two iterations to refine wind speed predictions, no clear benefit regarding tracking error minimization was observed in the studies forming the basis of this thesis when running the optimization twice. Consequently, the decision was made to calculate the farm control signal only once at each iteration. This further slightly streamlines the process, as less than 3\,ms are now used for each controller calculation. However, it should be noted that this reduction in complexity is secondary to the substantial computational gains achieved by the QP formulation itself.
+In the modified structure (Figure~\ref{fig:WFSimFlow}b), this workflow is replaced by the \textit{qLPVMPCcontroller\_dU\_\allowbreak quadprog.m} function. This new controller utilizes matrices initialized in \textit{koopmanstateextensionWFSim.m} and initializes wind-dependent input matrices from \textit{MPCinit\_ctrl.m}. The functions \textit{wfmodel.m} and \textit{matsys.m} are modified to accommodate these changes and to construct the parameter-dependent Toeplitz-like matrices and boundary conditions for the QP formulation. These are passed to \textit{quadprog\_sol.m}, which calls the MATLAB solver \textit{quadprog.m}. While the original implementation performed two iterations to refine wind speed predictions, no clear benefit regarding tracking error minimization was observed in the studies forming the basis of this thesis when running the optimization twice. Therefore, the decision was made to calculate the farm control signal only once at each iteration. This further slightly streamlines the process, as less than 3\,ms are now used for each controller calculation. However, it should be noted that this reduction in complexity is secondary to the substantial computational gains achieved by the QP formulation itself.
 
 The following section outlines the calculation of the wind field using the signals $C^{\prime}_T$ and $\gamma$ from \textit{Actuator.m}, the matrices $A_x$ and $A_y$ from \textit{MakingSparseMatrix.m}, and the boundary terms $B_1$, $B_2$, and $\bm{b}^\mathrm{BC}$ from \textit{Compute\_B1\_B2\_bc.m}.
 
@@ -148,7 +148,7 @@ where $C_{Tn}^{\prime}$ is the thrust control signal of turbine $n$ used to regu
 
 For the numerical implementation, the domain is discretized into an $n_p = n_x \cdot n_y$ grid of pressure cells. WFSim utilizes a staggered grid configuration: the longitudinal wind speed $v_x$ is stored on horizontal cell edges (normal to the vertical x-axis), and the lateral wind speed $v_y$ is stored on the vertical cell edges (normal to the horizontal y-axis). Note that in the WFSim matrix convention, the $x$-axis corresponds to the row index, i.e., the longitudinal direction, and the $y$-axis to the column index, the lateral direction.
 
-This discretization yields $n_{v_x} = n_x \cdot (n_y+1)$ unknowns for the longitudinal velocity and $n_{v_y} = (n_x+1) \cdot n_y$ unknowns for the lateral velocity. Consequently, the 2D force components from Equation~\eqref{eq:forceNdim2} are mapped to the grid and assembled into the vector $\bm{f}$:
+This discretization yields $n_{v_x} = n_x \cdot (n_y+1)$ unknowns for the longitudinal velocity and $n_{v_y} = (n_x+1) \cdot n_y$ unknowns for the lateral velocity. Therefore, the 2D force components from Equation~\eqref{eq:forceNdim2} are mapped to the grid and assembled into the vector $\bm{f}$:
 \begin{align}\label{eq:forceWFSim}
     \bm{f}_n \;\mapsto\; \bm{f} =
     \begin{bmatrix}
@@ -240,7 +240,7 @@ The thrust control inputs $C_T'$ are constrained within the range $[0.1, 2]$.  B
 With this simulation setup and the code modifications described in Section~\ref{sec:WFSim Program Structure and Code Modifications}, the adaptive qLMPC algorithm can be applied to the wind farm. The following section discusses the design and implementation of the AIC algorithm.
 
 \section{Adaptive Wind Farm qLMPC with Thrust Control} \label{sec:AdaptiveWindFarmqLMPCforAIC}
-Accurately describing the complex turbulence evolution caused by wakes using closed-form low-order ODEs is infeasible. Consequently, the standard MPC controller available in the open-source WFSim environment explicitly models only the turbine dynamics. Wake interactions are accounted for implicitly by utilizing the effective wind speeds at the turbines as inputs to the model. This architecture is illustrated in the block diagram in Figure~\ref{figBlockDiagramFarm}, presented in Section~\ref{Subsection:Windfarmcontrol}, which provides an overview of the WFSim MPC framework.
+Accurately describing the complex turbulence evolution caused by wakes using closed-form low-order ODEs is infeasible. Therefore, the standard MPC controller available in the open-source WFSim environment explicitly models only the turbine dynamics. Wake interactions are accounted for implicitly by utilizing the effective wind speeds at the turbines as inputs to the model. This architecture is illustrated in the block diagram in Figure~\ref{figBlockDiagramFarm}, presented in Section~\ref{Subsection:Windfarmcontrol}, which provides an overview of the WFSim MPC framework.
 
 In this section, the data generation process for both open-loop training and closed-loop controller testing is described. This is followed by a discussion of the data handling procedures required to derive an Extended Dynamic Mode Decomposition (EDMD) model, along with a review of the resulting wind farm model and the MPC algorithm itself. Finally, simulation results for both open-loop wind estimation and closed-loop adaptive control are presented. These results demonstrate the capability of the adaptive algorithm to learn dynamics that were not present in the initial training data.
 
@@ -264,7 +264,7 @@ where $v_{x,i_j}$ represents the wind speed component in the $x$-direction at th
 The visualization in Figure~\ref{fig:WFSimFlowAIC} is adapted from the general WFSim diagram (Figure~\ref{figBlockDiagramFarm}) to explicitly distinguish between the local measured wind speed $V_{1_m}$ and the effective wind speed $V_{r1}$. To achieve this without overcrowding the diagram, the following modifications regarding signals and their visual representation as arrows are made:
 \begin{itemize}
     \item In contrast to Figure~\ref{figBlockDiagramFarm}, where local wind speeds were summarized into vectors denoted $\bm{V}_{o1}$ and $\bm{V}_{o2}$, Figure~\ref{fig:WFSimFlowAIC} explicitly displays the individual wind speed signals $V_{1\text{out}_1}$ to $V_{1\text{out}_{n_r}}$ behind WT1. This visualization highlights the spatial signals involved in the wake interaction, while the corresponding signals behind WT2 are omitted, as they do not contribute to the MPC algorithm. Similarly to the rotor outflow, the rotor inflow velocities $V_{1_1}$ to $V_{1_{n_r}}$ and  $V_{2_1}$ to $V_{2_{n_r}}$ are visualized as arrows in Figure~\ref{fig:WFSimFlowAIC}.
-    \item The turbine forces resulting from the effective wind speeds and control inputs are calculated within the standard WFSim MPC. However, since they are neither used in the cost function of that MPC scheme nor in the proposed scheme, they are omitted from Figure~\ref{fig:WFSimFlowAIC} to reduce visual clutter.
+    \item The turbine forces resulting from the effective wind speeds and control inputs are calculated within the standard WFSim MPC and are retained as states in the turbine model, see Equation~\eqref{eqPowerWT} in Chapter~\ref{Subsection:Windfarmcontrol} or Equation~\eqref{eqPowerWTAIC_vector}. However, since they are not used in the cost function of either MPC scheme and do not affect the control inputs, they are omitted from Figure~\ref{fig:WFSimFlowAIC} to reduce visual clutter.
 \end{itemize}
 %
 The signals depicted in Figure~\ref{fig:WFSimFlowAIC} are:
@@ -387,19 +387,24 @@ where ${}^\dagger$ denotes the Moore–Penrose pseudoinverse. Since the number o
 \end{align*}
 Substituting this into Equation~\eqref{eq:Koop_G_Gplus_datamatrices} confirms the dimensions:
 \[
-\underbrace{\hat{\bm{K}}}_{n_\varphi \times (n_\varphi + n_w)} = 
-\underbrace{\bm{G}_{+}}_{n_\varphi \times (n_o-1)} \cdot 
-\underbrace{\bm{G}_w^T}_{(n_o-1) \times (n_\varphi + n_w)} \cdot 
+\underbrace{\hat{\bm{K}}}_{n_\varphi \times (n_\varphi + n_w)} =
+\underbrace{\bm{G}_{+}}_{n_\varphi \times (n_o-1)} \cdot
+\underbrace{\bm{G}_w^T}_{(n_o-1) \times (n_\varphi + n_w)} \cdot
 \underbrace{(\bm{G}_w \bm{G}_w^T)^{-1}}_{(n_\varphi + n_w) \times (n_\varphi + n_w)}.
 \]
+Equivalently, the identified matrix can be written as $\hat{\bm{K}}_0 = \mathbf{L}_0\,\mathbf{L}_{u,0}^{-1}$ with the initial auto- and cross-correlation matrices
+\begin{align*}
+    \mathbf{L}_{u,0} = \bm{G}_w \bm{G}_w^T, \quad \mathbf{L}_0 = \bm{G}_{+} \bm{G}_w^T,
+\end{align*}
+which serve as initial values for the online update explained below.
 %
-To utilize the identified matrix $\hat{\bm{K}}$ for linear model predictive control, it is partitioned into the system matrix $\bm{A}_{\hat{K}} \in \mathbb{R}^{n_\varphi \times n_\varphi}$ and the input matrix $\bm{B}_{\hat{K}} \in \mathbb{R}^{n_\varphi \times n_w}$. To account for the measured disturbance $V_1$ as an autonomous state within the prediction horizon, the input matrix is further split into $\bm{B}_d \in \mathbb{R}^{n_\varphi \times 1}$ for the disturbance and $\bm{B}_u \in \mathbb{R}^{n_\varphi \times (n_w-1)}$ for the control inputs $[C'_{T1} \;\; C'_{T2}]^T$. 
+To utilize the identified matrix $\hat{\bm{K}}$ for linear model predictive control, it is partitioned into the system matrix $\bm{A}_{\hat{K}} \in \mathbb{R}^{n_\varphi \times n_\varphi}$ and the input matrix $\bm{B}_{\hat{K}} \in \mathbb{R}^{n_\varphi \times n_w}$. To account for the measured disturbance $V_1$ as an autonomous state within the prediction horizon, the input matrix is further split into $\bm{B}_d \in \mathbb{R}^{n_\varphi \times 1}$ for the disturbance and $\bm{B}_u \in \mathbb{R}^{n_\varphi \times (n_w-1)}$ for the control inputs $[C'_{T1} \;\; C'_{T2}]^T$.
 
 The final augmented Koopman matrix $\hat{\bm{K}}_{\text{aug}}$ is then constructed to include the disturbance dynamics. Assuming the disturbance remains constant over the prediction horizon, the augmentation is performed as follows:
 \begin{align} \label{eq:AugmentedKoopmanMPC}
-    \hat{\bm{K}}_{\text{aug}} = \left[\begin{array}{cc|c} 
-        \bm{A}_{\hat{K}} & \bm{B}_d & \bm{B}_u\\ 
-        \bm{0}_{1 \times n_\varphi} & 1 & \bm{0}_{1 \times (n_w-1)} 
+    \hat{\bm{K}}_{\text{aug}} = \left[\begin{array}{cc|c}
+        \bm{A}_{\hat{K}} & \bm{B}_d & \bm{B}_u\\
+        \bm{0}_{1 \times n_\varphi} & 1 & \bm{0}_{1 \times (n_w-1)}
     \end{array}\right] \in \mathbb{R}^{(n_\varphi+1) \times (n_\varphi+n_w)},
 \end{align}
 where the second row ensures the persistence of the measured wind speed disturbance throughout the prediction. This structure allows the MPC to treat the disturbance as a known, constant state during the optimization of the control sequence.
@@ -410,26 +415,26 @@ The online update strategy employed here is based on the recursive least squares
 
 Let $\mathcal{X}_{\nu}$ denote the buffer containing the state and input vectors from the previous $h+1$ time instants:
 \[
-\mathcal{X}_{\nu} = \begin{bmatrix} x_{k-1}^T  & w_{k-1}^T  & \dots & x_{k-h-2}^T  & w_{k-h-2}^T  \end{bmatrix} \in \mathbb{R}^{1 \times (n_\varphi + n_w)(h+1)}.
+\mathcal{X}_{\nu} = \begin{bmatrix} x_{k-1}^T & w_{k-1}^T & \dots & x_{k-h-1}^T & w_{k-h-1}^T \end{bmatrix} \in \mathbb{R}^{1 \times (n_x + n_w)(h+1)}.
 \]
 The triggering condition is formulated using the infinity norm, which allows the threshold $\nu$ to be interpreted in physical units independent of the window length $h$:
 \begin{equation} \label{eq:add_data}
     \left\|
-    \begin{bmatrix} 
-        x_{k-h} \\ 
-        x_{k-h+1} \\ 
-        \vdots \\ 
+    \begin{bmatrix}
+        x_{k-h} \\
+        x_{k-h+1} \\
+        \vdots \\
         x_{k}
     \end{bmatrix}
     -
-    \begin{bmatrix} 
-        C\hat{K}\bm{\tilde{\varphi}}(z_{k-h-1}) \\[2mm] 
+    \begin{bmatrix}
+        C\hat{K}\bm{\tilde{\varphi}}(z_{k-h-1}) \\[2mm]
         C\hat{K}\bm{\tilde{\varphi}}\Big(
-        \begin{bmatrix} 
-            \hat{K}\bm{\tilde{\varphi}}(z_{k-h-1}) \\ 
-            w_{k-h} 
+        \begin{bmatrix}
+            \hat{K}\bm{\tilde{\varphi}}(z_{k-h-1}) \\
+            w_{k-h}
         \end{bmatrix}
-        \Big) \\[1mm] 
+        \Big) \\[1mm]
         \vdots \\[1mm]
         C\hat{K}\bm{\tilde{\varphi}}\Big(
         \begin{bmatrix}
@@ -445,23 +450,28 @@ The triggering condition is formulated using the infinity norm, which allows the
     \end{bmatrix}
     \right\|_\infty \geq \nu,
 \end{equation}
-where the extended lifted observables $\bm{\tilde{\varphi}}$ are defined as in Equation~\eqref{eq:extLiftObs}, and $z_k = [x_k^T  \;\; w_k^T ]$ is a stacked vector selected from $\mathcal{X}_{\nu}$.
+where the extended lifted observables $\bm{\tilde{\varphi}}$ are defined as in Equation~\eqref{eq:extLiftObs}, and $z_k = [x_k^T \;\; w_k^T]^T$ is a stacked vector selected from $\mathcal{X}_{\nu}$.
 
-When this condition is met, the Koopman matrix is updated using data matrices $\mathbf{L}_u^+$ and $\mathbf{L}^+$. At initialization, $\mathbf{L}_u$ and $\mathbf{L}$ correspond to the correlation matrices derived from the original offline data matrices $\mathbf{G}_w$ and $\mathbf{G}_+$, see Equations~\eqref{eq:G_Gplus_datamatrices} to \eqref{eq:Koop_G_Gplus_datamatrices}. While \cite{cisneros2020data} utilizes only the current measurement, this work incorporates a batch of the last five measurement samples to provide low-pass filtering and reduced sensitivity noise. The batch data matrix is defined as:
+When this condition is met, the Koopman matrix is updated using the data matrices $\mathbf{L}_u^+$ and $\mathbf{L}^+$. At initialization, $\mathbf{L}_u$ and $\mathbf{L}$ are the offline correlation matrices defined above. While \cite{cisneros2020data} utilizes only the current measurement, this work incorporates a batch of the last five measurement samples to provide low-pass filtering and reduced sensitivity to noise. The batch data matrices are defined as
 \[
-z_{k,5} = [z_{k-5} \;\; z_{k-4} \;\; \dots \;\; z_k]  \in \mathbb{R}^{ (n_x + n_w)\times 6}.
+z_{k,5} = [z_{k-5} \;\; z_{k-4} \;\; \dots \;\; z_{k-1}] \in \mathbb{R}^{(n_x + n_w)\times 5}, \quad
+x_{k,5}^+ = [x_{k-4} \;\; x_{k-3} \;\; \dots \;\; x_{k}] \in \mathbb{R}^{n_x \times 5},
 \]
+where $x_{k,5}^+$ contains the successor states of the samples in $z_{k,5}$.
 The recursive updates are computed as a weighted sum of the existing correlation matrices $\mathbf{L}_u$ and $\mathbf{L}$ and the new data:
 \begin{equation} \label{eq:GA_online}
     \begin{split}
         n_{\text{upd}}^+ &= n_{\text{upd}} + 1,\\
-        \mathbf{L}_u^+ &= \frac{1}{n_{\text{upd}}^+} \Big( (n_{\text{upd}}^+-1)\mathbf{L}_u + \bm{\tilde{\varphi}}(z_{k,5}) \bm{\tilde{\varphi}}(z_{k,5})^T  \Big),\\
-        \mathbf{L}^+ &= \frac{1}{n_{\text{upd}}^+} \Big( (n_{\text{upd}}^+-1)\mathbf{L} + \bm{\tilde{\varphi}}(z_{k,5}^+) \bm{\tilde{\varphi}}(z_{k,5})^T  \Big).
+        \mathbf{L}_u^+ &= \frac{1}{n_{\text{upd}}^+} \Big( (n_{\text{upd}}^+-1)\mathbf{L}_u + \bm{\tilde{\varphi}}(z_{k,5}) \bm{\tilde{\varphi}}(z_{k,5})^T \Big),\\
+        \mathbf{L}^+ &= \frac{1}{n_{\text{upd}}^+} \Big( (n_{\text{upd}}^+-1)\mathbf{L} + \bm{\varphi}(x_{k,5}^+) \bm{\tilde{\varphi}}(z_{k,5})^T \Big).
     \end{split}
 \end{equation}
-The counter $n_{\text{upd}}$ acts as a weighting factor. In \cite{cisneros2020data}, this counter monotonically increases. In contrast, the values $n_{\text{upd}}$ is reset to $1$ whenever the error norm falls below the threshold. This allows the model to adapt to changing dynamics rather than becoming rigid due to a large historical weight. Conversely, during active updates, the counter is incremented to integrate the new information.
+The updated Koopman matrix is then obtained as $\hat{\bm{K}}^+ = \mathbf{L}^+ (\mathbf{L}_u^+)^{-1}$ and partitioned as in Equation~\eqref{eq:AugmentedKoopmanMPC}.
+The counter $n_{\text{upd}}$ acts as a weighting factor. In \cite{cisneros2020data}, this counter monotonically increases. In contrast, here the counter $n_{\text{upd}}$ is reset to $1$ whenever the error norm falls below the threshold. This allows the model to adapt to changing dynamics rather than becoming rigid due to a large historical weight. Conversely, during active updates, the counter is incremented to integrate the new information.
 
-Finally, accurate online identification requires sufficient spectral content in the input. Since standard control signals may not excite all dynamic modes, a low-amplitude band-limited white noise signal is superimposed on the control input during updates. %More details on the implementation of this excitation signal are provided in the results section.
+Finally, accurate online identification requires sufficient spectral content in the input. Since standard control signals may not excite all dynamic modes, a low-amplitude band-limited white noise signal is superimposed on the control input during updates.
+
+ %More details on the implementation of this excitation signal are provided in the results section.
 %Future improvements may include explicit limits on $n_{\text{upd}}$ and the introduction of forgetting factors to balance recent and historical data, as suggested in \cite{zhang2019online}.
 %Based on the theory in \cite{cisneros2020data}, a brief review on online update of koopman model is provided in this section. To avoid the memory management issues, we can only store $G$, $G_+$ and $U$ vectors at time $k$ ToDo: Make clear that Psi might be a matrix not a vector if more than one sample is included. Aso use our formulation  Phi*Phi' and X1 *Phi' where Phi= [x0;u0] 
 % To do: Forgetting factors, weights between previous model and new data, 
@@ -470,6 +480,7 @@ Finally, accurate online identification requires sufficient spectral content in 
 % Differences to Pable: P initialized as 1, so offline identified model is used
 % P is reset to 1 when no update is necessary (tuning knob -> future work to 
 \input{chapters/06_23_qLMPC_ApplicationWindFarmControl_02}
+
 \subsection{Results} \label{section:AICWindFarmControl}
 The qLMPC described in the previous section is applied to a wind farm of two turbines implemented in WFSim as discussed above. Open-loop simulations are run to obtain data with and without a change in wind speed. In closed-loop simulation, a non-adaptive version of the algorithm and the described adaptive version are compared.
 
@@ -570,7 +581,7 @@ As shown in the first subplot of Figure~\ref{fig:CL_Comparison}(a), the non-adap
 
 However, a small increase in actuator activity is observed in the adaptive case. This is due to a persistent excitation signal added to the thrust coefficient to ensure the data remains informative for online identification. When the update condition is triggered, white noise is added to the control signal, updated every five samples. This augmented signal is a weighted sum of the optimal control input and the noise (weighted $0.99$ and $0.01$, respectively), ensuring that power tracking quality is maintained while satisfying the requirements for efficient online adaptation.
 
-It should be noted that the highly precise and nearly instantaneous power tracking achieved by the adaptive Koopman MPC is partly attributable to the simplified modeling assumptions within the WFSim environment. Specifically, the simulation does not account for internal structural mechanics, rotational inertia, or actuator dynamics, instead representing the wind turbines as controlled energy sinks. In a higher-fidelity setup that incorporates these physical properties, the tracking response would likely be more restricted by mechanical time constants and the structural load limitations of the turbine hardware. Consequently, while these results demonstrate the superior adaptive capabilities of the Koopman-based approach, further validation using aeroelastic tools would be necessary to assess performance under realistic mechanical constraints.
+It should be noted that the highly precise and nearly instantaneous power tracking achieved by the adaptive Koopman MPC is partly attributable to the simplified modeling assumptions within the WFSim environment. Specifically, the simulation does not account for internal structural mechanics, rotational inertia, or actuator dynamics, instead representing the wind turbines as controlled energy sinks. In a higher-fidelity setup that incorporates these physical properties, the tracking response would likely be more restricted by mechanical time constants and the structural load limitations of the turbine hardware. Therefore, while these results demonstrate the superior adaptive capabilities of the Koopman-based approach, further validation using aeroelastic tools would be necessary to assess performance under realistic mechanical constraints.
 
  Nonetheless, this adaptive Koopman approach demonstrates that effective wind speeds in highly nonlinear wake environments can be accurately estimated and tracked online. By selectively updating the model only when new information is present, the framework maintains high estimation accuracy, with VAF values consistently around 90\% in both open- and closed-loop scenarios. In the closed-loop tracking case, the adaptive strategy significantly outperforms the non-adaptive scheme, reducing power tracking error while maintaining acceptable actuator activity. These results validate the use of adaptive Koopman models as a solid foundation for wind farm control under varying freestream conditions. The following section builds upon this framework by integrating yaw control, exploring how WRC can be used alongside thrust control to further optimize total farm yield.
 
