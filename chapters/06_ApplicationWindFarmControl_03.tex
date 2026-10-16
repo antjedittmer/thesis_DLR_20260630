@@ -68,12 +68,13 @@ The changes to the turbine states, such as thrust and power, and the wind field 
     \item The function \textit{MakingSparseMatrix.m} creates the sparse matrix representation of the finite-volume discretization. It is called twice, once for the longitudinal and once for the lateral wind speed components, to construct the system matrices $A_x$ and $A_y$.
 \end{itemize}
 %
-Following the matrix assembly, \textit{Computesol.m} solves the resulting system of equations to obtain the current wind speeds and pressure at the nodes as a vectorized solution. Finally, \textit{MapSolution.m} maps this vector back onto the 2D flow field and updates the boundary conditions for the subsequent simulation iteration.Figure~\ref{fig:WFSimFlow} illustrates the program structure diagram of the controller call within the red box, situated below the wind farm model functions (blue box). In the original code (Figure~\ref{fig:WFSimFlow}a), all controller information, including constant parameters, was re-initialized at every timestep using \textit{MPCinit.m}. In the versions developed in \cite{sharan2022Koopman}, \cite{dittmer2022data}, and \cite{dittmer2023koopman}, only the wind-dependent input matrices are updated, while all constant values are established during the initial setup. In the original implementation, the MATLAB-based modeling framework YALMIP \cite{lofberg2004yalmip} is then initialized to parse the optimization problem. The control signals, specifically the thrust and yaw commands, $C^{\prime}_T$ and $\gamma$, are calculated in the \textit{NMPCcontroller.m} function through three steps:
-
+Following the matrix assembly, \textit{Computesol.m} solves the resulting system of equations to obtain the current wind speeds and pressure at the nodes as a vectorized solution. Finally, \textit{MapSolution.m} maps this vector back onto the 2D flow field and updates the boundary conditions for the subsequent simulation iteration. Figure~\ref{fig:WFSimFlow} illustrates the program structure diagram of the controller call within the red box, situated below the wind farm model functions (blue box). In the original code (Figure~\ref{fig:WFSimFlow}a), all controller information, including constant parameters, was re-initialized at every timestep using \textit{MPCinit.m}. In the versions developed in \cite{sharan2022Koopman}, \cite{dittmer2022data}, and \cite{dittmer2023koopman}, only the wind-dependent input matrices are updated, while all constant values are established during the initial setup. In the original implementation, the MATLAB-based modeling framework YALMIP \cite{lofberg2004yalmip} is then initialized to parse the optimization problem. 
+%
+The thrust commands $C^{\prime}_T$ are calculated in the \textit{NMPCcontroller.m} function through three steps, while the yaw angles $\gamma$ are set to zero:
 \begin{itemize}
-    \item The individual system and input matrices for each turbine are computed in \textit{wfmodel.m}.
-    \item In \textit{matsys.m}, these individual matrices are concatenated to form the global wind farm system and input matrices.
-    \item The optimal control signals are obtained by solving the resulting MPC problem via \textit{optimize.m}.
+    \item In \textit{wfmodel.m}, the wind turbine matrices are used to form the wind farm system and input matrices, which are block-diagonal matrices with the turbine matrices on their diagonal.
+    \item Based on these, \textit{matsys.m} builds the prediction matrices over the horizon.
+    \item The optimal control signals are obtained by solving the resulting MPC problem via the YALMIP function \textit{optimize.m}, with CPLEX as the solver.
 \end{itemize}
 %
 In the modified structure (Figure~\ref{fig:WFSimFlow}b), this workflow is replaced by the \textit{qLPVMPCcontroller\_dU\_\allowbreak quadprog.m} function. This new controller utilizes matrices initialized in \textit{koopmanstateextensionWFSim.m} and initializes wind-dependent input matrices from \textit{MPCinit\_ctrl.m}. The functions \textit{wfmodel.m} and \textit{matsys.m} are modified to accommodate these changes and to construct the parameter-dependent Toeplitz-like matrices and boundary conditions for the QP formulation. These are passed to \textit{quadprog\_sol.m}, which calls the MATLAB solver \textit{quadprog.m}. While the original implementation performed two iterations to refine wind speed predictions, no clear benefit regarding tracking error minimization was observed in the studies forming the basis of this thesis when running the optimization twice. Therefore, the decision was made to calculate the farm control signal only once at each iteration. This further slightly streamlines the process, as less than 3\,ms are now used for each controller calculation. However, it should be noted that this reduction in complexity is secondary to the substantial computational gains achieved by the QP formulation itself.
@@ -252,7 +253,7 @@ Consider a linear system in the lifted space of the form:
     \quad \hat{\bm{x}}(k) = \bm{C} \bm{\varphi}(k), 
     \label{eq:linearPredictor}
 \end{align}
-where $\bm{\varphi} \in \mathbb{R}^{n_\varphi \times 1}$ is the lifted state vector containing $n_\varphi$ observables, and $\bm{w} \in \mathbb{R}^{n_w \times 1}$ denotes the input vector, which includes both control signals and measured disturbances. The vector $\hat{\bm{x}} \in \mathbb{R}^{n_x \times 1}$ represents the predicted output. The system dynamics are defined by the state matrix $\bm{A} \in \mathbb{R}^{n_\varphi \times n_\varphi}$, the input matrix $\bm{B} \in \mathbb{R}^{n_\varphi \times n_w}$, and the output matrix $\bm{C} \in \mathbb{R}^{n_x \times n_\varphi}$. The initial lifted state is given by $\bm{\varphi}(\bm{x}_0) = [g_{1}(\bm{x}_0)\;\; g_{2}(\bm{x}_0) \;\; \ldots\;\;g_{n_\varphi}(\bm{x}_0)]^T$.
+where $\bm{\varphi} \in \mathbb{R}^{n_\varphi \times 1}$ is the lifted state vector containing $n_\varphi$ lifted states, and $\bm{w} \in \mathbb{R}^{n_w \times 1}$ denotes the input vector, which includes both control signals and measured disturbances. The vector $\hat{\bm{x}} \in \mathbb{R}^{n_x \times 1}$ represents the predicted output. The system dynamics are defined by the state matrix $\bm{A} \in \mathbb{R}^{n_\varphi \times n_\varphi}$, the input matrix $\bm{B} \in \mathbb{R}^{n_\varphi \times n_w}$, and the output matrix $\bm{C} \in \mathbb{R}^{n_x \times n_\varphi}$. The initial lifted state is given by $\bm{\varphi}(\bm{x}_0) = [g_{1}(\bm{x}_0)\;\; g_{2}(\bm{x}_0) \;\; \ldots\;\;g_{n_\varphi}(\bm{x}_0)]^T$.
 
 In the proposed framework, the lifted state vector $\bm{\varphi}$ is structured such that its first $n_x$ elements correspond directly to the predicted output $\hat{\bm{x}}$, which are the effective wind speeds, followed by their quadratic and cubic terms:
 \begin{align*}
@@ -265,14 +266,14 @@ with dimensions $n_\varphi = 6$ and $n_x = 2$. The input vector $\bm{w}$ contain
 \end{align*}
 with $n_w = 3$.
 
-EDMD is employed to calculate the Koopman matrix, which approximates the infinite-dimensional Koopman operator $\mathcal{K}$ \cite{arbabi2018data}. To facilitate this, the extended lifted observables, which combine the nonlinear state observables and the inputs, are defined as:
+EDMD is employed to calculate the Koopman matrix, which approximates the infinite-dimensional Koopman operator $\mathcal{K}$ \cite{arbabi2018data}. To facilitate this, the extended lifted lifted states, which combine the nonlinear state lifted states and the inputs, are defined as:
 \begin{align}\label{eq:extLiftObs}
     \bm{\tilde{\varphi}}(\bm{x},\bm{w}) = 
     \begin{bmatrix}
         \bm{g}(\bm{x}) \\ \bm{w}
     \end{bmatrix} \in \mathbb{R}^{(n_\varphi + n_w) \times 1}.
 \end{align}
-For the considered setup, this results in a total dimension of $n_\varphi + n_w = 9$. Here, $\bm{\varphi} = \bm{g}(\bm{x}) \in \mathbb{R}^{n_\varphi \times 1}$ denotes the vector of nonlinear state observables, and $\bm{w} \in \mathbb{R}^{n_w \times 1}$ is the input vector, which appears linearly in the lifted dynamics.
+For the considered setup, this results in a total dimension of $n_\varphi + n_w = 9$. Here, $\bm{\varphi} = \bm{g}(\bm{x}) \in \mathbb{R}^{n_\varphi \times 1}$ denotes the vector of nonlinear state lifted states, and $\bm{w} \in \mathbb{R}^{n_w \times 1}$ is the input vector, which appears linearly in the lifted dynamics.
 
 Given $n_o$ samples of state and input data collected in simulation runs, the data snapshot matrices are defined:
 \begin{align} \label{eq:DataCollAIC}
@@ -338,7 +339,7 @@ the analytical least-squares solution is given by:
     = \bm{G}_{+}  \bm{G}_w^{\dagger}
     \in \mathbb{R}^{n_\varphi \times (n_\varphi + n_w)},
 \end{align}
-where ${}^\dagger$ denotes the Moore–Penrose pseudoinverse. Since the number of samples is significantly larger than the number of observables, i.e., $n_o \gg n_\varphi + n_w$, $\bm{G}_w$ has full row rank, and the pseudoinverse can be explicitly computed as:
+where ${}^\dagger$ denotes the Moore–Penrose pseudoinverse. Since the number of samples is significantly larger than the number of lifted states, i.e., $n_o \gg n_\varphi + n_w$, $\bm{G}_w$ has full row rank, and the pseudoinverse can be explicitly computed as:
 \begin{align*}
     \bm{G}_w^{\dagger} = \bm{G}_w^T (\bm{G}_w \bm{G}_w^T)^{-1} \in \mathbb{R}^{(n_o-1) \times (n_\varphi + n_w)}.
 \end{align*}
@@ -408,7 +409,7 @@ The triggering condition is formulated using the infinity norm, which allows the
     \end{bmatrix}
     \right\|_\infty \geq \nu,
 \end{equation}
-where the extended lifted observables $\bm{\tilde{\varphi}}$ are defined as in Equation~\eqref{eq:extLiftObs}, and $z_k = [x_k^T \;\; w_k^T]^T$ is a stacked vector selected from $\mathcal{X}_{\nu}$.
+where the extended lifted lifted states $\bm{\tilde{\varphi}}$ are defined as in Equation~\eqref{eq:extLiftObs}, and $z_k = [x_k^T \;\; w_k^T]^T$ is a stacked vector selected from $\mathcal{X}_{\nu}$.
 
 When this condition is met, the Koopman matrix is updated using the data matrices $\mathbf{L}_u^+$ and $\mathbf{L}^+$. At initialization, $\mathbf{L}_u$ and $\mathbf{L}$ are the offline correlation matrices defined above. While \cite{cisneros2020data} utilizes only the current measurement, this work incorporates a batch of the last five measurement samples to provide low-pass filtering and reduced sensitivity to noise. The batch data matrices are defined as
 \[
@@ -425,10 +426,9 @@ The recursive updates are computed as a weighted sum of the existing correlation
     \end{split}
 \end{equation}
 The updated Koopman matrix is then obtained as $\hat{\bm{K}}^+ = \mathbf{L}^+ (\mathbf{L}_u^+)^{-1}$ and partitioned as in Equation~\eqref{eq:AugmentedKoopmanMPC}.
-The counter $n_{\text{upd}}$ acts as a weighting factor. In \cite{cisneros2020data}, this counter monotonically increases. In contrast, here the counter $n_{\text{upd}}$ is reset to $1$ whenever the error norm falls below the threshold. This allows the model to adapt to changing dynamics rather than becoming rigid due to a large historical weight. Conversely, during active updates, the counter is incremented to integrate the new information.
+The counter $n_{\text{upd}}$ acts as a weighting factor. In \cite{cisneros2020data}, this counter monotonically increases. In contrast, here the counter $n_{\text{upd}}$ is reset to $1$ whenever the error norm falls below the threshold. This allows the model to adapt to changing dynamics rather than becoming rigid due to a large historical weight. During active updates, the counter is incremented to integrate the new information.
 
 Finally, accurate online identification requires sufficient spectral content in the input. Since standard control signals may not excite all dynamic modes, a low-amplitude band-limited white noise signal is superimposed on the control input during updates.
-
  %More details on the implementation of this excitation signal are provided in the results section.
 %Future improvements may include explicit limits on $n_{\text{upd}}$ and the introduction of forgetting factors to balance recent and historical data, as suggested in \cite{zhang2019online}.
 %Based on the theory in \cite{cisneros2020data}, a brief review on online update of koopman model is provided in this section. To avoid the memory management issues, we can only store $G$, $G_+$ and $U$ vectors at time $k$ ToDo: Make clear that Psi might be a matrix not a vector if more than one sample is included. Aso use our formulation  Phi*Phi' and X1 *Phi' where Phi= [x0;u0] 
@@ -539,9 +539,9 @@ As shown in the first subplot of Figure~\ref{fig:CL_Comparison}(a), the non-adap
 
 However, a small increase in actuator activity is observed in the adaptive case. This is due to a persistent excitation signal added to the thrust coefficient to ensure the data remains informative for online identification. When the update condition is triggered, white noise is added to the control signal, updated every five samples. This augmented signal is a weighted sum of the optimal control input and the noise (weighted $0.99$ and $0.01$, respectively), ensuring that power tracking quality is maintained while satisfying the requirements for efficient online adaptation.
 
-It should be noted that the highly precise and nearly instantaneous power tracking achieved by the adaptive Koopman MPC is partly attributable to the simplified modeling assumptions within the WFSim environment. Specifically, the simulation does not account for internal structural mechanics, rotational inertia, or actuator dynamics, instead representing the wind turbines as controlled energy sinks. In a higher-fidelity setup that incorporates these physical properties, the tracking response would likely be more restricted by mechanical time constants and the structural load limitations of the turbine hardware. Therefore, while these results demonstrate the superior adaptive capabilities of the Koopman-based approach, further validation using aeroelastic tools would be necessary to assess performance under realistic mechanical constraints.
+It should be noted that the precise and fast power tracking achieved by the adaptive Koopman MPC is partly attributable to the simplified turbine modeling in WFSim. The turbines are represented as actuator disks with a first-order filter on the thrust control signal, see Equation~\eqref{eqPowerWTAIC_vector}, while rotor inertia, drive-train and structural dynamics, and the turbine controllers are not modeled. In a higher-fidelity setup, the tracking response would likely be limited by mechanical time constants and structural load constraints. Therefore, while these results show the advantage of the adaptive over the non-adaptive Koopman approach, further validation with aeroelastic tools is necessary to assess the performance under realistic mechanical constraints.
 
- Nonetheless, this adaptive Koopman approach demonstrates that effective wind speeds in highly nonlinear wake environments can be accurately estimated and tracked online. By selectively updating the model only when new information is present, the framework maintains high estimation accuracy, with VAF values consistently around 90\% in both open- and closed-loop scenarios. In the closed-loop tracking case, the adaptive strategy significantly outperforms the non-adaptive scheme, reducing power tracking error while maintaining acceptable actuator activity. These results validate the use of adaptive Koopman models as a solid foundation for wind farm control under varying freestream conditions. The following section builds upon this framework by integrating yaw control, exploring how WRC can be used alongside thrust control to further optimize total farm yield.
+The adaptive Koopman approach shows that effective wind speeds in waked wind farms can be predicted online with a data-driven model, provided that the operating conditions are similar to those covered by the training data. Since the model is only updated when the prediction error exceeds the threshold $\nu$, the computational effort remains low, while the prediction accuracy is maintained, with VAF values around 90\%  in both open- and closed-loop scenarios.In the closed-loop case, the adaptive strategy reduces the power tracking error by about 94\% compared to the non-adaptive scheme, at the cost of an increase in actuator activity of about 10\%. These results indicate that adaptive Koopman models are a suitable basis for wind farm control under varying freestream conditions. The following section builds upon this framework by integrating yaw control, exploring how WRC can be used alongside thrust control to further optimize total farm yield.
 
 
 
@@ -672,37 +672,34 @@ Open-loop simulations are used to investigate the potential power increase from 
 
 
 \subsubsection{Open-Loop Results}
-Open-loop WFSim simulation results to quantify the effect of wake misalignment are obtained for a step-sweep of the yaw angle $\gamma_1$ from 0\textdegree{} to 35\textdegree{} with consecutive increases of 5\textdegree{} every 500 samples, resulting in a total of 4000 samples. During this sweep, the thrust control signals are set to their maximum value of 2 and the freestream wind is held constant at 8\,m/s.
-
-Figure~\ref{fig:WFSimgamma0} visualizes the simulated longitudinal wind in steady state. The WFSim results are overlaid with the Gaussian wake model from \cite{bastankhah2016experimental}, with the centerline plotted as a blue dotted line and the far-field wake expansion as a blue dash-dotted line. The match of the wake expansion at the rotor disc is reasonable. While the deflection angle of the Gaussian wake model in the far-wake region is slightly smaller than that of the 2D NSE model, the main area of speed deficit is nearly identical between the two. 
-It should be noted that the wake centerline of a yawed turbine is curled in the near-wake region; therefore, modeling the centerline as a straight line in this region necessarily leads to discrepancies. This effect is addressed in more recent models such as the curled wake model from \cite{martinez2019aerodynamics}  or the Gaussian-Curl-Hybrid model \cite{king2020controls}, but the standard Gaussian wake model is chosen here for its simplicity and to maintain comparability with \cite{boersma2019constrained}. 
-
-Figure~\ref{fig:PowerPerYaw} shows the farm power $P_{\text{WF}}$ as a function of the yaw angle $\gamma_1$ for both the WFSim simulation and the Gaussian wake model.
-%
-\begin{figure}[ht]
-\centering
-\subfloat[Longitudinal wind field for $\gamma_1$ at 0\textdegree{} and 20\textdegree{}.]{
-    \includegraphics[width=0.48\textwidth]{figures/figures_IFAC23/03FigAngle0_20_tex.eps}
-    \label{fig:WFSimgamma0}
-}
-\hfill
-\subfloat[Power $P_{\text{WF}}$ as a function of yaw angle $\gamma_1$.]{
-    \includegraphics[width=0.48\textwidth]{figures/figures_IFAC23/01FigPwrVsYaw_tex.eps}
-    \label{fig:PowerPerYaw}
-}
-\caption[Open-loop validation of the Gaussian wake model against WFSim.]{Open-loop validation of the Gaussian wake model against WFSim: (a) steady-state longitudinal wind field with Gaussian wake centerline $\delta$ and expansion $\sigma_y$ as blue dashed and dash-dotted lines; (b) power output comparison where WFSim results are marked with circles and the Gaussian model with squares: WT1 (blue), WT2 (red), total wind farm (black), and maximum power point (green)}
-\label{fig:OpenLoopResultsCombined}
+Open-loop WFSim simulation results to quantify the effect of wake misalignment are obtained for a step-sweep of the yaw angle $\gamma_1$ from 0\textdegree{} to 35\textdegree{} with consecutive increases of 5\textdegree{} every 500 samples, resulting in a total of 4000 samples. During this sweep, the thrust control signals are set to their maximum value of 2 and the freestream wind is held constant at 8\,m/s. Figure~\ref{fig:OpenLoopResultsCombined} shows the resulting longitudinal wind field and the power output of the turbines and farm.
+\begin{figure}[htb]
+    \centering
+    \subfloat[Longitudinal wind field for $\gamma_1$ at 0\textdegree{} and 20\textdegree{}.]{
+        \includegraphics[width=0.48\textwidth]{figures/figures_IFAC23/03FigAngle0_20_tex.eps}
+        \label{fig:WFSimgamma0}
+    }
+    \hfill
+    \subfloat[Power $P_{\text{WF}}$ as a function of yaw angle $\gamma_1$.]{
+        \includegraphics[width=0.48\textwidth]{figures/figures_IFAC23/01FigPwrVsYaw_tex.eps}
+        \label{fig:PowerPerYaw}
+    }
+    \caption[Open-loop validation of the Gaussian wake model against WFSim.]{Open-loop validation of the Gaussian wake model against WFSim: (a) steady-state longitudinal wind field with Gaussian wake centerline $\delta$ and expansion $\sigma_y$ as blue dashed and dash-dotted lines; (b) power output comparison where WFSim results are marked with circles and the Gaussian model with squares: WT1 (blue), WT2 (red), total wind farm (black), and maximum power point (green)}
+    \label{fig:OpenLoopResultsCombined}
 \end{figure}
 
-The power of the upstream turbine (blue) decreases as the yaw angle increases. This reduction is attributed to the reduced effective rotor area facing the wind and the inherent decrease in aerodynamic efficiency during yawed operations. These effects are analyzed in a comparative study of various yaw models \cite{sant2016comparing} and are further supported by recent field evaluations \cite{hulsman2022turbine}. 
+Figure~\ref{fig:WFSimgamma0} visualizes the simulated longitudinal wind in steady state. The WFSim results, obtained by solving the 2D NSE \cite{boersma2018control}, are overlaid with the Gaussian wake model from \cite{bastankhah2016experimental}, with the centerline plotted as a blue dashed line and the far-field wake expansion as a blue dash-dotted line. The match of the wake expansion at the downstream rotor is reasonable. While the deflection angle of the Gaussian wake model in the far-wake region is slightly smaller than that of WFSim, the main area of speed deficit is nearly identical between the two. It should be noted that the wake centerline of a yawed turbine is curled in the near-wake region; therefore, modeling the centerline as a straight line in this region necessarily leads to discrepancies. This effect is addressed in more recent models such as the curled wake model \cite{martinez2019aerodynamics} or the Gaussian-Curl-Hybrid model \cite{king2020controls}, which have been shown to yield a better fit to large-eddy simulations and also report that the Gaussian model underestimates the power gain from wake steering. The standard Gaussian wake model is nevertheless used here for its simplicity, as it provides the optimal yaw angle with negligible computational effort.
 
-As shown in Figure~\ref{fig:PowerPerYaw}, the simulated power for the first turbine still slightly exceeds the Gaussian wake model predictions between 10\textdegree{} and 30\textdegree{}. Specifically, the farm power increase due to WRC is 10\% in the 2D NSE simulation, compared to 6\% as predicted by the Gaussian model. While this difference in maximum increase is non-negligible, the curves remain in close agreement and both models identify a maximum wind farm yield (green marker on the black curve) at approximately 20\textdegree{} yaw. The fact that the peak occurs at the same angle and that the general curve forms are similar confirms that the Gaussian wake model serves as a computationally efficient and reasonable approximation of the 2D NSE for controller design. % in the qLMPC controller design based on the Koopman model for estimated winds speeds, $Mdl_{K1}$.\\
-%It is also worth noting that wake models more recently published then the Gaussian model, namely the curled wake model from  \cite{martinez2019aerodynamics} or the Gaussian-Curl-Hybrid model from \cite{king2020controls} have been demonstrated to yield a better fit to large-eddy simulations and that the Gaussian model underestimating the improvement in power is also reported in these publications. However, the decision was made to use the Gaussian model in this work due to its application to a combination of thrust and yaw control in \cite{boersma2018control}. \cite{boersma2019constrained}
+Figure~\ref{fig:PowerPerYaw} shows the steady-state power at the end of each yaw step as a function of the yaw angle $\gamma_1$ for both WFSim and the Gaussian wake model. The power of the upstream turbine (blue) decreases as the yaw angle increases. This reduction is attributed to the reduced effective rotor area facing the wind and the inherent decrease in aerodynamic efficiency during yawed operation. These effects are analyzed in a comparative study of various yaw models \cite{sant2016comparing} and are further supported by recent field evaluations \cite{hulsman2022turbine}. Between 10\textdegree{} and 30\textdegree{}, the WFSim power of the first turbine slightly exceeds the Gaussian wake model prediction.
+
+At farm level, the power increase due to WRC is 10\% in WFSim, compared to 6\% predicted by the Gaussian model. While this difference is non-negligible, the curves remain in close agreement, and both models identify the maximum farm power (green marker) at approximately 20\textdegree{} yaw, within the 5\textdegree{} resolution of the sweep. The matching location of the maximum and the similar curve shapes indicate that the Gaussian wake model is a computationally efficient and reasonable approximation of WFSim for determining the yaw angle in the combined controller, while the effective wind speeds for the thrust control are predicted with the Koopman model.S
+
+%\cite{boersma2019constrained}
 % the deduction from the simulated wind fields
 
 \subsubsection{Closed-Loop Results}
 Figure~\ref{fig:ClosedLoopComparison} shows the results of the closed-loop simulations run to evaluate the performance of the baseline AIC controller against the two WRC-AIC designs from Section~\ref{qLMPCDesign}, which incorporate combined yaw and thrust control.
-\begin{figure}[htb]
+\begin{figure}[!tbp]
 \centering
 \subfloat[Baseline AIC ($n_u = 2$) with fixed yaw ($\gamma_1 = 0^\circ$).]{
 \includegraphics[width=0.48\textwidth]{figures/figures_IFAC23/04FigTimeSeries0_tex.eps}
@@ -724,7 +721,6 @@ Figure~\ref{fig:ClosedLoopComparison} shows the results of the closed-loop simul
 \caption[Closed-loop performance comparison baseline AIC and the two WRC-AIC algorithms]{Closed-loop performance comparison baseline AIC and the two WRC-AIC algorithms. Subplots (top to bottom): reference $P_{\text{ref}}$ (solid black) and total power $P_{\text{WF}}$ (purple dashed); wind speeds $V_\infty$ (black) and $V_1$ (blue); thrust $C_T$; yaw $\gamma$; and real vs. estimated effective wind $V_{r1}, V_{r2}$. WT1/WT2 signals are blue/red; dashed lines denote estimates. Weighting parameters: $Q$ and $R$ as provided in subplot titles, $R_{u1}=R_{u2}=1$, and $R_{u3}=0.1$.}
 \label{fig:ClosedLoopComparison}
 \end{figure}
-
 The controllers are tasked with tracking a dynamic power reference signal, defined as:
 \begin{align*}
 P_{\text{ref},k} = \big(a_{\text{const}} + a_{\delta} \, \delta P_k \big) P_{\text{greedy}},
