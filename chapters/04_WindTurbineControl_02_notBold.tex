@@ -516,8 +516,7 @@ Note that the plant model requires turbine parameters used to construct the syst
 \subsection{Results} \label{quasiLPVMPCResults}
 The velocity-based qLMPC is evaluated in two scenarios, similar to those used for model verification in Section~\ref{subsec:ResultsqLPVModel}. As in \cite{dittmer2021velocity} the qLPV model Mdl2 is used, so there is no model mismatch. This unrealistic best-case scenario was selected for its fast run times which allowed a quick tuning of the weights, but, more importantly, to investigate the upper limits of possible improvements. The test cases for comparison with the baseline PI have a simulation time of 400\,s. While a simulation time of 660\,s would be required for controller certification, this duration is sufficient to demonstrate the impact of the proposed qLMPC design with no model mismatch. In the first scenario, the wind speed is increased stepwise from 4\,m/s to 23\,m/s in steps with a duration of 20\,s, with the first 15\,s discarded as a transient. In the second scenario, 400\,s of turbulent wind with a mean speed of 18\,m/s and IEC turbulence class B is used to assess controller performance under realistic wind conditions.  For quantitative comparison, the variance of the power tracking error and the variance of the tower fore-aft acceleration are used, see \cite{dittmer2021velocity}.
 
-Figure~\ref{fig:CtrlCmpMdlSweep}(a) shows the controller comparison for the stepped wind sweep covering nearly the entire operating range. In below-rated wind conditions, the two controllers achieve comparable performance. In above-rated wind conditions, however, predictive pitch control considerably reduces tower fore-aft acceleration and power variance. Overall, the variance of the fore-aft acceleration is reduced by a factor of 3.13 and the power variance by 1.34, corresponding to standard deviation ratios of 1.77 and 1.16, as shown in Table~\ref{tab:ControllerComparisonMerged}. Figure~\ref{fig:CtrlCmpMdlSweep}(b) shows results for the turbulent wind. The improvements over the baseline PI are even more pronounced than in the stepped sweep case, particularly in above-rated conditions. Regarding the variance of the tower fore-aft acceleration and power tracking error, the qLMPC yields standard deviation ratios of 3.90 and 8.67 (equivalent to variance reduction factors of 15.21 and 75.17), as presented in Table~\ref{tab:ControllerComparisonMerged}.
-
+Figure~\ref{fig:CtrlCmpMdlSweep}(a) shows the controller comparison for the stepped wind sweep covering nearly the entire operating range. In below-rated wind conditions, the two controllers achieve comparable performance. In above-rated wind conditions, however, predictive pitch control considerably reduces tower fore-aft acceleration and power variance. Overall, the standard deviation ratios for the tower fore-aft acceleration and power tracking error are 1.61 and 1.16 (corresponding to variance reduction factors of 2.59 and 1.35), as shown in Table~\ref{tab:ControllerComparisonMerged}. Figure~\ref{fig:CtrlCmpMdlSweep}(b) shows results for the turbulent wind.  The improvements over the baseline PI are even more pronounced than in the stepped sweep case, particularly in above-rated conditions. Regarding the tower fore-aft acceleration and power tracking error, the qLMPC yields standard deviation ratios of 1.70 and 7.96 (equivalent to variance reduction factors of 2.89 and 63.36), as presented in Table~\ref{tab:ControllerComparisonMerged}. Figure~\ref{fig:CtrlCmpMdlSweep}(b) shows results for the turbulent wind.
 
 \begin{figure} [ht]
     \subfloat[Stepped wind sweep]{\includegraphics[width=0.485\textwidth]{figures/Figures_ADi/cmpCtrlTimeDomain_All_RefSimulinkClosedLoop_beta.eps}}\hfill 
@@ -548,10 +547,15 @@ Table \ref{tab:ControllerComparisonMerged} summarizes this by displaying the afo
         {Standard Deviation of} & {Stepped wind sweep} & {Turbulent wind} \\
         {Signal (unit)} & \multicolumn{2}{c}{std PI / std qLMPC =  ratio} \\
         \midrule
-        Tower fore-aft acc. (m/s$^2$)& $0.06 / 0.04 = 1.57$ & $0.30 / 0.08 = 3.90$ \\
-        Power tracking error (kW)& $161.29 / 115.20 = 1.40$ & $133.36 / 15.38 = 8.67$ \\
-        Generator torque rate (kNm/s) & $0.56 / 1.47 = 0.38$ & $0 / 0 = {-}$ \\
-        Blade pitch rate  (\textdegree/s)& $0.23 / 0.76 = 0.30$ & $1.50 / 4.47 = 0.34$ \\
+        %Tower fore-aft acc. (m/s$^2$)& $0.06 / 0.04 = 1.57$ & $0.30 / 0.08 = 3.90$ \\
+        %Power tracking error (kW)& $161.29 / 115.20 = 1.40$ & $133.36 / 15.38 = 8.67$ \\
+        %Generator torque rate (kNm/s) & $0.56 / 1.47 = 0.38$ & $0 / 0 = {-}$ \\
+        %Blade pitch rate  (\textdegree/s)& $0.23 / 0.76 = 0.30$ & $1.50 / 4.47 = 0.34$ \\
+        
+        Tower fore-aft acc. (m/s$^2$) & $0.05 / 0.03 = 1.61$ & $0.13 / 0.07 = 1.70$ \\
+        Power tracking error (kW) & $170.40 / 147.36 = 1.16$ & $94.21 / 11.84 = 7.96$ \\
+        Generator torque rate (kNm/s) & $0.55 / 1.47 = 0.37$ & $0 / 0 = {-}$ \\
+        Blade pitch rate (deg/s) & $0.22 / 0.76 = 0.30$ & $0.72 / 4.47 = 0.16$ \\
         \bottomrule
     \end{tabular}
 \end{table}
@@ -595,19 +599,20 @@ The standard deviations of the pitch derivative, the rotor speed, the tower fore
         Controller & Signal & low: 4\textdegree/s & standard: 8\textdegree/s & high: 13\textdegree/s \\
         \midrule
         \multirow{4}{*}{PI}
-        & Tower fore-aft acc.\ (m/s$^2$) & 0.32 (1.03) & 0.33 (1.00) & 0.34 (0.97) \\
-        & Generated power (kW) & 200.26 (0.99) & 197.62 (1.00) & 197.32 (1.00) \\
-        & Rotor speed (rpm) & 4.57 (0.99) & 4.51 (1.00) & 4.50 (1.00) \\
-        & Blade pitch rate (\textdegree/s) & 1.21 (1.06) & 1.28 (1.00) & 1.34 (0.96) \\
+        & Tower fore-aft acc.\ (m/s$^2$) & 0.13 (1.00) & 0.13 (1.00) & 0.13 (1.00) \\
+        & Generated power (kW) & 150.75 (1.00) & 150.69 (1.00) & 150.69 (1.00) \\
+        & Rotor speed (rpm) & 3.44 (1.00) & 3.44 (1.00) & 3.44 (1.00) \\
+        & Blade pitch rate (\textdegree/s) & 0.67 (1.00) & 0.67 (1.00) & 0.67 (1.00) \\
         \midrule
         \multirow{4}{*}{qLMPC}
-        & Tower fore-aft acc.\ (m/s$^2$) & 0.21 (1.57) & 0.11 (3.00) & 0.08 (4.12) \\
-        & Generated power (kW) & 78.37 (2.52) & 30.72 (6.43) & 19.63 (10.07) \\
-        & Rotor speed (rpm) & 1.79 (2.52) & 0.70 (6.44) & 0.45 (10.02) \\
-        & Blade pitch rate (\textdegree/s) & 1.84 (0.70) & 3.11 (0.41) & 3.88 (0.33) \\
+        & Tower fore-aft acc.\ (m/s$^2$) & 0.12 (1.08) & 0.08 (1.62) & 0.08 (1.62) \\
+        & Generated power (kW) & 31.45 (4.79) & 18.19 (8.28) & 15.72 (9.59) \\
+        & Rotor speed (rpm) & 0.71 (4.85) & 0.41 (8.39) & 0.36 (9.56) \\
+        & Blade pitch rate (\textdegree/s) & 2.91 (0.23) & 4.08 (0.16) & 4.46 (0.15) \\
         \bottomrule
     \end{tabular}
 \end{table}
+
 
 The application of the proposed velocity-based qLMPC concept significantly reduces tower movements and minimizes power output fluctuations. As noted at the start of this section, DEL reduction is not directly a qLMPC objective. However, it will be shown in Section~\ref{subsection: IPCResults} and~\ref{subsec:ComparisonWindTurbineControlDesigns} that the reduced tower movement also results in considerably reduced Damage Equivalent Loads (DELs) and the corresponding values are included in comparisons with other control schemes in the Figures~\ref{fig:EvalCrit1} and~\ref{fig:CtrlCompAll}.
 

@@ -698,45 +698,44 @@ At farm level, the power increase due to WRC is 10\% in WFSim, compared to 6\% p
 % the deduction from the simulated wind fields
 
 \subsubsection{Closed-Loop Results}
-Figure~\ref{fig:ClosedLoopComparison} shows the results of the closed-loop simulations run to evaluate the performance of the baseline AIC controller against the two WRC-AIC designs from Section~\ref{qLMPCDesign}, which incorporate combined yaw and thrust control.
+Figure~\ref{fig:ClosedLoopComparison} compares the closed-loop performance of the baseline AIC controller with the two WRC-AIC designs from Section~\ref{qLMPCDesign}, which combine yaw and thrust control.
 \begin{figure}[!tbp]
-\centering
-\subfloat[Baseline AIC ($n_u = 2$) with fixed yaw ($\gamma_1 = 0^\circ$).]{
-\includegraphics[width=0.48\textwidth]{figures/figures_IFAC23/04FigTimeSeries0_tex.eps}
-\label{fig:CLbaseline}
-}
-\hfill
-\subfloat[AIC ($n_u=2$) with pre-optimized yaw ($\gamma_1^* = 18^\circ$) based on Gaussian wake model.]{
-\includegraphics[width=0.48\textwidth]{figures/figures_IFAC23/05FigTimeSeriesQLMPC_tex.eps}
-\label{fig:CLMPC1}
-}
-
-\vspace{0.5cm} 
-
-\subfloat[WRC-AIC ($n_u=3$): Thrust and yaw controls simultaneously optimized.]{
-\includegraphics[width=0.48\textwidth]{figures/figures_IFAC23/06FigTimeSeriesLinMPC_tex.eps} 
-\label{fig:CLMPC2}
-}
-
-\caption[Closed-loop performance comparison baseline AIC and the two WRC-AIC algorithms]{Closed-loop performance comparison baseline AIC and the two WRC-AIC algorithms. Subplots (top to bottom): reference $P_{\text{ref}}$ (solid black) and total power $P_{\text{WF}}$ (purple dashed); wind speeds $V_\infty$ (black) and $V_1$ (blue); thrust $C_T$; yaw $\gamma$; and real vs. estimated effective wind $V_{r1}, V_{r2}$. WT1/WT2 signals are blue/red; dashed lines denote estimates. Weighting parameters: $Q$ and $R$ as provided in subplot titles, $R_{u1}=R_{u2}=1$, and $R_{u3}=0.1$.}
-\label{fig:ClosedLoopComparison}
+    \centering
+    \subfloat[Baseline AIC ($n_u = 2$) with fixed yaw ($\gamma_1 = 0^\circ$).]{
+        \includegraphics[width=0.48\textwidth]{figures/figures_IFAC23/04FigTimeSeries0_tex.eps}
+        \label{fig:CLbaseline}
+    }
+    \hfill
+    \subfloat[AIC ($n_u=2$) with yaw set to the Gaussian-model optimum $\gamma_1^* = 18^\circ$ when $P_{\text{ref}} > P_{\text{greedy}}$.]{
+        \includegraphics[width=0.48\textwidth]{figures/figures_IFAC23/05FigTimeSeriesQLMPC_tex.eps}
+        \label{fig:CLMPC1}
+    }
+    
+    \vspace{0.5cm}
+    
+    \subfloat[WRC-AIC ($n_u=3$): thrust and yaw controls optimized simultaneously.]{
+        \includegraphics[width=0.48\textwidth]{figures/figures_IFAC23/06FigTimeSeriesLinMPC_tex.eps}
+        \label{fig:CLMPC2}
+    }
+    
+    \caption[Closed-loop performance comparison of the baseline AIC and the two WRC-AIC algorithms]{Closed-loop performance comparison of the baseline AIC and the two WRC-AIC algorithms. Subplots (top to bottom): reference $P_{\text{ref}}$ (solid black), total power $P_{\text{WF}}$ (purple dashed), and greedy power $P_{\text{greedy}}$ (green dashed); wind speeds $V_\infty$ (black) and $V_1$ (blue); thrust $C'_T$; yaw $\gamma$; and real vs. estimated effective wind speeds $V_{r1}, V_{r2}$. WT1/WT2 signals are blue/red; dashed lines denote estimates. Weighting parameters: $Q$ and $R$ as given in the subplot titles; in (c), additionally $R_{u1}=R_{u2}=1$ and $R_{u3}=0.1$.}
+    \label{fig:ClosedLoopComparison}
 \end{figure}
 The controllers are tasked with tracking a dynamic power reference signal, defined as:
 \begin{align*}
-P_{\text{ref},k} = \big(a_{\text{const}} + a_{\delta} \, \delta P_k \big) P_{\text{greedy}},
+    P_{\text{ref},k} = \big(a_{\text{const}} + a_{\delta} \, \delta P_k \big) P_{\text{greedy}},
 \end{align*}
-where $P_{\text{greedy}}$ represents the maximum power production of the farm when both turbines operate at maximum thrust ($C_T' = 2$) and zero yaw ($\gamma = 0^\circ$). The reference signal is adapted from the stochastic variation model used in \cite{sharan2022Koopman}. While the original parameters in that study were set to $a_{\text{const}} = 0.8$ and $a_{\delta} = 0.35$, the present work utilizes $a_{\text{const}} = 0.9$ and $a_{\delta} = 0.2$, and the vector $\delta P$ has been resampled to update only every second time step. These modifications are implemented to obtain a reference trajectory that exceeds the greedy power for longer durations, thereby increasing the importance of wake steering for successful trajectory tracking. To ensure the performance metrics are not skewed by initialization artifacts, the evaluation begins at sample $k=240$.
+where $\delta P_k$ is a random sequence as in \cite{sharan2022Koopman}, and $P_{\text{greedy}}$ represents the maximum power production of the farm when both turbines operate at maximum thrust ($C_T' = 2$) and zero yaw ($\gamma = 0^\circ$). While the original parameters in \cite{sharan2022Koopman} were set to $a_{\text{const}} = 0.8$ and $a_{\delta} = 0.35$, the present work uses $a_{\text{const}} = 0.9$ and $a_{\delta} = 0.2$, and the vector $\delta P$ has been resampled to update only every second time step. These modifications yield a reference trajectory that exceeds the greedy power for longer durations, thereby increasing the importance of wake steering for successful tracking. To ensure that the performance metrics are not affected by initialization artifacts, the evaluation begins at sample $k=240$.
 
-The closed-loop performance is evaluated using the tracking error (TE) and actuator activity (AA) metrics previously introduced in Section~\ref{section:AICWindFarmControl}. These metrics correspond to the weighted components of the cost function in Equation~\eqref{eq:NMPCcostAIC}, where the scalar weights $Q$ and $R$ are specified in the subplot titles of Figure~\ref{fig:ClosedLoopComparison}. 
-For the combined control cases, the input-specific weighting factors are set to $R_{u1} = R_{u2} = 1$ for the thrust control inputs $\Delta C_{T1}^\prime$ and $\Delta C_{T2}^\prime$, and $R_{u3} = 0.1$ for the yaw input $\Delta \gamma_1$. Both TE and AA are computed as mean values over the evaluation period (starting at $k=240$), with the AA incorporating the respective weighting factors from the matrix $\bm{R}$. 
+The closed-loop performance is evaluated using the tracking error (TE) and actuator activity (AA) metrics introduced in Section~\ref{section:AICWindFarmControl}. These metrics correspond to the weighted terms of the cost function in Equation~\eqref{eq:NMPCcostAIC}, where the scalar weights $Q$ and $R$ are given in the subplot titles of Figure~\ref{fig:ClosedLoopComparison}. For the combined control case, the input-specific weighting factors are set to $R_{u1} = R_{u2} = 1$ for the thrust control increments $\Delta C_{T1}^\prime$ and $\Delta C_{T2}^\prime$, and $R_{u3} = 0.1$ for the yaw increment $\Delta \gamma_1$. Both TE and AA are computed as mean values over the evaluation period, with the AA including the respective weighting factors.
 
-Figure~\ref{fig:ClosedLoopComparison}(a) shows the performance of the baseline controller with the yaw angle fixed at zero. Figure~\ref{fig:ClosedLoopComparison}(b) displays results obtained with the first Koopman MPC algorithm ($n_u=2$), which utilizes an optimal yaw setpoint derived from the Gaussian wake model. Finally, Figure~\ref{fig:ClosedLoopComparison}(c) displays the results of the second Koopman MPC algorithm ($n_u=3$), which performs integrated optimization of both thrust and yaw. The first plot in each subfigure shows the power yield at the wind farm level, with the power reference signal $P_{\text{ref}}$ depicted as a solid black line and the power yield $P_{\text{WF}}$ as a dashed purple line. The power $P_{\text{greedy}}$ is depicted as a dashed green line. 
+Figure~\ref{fig:CLbaseline} shows the performance of the baseline controller with the yaw angle fixed at zero. Figure~\ref{fig:CLMPC1} shows the results of the first Koopman MPC algorithm ($n_u=2$), based on an EDMD model, which sets the yaw angle to the optimum of the Gaussian wake model whenever the reference exceeds the greedy power. Here, $\gamma_1^* = 18^\circ$ is the exact optimum of the Gaussian model, while the open-loop sweep in Figure~\ref{fig:PowerPerYaw} resolves the maximum only to 5\textdegree{}. Finally, Figure~\ref{fig:CLMPC2} shows the results of the second Koopman MPC algorithm ($n_u=3$), based on an EIODMD model, which optimizes thrust and yaw simultaneously. The first plot in each subfigure shows the wind farm power $P_{\text{WF}}$, the power reference $P_{\text{ref}}$, and the greedy power $P_{\text{greedy}}$.
 
-Note in Figure~\ref{fig:ClosedLoopComparison}(a) that when using the thrust coefficient as the only actuator, the power yield initially exceeds the greedy power output if the reference demands it. However, it falls back to the greedy power once the wind speed deficit from the first turbine's maximum thrust reaches the second wind turbine. In Figure~\ref{fig:ClosedLoopComparison}(b), the yaw is increased if the reference power exceeds the greedy power, reducing the tracking error by a factor of 1.8.
+In Figure~\ref{fig:CLbaseline}, with the thrust coefficient as the only actuator, the farm power initially exceeds the greedy power when the reference demands it. However, it falls back to the greedy power once the increased wind speed deficit from the first turbine's higher thrust reaches the second turbine. In Figure~\ref{fig:CLMPC1}, the yaw angle is increased when the reference exceeds the greedy power, which reduces the tracking error by a factor of 1.8.
 
-In Figure~\ref{fig:ClosedLoopComparison}(c), the tracking error is further reduced from 116\,MW to 33\,MW by including the yaw angle as a third control input. The actuator activity, i.e., the actuator rate, is slightly increased compared to the EDMD design as the overall yaw rate increases. However, the control actuators of the Koopman MPC based on EIODMD result in both smaller thrust coefficient values and a smaller yaw angle value. This is desirable, as it also decreases the forces acting on the tower and blades. 
+In Figure~\ref{fig:CLMPC2}, the tracking error is further reduced from 116\,kW to 33\,kW by including the yaw angle as a third control input. The actuator activity increases slightly compared to the EDMD design, as the yaw angle changes more frequently. However, the EIODMD-based controller results in both smaller thrust coefficients and smaller yaw angles. This is desirable, as it is expected to reduce the loads acting on the tower and blades.
 
-These results demonstrate that the Koopman-basedWRC-AIC MPC effectively coordinates yaw and thrust to overcome the physical limitations of AIC alone. The following section concludes the chapter by summarizing the key results and discussing the limitations and future research directions for Koopman-based wind farm control.
+These results show that the Koopman-based WRC-AIC MPC effectively coordinates yaw and thrust to overcome the wake-induced limitations of AIC alone. The following section concludes the chapter by summarizing the key results and discussing the limitations and future research directions for Koopman-based wind farm control.
 
 
 \section{Conclusions}
