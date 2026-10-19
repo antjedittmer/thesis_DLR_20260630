@@ -41,14 +41,19 @@ The individual turbine models are concatenated into a qLPV system with the vecto
 \end{align}
 where $\bm{A}_{\text{WF}} \in {\mathbb{R}}^{3n_\text{WT} \times 3n_\text{WT}}$ and $\bm{B}_{\text{WF}}(\hat{\bm{V}}_r) \in {\mathbb{R}}^{3n_\text{WT} \times n_\text{WT}}$ are block-diagonal matrices composed of the turbine matrices $\bm{A}_{\text{WT},i}$ and $\bm{B}_{\text{WT},i}(\hat{V}_{ri})$. The wind farm power $P_{\text{WF}}$ is the sum of all individual turbine powers, $P_{\text{WF}} = \sum_{i=1}^{n_{\text{WT}}} P_i$.
 
-The farm-level state vector, the control input vector, and the scheduling parameter vector are defined as:
+The farm-level state vector, the control input vector, and the vector containing the estimated effective wind speeds of all turbines are defined as:
 \begin{align*}
     \bm{x}_{\text{WF}} &= [\bm{x}_{\text{WT},1}^T \quad \bm{x}_{\text{WT},2}^T \quad \dots \quad \bm{x}_{\text{WT},n_{\text{WT}}}^T ]^T \in {\mathbb{R}}^{3n_\text{WT} \times 1},\\
     \bm{C}_{T}^\prime &= [C_{T1}^\prime \quad C_{T2}^\prime \quad \dots \quad C_{T n_{\text{WT}}}^\prime ]^T \in {\mathbb{R}}^{n_\text{WT} \times 1},\\
     \hat{\bm{V}}_r &= [\hat{V}_{r1} \quad \hat{V}_{r2} \quad \dots \quad \hat{V}_{r n_\text{WT}}]^T \in {\mathbb{R}}^{n_\text{WT}\times 1}.
 \end{align*}
+The vector $\hat{\bm{V}}_r$ is the scheduling parameter vector $\bm{\rho}_{\Rho,\text{WF}}$ introduced in Equation~\eqref{eq:rhoWF}. Over the prediction horizon, it forms the scheduling trajectory
+\begin{align*}
+    \bm{\Rho}_{\Rho} = [ \hat{\bm{V}}_r^T(k) \quad \hat{\bm{V}}_r^T(k+1) \quad \ldots \quad \hat{\bm{V}}_r^T(k+n_h-1)]^T \in \mathbb{R}^{n_{\text{WT}} n_h \times 1}.
+\end{align*}
+%
 These vectors are used in combination with the parameter-dependent Toeplitz-like matrices built from $\bm{A}_{\text{WF}}$, $\bm{B}_{\text{WF}}$, and $\bm{C}_{\text{WF}}$ to predict the farm power trajectory, similarly to the approach discussed in Section~\ref{sec:qLMPCOptimizationAlgo} and Equation~\eqref{eq:nearlyToeplitzMat}.
-
+%
 The cost function $J(\bm{U})$ is formulated to minimize the tracking error $\bm{E}$ and control increments $\Delta \bm{U}$:
 \begin{align} \label{eq:NMPCcostAIC}
     J(\bm{U}) = \underbrace{\bm{E}^T Q \bm{E}}_{J_Q (\bm{U})} + \underbrace{\Delta \bm{U}^T R \Delta \bm{U} }_{J_R ( \bm{U})},
@@ -88,7 +93,8 @@ Note that the decision variables in the wind farm optimization problem in Equati
 
 The predicted power trajectory follows from the state-space model in Equation~\eqref{eqLinWFAIC}:
 \begin{align*}
-    \hat{\bm{P}}_{\text{WF}}(k) = \tilde{L}\, \bm{x}_{\text{WF}}(k) + \tilde{S}(\hat{\bm{V}}_r)\, \bm{U}(k),
+    %\hat{\bm{P}}_{\text{WF}}(k) = \tilde{L}\, \bm{x}_{\text{WF}}(k) + \tilde{S}(\hat{\bm{V}}_r)\, \bm{U}(k),
+        \hat{\bm{P}}_{\text{WF}}(k) = \tilde{L}\, \bm{x}_{\text{WF}}(k) + \tilde{S}(\bm{\Rho}_k)\, \bm{U}(k),
 \end{align*}
 with the matrices $\tilde{L} \in \mathbb{R}^{n_h \times 3n_{\text{WT}}}$ and $\tilde{S} \in \mathbb{R}^{n_h \times n_{hu}}$:
 \begin{equation} \label{eq:ltildeWF}

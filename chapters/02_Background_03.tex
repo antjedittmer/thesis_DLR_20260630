@@ -198,7 +198,7 @@ The ultimate load DLCs are used to verify that a turbine can withstand the maxim
 
 \subsubsection{DEL Criteria $C_{\text{DEL},b}$ and $C_{\text{DEL},t}$}
 
-For the DEL calculation of signals such as blade and tower bending moments, their load cycles are first classified using rainflow counting \cite{matsuishi1968fatigue}. In this thesis, the MATLAB implementation in \textit{rainflow.m} is used to derive the cycle count vector $\bm{l}_D \in \mathbb{R}^{n_l \times 1}$ and their respective range vector $\bm{R}_{\text{DEL}}\in \mathbb{R}^{n_l \times 1}$, i.e., their peak-to-peak amplitudes, for the simulation signal of a bending moment, with $n_l$ as the number of stress levels. 
+For the DEL calculation of signals such as blade and tower bending moments, their load cycles are first classified using rainflow counting \cite{matsuishi1968fatigue}. In this thesis, the MATLAB implementation in \textit{rainflow.m} is used to derive the cycle count vector $\bm{l}_D \in \mathbb{R}^{n_l }$ and their respective range vector $\bm{R}_{\text{DEL}}\in \mathbb{R}^{n_l }$, i.e., their peak-to-peak amplitudes, for the simulation signal of a bending moment, with $n_l$ as the number of stress levels. 
 
 In a second step, the elements of the vectors $\bm{l}_D$ and $\bm{R}_{\text{DEL}}$ are applied to calculate damage from the moment signals. This is based on Miner’s rule, which calculates damage from stress signals as:
 \begin{equation} \label{eq:Miner0}
@@ -419,7 +419,7 @@ with $v_x$ and $v_y$ as wind components in the longitudinal $x$ and lateral $y$ 
 %
 For compactness, these equations can be expressed in vector form as
 \begin{align} \label{eq:NSE2d}
-\frac{\partial \bm{v}}{\partial t}+ (\bm{v}\cdot \nabla_H)\bm{v} + \nabla_H p + \nabla_H\cdot\bm{\tau}_h  - \bm{f} = \bm{0}_{2\times1},\quad  
+\frac{\partial \bm{v}}{\partial t}+ (\bm{v}\cdot \nabla_H)\bm{v} + \nabla_H p + \nabla_H\cdot\bm{\tau}_h  - \bm{f} = \bm{0}_{2},\quad  
 \nabla_H\cdot \bm{v} = -\frac{\partial v_y}{\partial y}
 \end{align}
 where:
@@ -449,16 +449,16 @@ In WFSim, the NSEs are discretized in space using the finite volume method on a 
 \caption[WFSim mesh setup for a nine-turbine wind farm.]{WFSim mesh setup for a nine-turbine wind farm. The primary mesh (blue) is used for wind speed calculations, and the secondary mesh (gray) for pressure. Turbines are shown as colored bars. Zoomed-in area around WT1 shows primary grid point indices.} 
 \label{fig:9TurbMesh}
 \end{figure}
-The turbine locations for the default nine-turbine wind farm layout included with WFSim are depicted as bold, colored lines. The figure shows the entire wind field area and highlights a zoom around the first turbine, showing that the nodes of the secondary grid correspond to the centers of the primary grid cells and providing the index pair of the node as blue numbers. The effective wind speeds of the turbines is calculated based on the wind speeds at the nodes of the primary grid in front of the turbines. In the example in Figure~\ref{fig:9TurbMesh} these grid points leveraged for upstream wind turbine WT1 are the points in the 16$^{\text{th}}$ row from the 30$^{\text{th}}$ to the 33$^{\text{rd}}$ column. For better readability, only every second mesh point is annotated with the corresponding grid index in the zoom on the turbine location.
+The turbine locations for the default nine-turbine wind farm layout included with WFSim are depicted as bold, colored lines. The figure shows the entire wind field area and highlights a zoom around the first turbine, showing that the nodes of the secondary grid correspond to the centers of the primary grid cells and providing the index pair of the node as blue numbers. The effective wind speeds of the turbines is calculated based on the wind speeds at the nodes of the primary grid in front of the turbines. In the example in Figure~\ref{fig:9TurbMesh} these grid points leveraged for upstream wind turbine WT1 are the points in the 16th row from the 30th to the 33rd column. For better readability, only every second mesh point is annotated with the corresponding grid index in the zoom on the turbine location.
 
 The finite volume method discretizes Partial Differential Equations (PDEs) such as the NSE by integrating them over small control areas to ensure the conservation of fluxes, such as the air mass flowing through the wind farm, across cell boundaries. In the WFSim 2D simulation, pressure is stored at the center of each grid cell, corresponding to the mesh points of the secondary mesh, while the longitudinal wind speed $v_x$, acting in vertical direction, is stored at the top and bottom edges and the lateral wind speed $v_y$ is stored at the left and right edges of the primary mesh.
 
 In CFD software, the convective terms from Equation~\eqref{eq:NSE2d} are approximated with a combination of differencing schemes. These schemes compute how the wind carries momentum across the grid by switching between approaches to balance numerical stability and solution accuracy. Upstream differencing, which is more stable, is used when wind speeds are high, whereas central differencing, which is more accurate, is employed when wind speeds are low. Temporal discretization is performed using an implicit Euler method.
-
+%
 Numerical cost varies considerably with grid resolution, timestep, and available computing resources; for example, NREL's SOWFA documentation \cite{churchfield2012overview} reports a coarse LES example that ran at approximately 1.6\,s of wall-clock time per 1\,s of simulated time on 32 cores. Wall-clock time is the total real-world time elapsed from the start to the end of a simulation, including computation, inter-processor communication, disk I/O, memory access, and any idle or waiting time.
 
 In \cite{boersma2018control}, which introduces the WFSim software, a mean computation time of approximately 0.02\,s per 1\,s timestep is reported on a single-core Intel~i7 platform instead on a server cluster. While no direct wall-clock time comparison with SOWFA is provided, the paper notes that high-fidelity LES solvers such as SOWFA require orders-of-magnitude longer runtimes and substantially more computational resources. In a two-turbine test case, WFSim was shown to reproduce the center-line mean wake velocity and power output time series from SOWFA reasonably well.
-
+%
 In WFSim, the wind field is approximated by a linear system for the velocity and pressure fields at each timestep, resulting in a significant reduction in simulation time and required computing resources. A more detailed overview of WFSim, including equations, is provided in Section~\ref{sec:WindFarmSimulationWFSim}, which also discusses the modifications made to WFSim to obtain the simulation results in \cite{dittmer2022data,dittmer2023koopman}.
 
 \subsection{Wind Farm Control}\label{Subsection:Windfarmcontrol}
@@ -473,7 +473,7 @@ For closed-loop wind farm control, turbine control inputs are set to minimize th
 \label{figBlockDiagramFarm}
 \end{figure}
 
-The wind farm layout and turbine parameters used in this study are consistent with those in \cite{sharan2022Koopman}, \cite{dittmer2022data}, and \cite{dittmer2023koopman}, upon which this thesis is based. The thrust control, which governs the amount of energy harvested by a turbine, is modeled as a fictitious input that substitutes for generator torque and blade pitch. This simplification eliminates the need for a detailed turbine model.
+The wind farm layout and turbine parameters used in this study are consistent with those in \cite{sharan2022Koopman}, \cite{dittmer2022data}, and \cite{dittmer2023koopman}, upon which this thesis is based. Modeling the thrust control, which governs the amount of energy harvested by a turbine, as a fictitious input that substitutes for generator torque and blade pitch eliminates the need for a detailed turbine model.
 
 In the MPC implementation included with WFSim, it is assumed that the effective wind speeds at both turbines, $V_{r1}$ and $V_{r2}$, can be measured. These wind speeds, along with the power outputs $P_1$ and $P_2$, and the thrust forces $F_{T,r1}$ and $F_{T,r2}$, serve as feedback for the wind farm controller.
 
@@ -529,7 +529,7 @@ In general, nonlinear continuous-time dynamics can be expressed as
     \dot{\bm{x}}(t) = \bm{f}(\bm{x}, \bm{u}), \quad
     \bm{y}(t) = \bm{h}(\bm{x}, \bm{u}),
 \end{align}
-with the state $\bm{x} \in \mathbb{R}^{n_x\times 1}$, input $\bm{u} \in \mathbb{R}^{n_u \times 1}$, and output $\bm{y} \in \mathbb{R}^{n_y \times 1}$. The functions $\bm{f}$ and $\bm{h}$ are nonlinear, but locally smooth in the neighborhood of operating points.
+with the state $\bm{x} \in \mathbb{R}^{n_x}$, input $\bm{u} \in \mathbb{R}^{n_u }$, and output $\bm{y} \in \mathbb{R}^{n_y }$. The functions $\bm{f}$ and $\bm{h}$ are nonlinear, but locally smooth in the neighborhood of operating points.
 
 The matrices of the LPV model are the linearization of Equation~\eqref{eq:stateSpaceGeneral} around relevant operating points, yielding the Jacobian-based matrices
 \begin{equation}\label{eq:contMatricesqLPV}
@@ -570,7 +570,7 @@ with the sample time $T_s$. A velocity-based discrete state-space model can then
 \end{align}
 with $\Delta\bm{x}(k) = \bm{x}(k) - \bm{x}(k-1)$ and $\Delta\bm{u}(k) = \bm{u}(k) - \bm{u}(k-1).$
 
-A subset of states $\bm{x}_{\text{sel}} \in \mathbb{R}^{n_{\text{sel}}\times1}$ is selected for explicit inclusion in the qLPV model's state vector, enabling direct constraints on these states within the MPC scheme. The discrete difference vector $\Delta\bm{x}(k)$ at time sample $k$ is augmented with the vector 
+A subset of states $\bm{x}_{\text{sel}} \in \mathbb{R}^{n_{\text{sel}}}$ is selected for explicit inclusion in the qLPV model's state vector, enabling direct constraints on these states within the MPC scheme. The discrete difference vector $\Delta\bm{x}(k)$ at time sample $k$ is augmented with the vector 
 \begin{equation}  \label{eq:differenceSelectedFormDisc}
     \begin{aligned}
         \bm{x}_{\text{sel}}(k) &= \bm{x}_{\text{sel}}(k-1) + \Delta \bm{x}_{\text{sel}}(k) \\ 
@@ -610,7 +610,7 @@ i.e., the ratio of the blade tip speed, given by the rotor speed $\omega_r$ and 
 \begin{equation} \label{eq:rhoWT}
     \bm{\rho}_{\Rho,\text{WT}} = [V_\infty \quad \beta_0 \quad \omega_r]^T,
 \end{equation}
-consisting of wind speed, pitch angle, and rotor speed, captures the variations in the aerodynamics. The qLPV matrices thus reflect that changes in these three parameters immediately change the aerodynamic behavior of the turbine. Note that in the models used for controller design, the pitch angle $\beta_0$ is a state, while the commanded pitch $\beta_{0,\text{ref}}$ is the input, see Equation~\eqref{eq:11} in Chapter~\ref{sec:WindTurbineqLPVModels}. Chapter~\ref{sec:WindTurbineqLPVModels} provides a detailed derivation of two qLPV wind turbine models, both based on lookup tables for the thrust and torque coefficients generated using FAST.
+consisting of wind speed, pitch angle, and rotor speed, captures the variations in the aerodynamics. The qLPV matrices thus reflect that changes in these three parameters immediately influence the aerodynamic behavior of the turbine. Note that in the models used for controller design, the pitch angle $\beta_0$ is a state, while the commanded pitch $\beta_{0,\text{ref}}$ is the input, see Equation~\eqref{eq:11} in Chapter~\ref{sec:WindTurbineqLPVModels}. Chapter~\ref{sec:WindTurbineqLPVModels} provides a detailed derivation of two qLPV wind turbine models, both based on lookup tables for the thrust and torque coefficients generated using FAST.
 
 For farm-level control, the turbines are represented by the actuator disk model from Section~\ref{windTurbineModel}. Its input matrices depend on the effective inflow wind speeds of the $n_{\text{WT}}$ turbines, which therefore serve as the scheduling parameters of the qLPV wind farm model:
 \begin{equation} \label{eq:rhoWF}
@@ -933,8 +933,8 @@ Model Predictive Control (MPC) is an optimization-based control strategy that co
 \end{equation}
 where $\bm{x}$ and $\bm{u}$ denote the state and input vectors, $\bm{Q}$ and $\bm{R}$ are positive semi-definite weighting matrices penalizing state deviation and control effort, respectively. The vector $\bm{U}$ contains the values of the input vector at all samples of the prediction horizon and the vector $\bm{X}$ the corresponding state vectors:
 \begin{align*}
-     \bm{U}(k) &= \begin{bmatrix} \bm{u}(k)^T \quad \bm{u}(k+1)^T \quad \ldots \quad  \bm{u}(k+n_h-1)^T \end{bmatrix}^T \in \mathbb{R}^{n_h n_u \times 1},\\
-      \bm{X}(k) &= \begin{bmatrix} \bm{x}(k)^T \quad \bm{x}(k+1)^T \quad \ldots \quad  \bm{x}(k+n_h-1)^T \end{bmatrix}^T \in \mathbb{R}^{n_h n_x \times 1}.
+     \bm{U}(k) &= \begin{bmatrix} \bm{u}(k)^T \quad \bm{u}(k+1)^T \quad \ldots \quad  \bm{u}(k+n_h-1)^T \end{bmatrix}^T \in \mathbb{R}^{n_h n_u },\\
+      \bm{X}(k) &= \begin{bmatrix} \bm{x}(k)^T \quad \bm{x}(k+1)^T \quad \ldots \quad  \bm{x}(k+n_h-1)^T \end{bmatrix}^T \in \mathbb{R}^{n_h n_x }.
 \end{align*}
 %
  Only the first element of the optimal input sequence is applied, after which the horizon is shifted forward and the problem is solved again, following the receding horizon principle. Therefore, of the calculated values of the horizon only the first sample is directly used, but all values of the horizon of the current control input are stored to be used for a warm start in the next step.
@@ -946,13 +946,10 @@ The original formulation of MPC, as provided in Equation~\ref{eqMPCGeneral}, pen
         \text{subject to Equation } \eqref{eqLinWF}, \quad   k \in \{1, 2, \dots, n_h-1\}
     \end{array}
 \end{align}
-
-
-
 %
 with the weighting matrices $\bm{Q}$ and $\bm{R}$. The trajectory of the farm power tracking error $\bm{E}$ is:
 \begin{align*}
-    \bm{E}(k) = \begin{bmatrix} e(k) & e(k+1) & \dots & e(k + n_h - 1) \end{bmatrix}^T \in \mathbb{R}^{n_h \times 1},
+    \bm{E}(k) = \begin{bmatrix} e(k) & e(k+1) & \dots & e(k + n_h - 1) \end{bmatrix}^T \in \mathbb{R}^{n_h },
 \end{align*}
 where the power reference tracking error at time step $k$ on the farm level is calculated as 
 \begin{align*}
@@ -961,9 +958,9 @@ where the power reference tracking error at time step $k$ on the farm level is c
 %
 The change in control inputs $\Delta \bm{U}$ is calculated as:
 \begin{align*}
-    \Delta \bm{U}(k) = \begin{bmatrix} \bm{u}(k) - \bm{u}(k-1) \\ \bm{u}(k+1) - \bm{u}(k) \\ \vdots \\ \bm{u}(k+n_h - 1) - \bm{u}(k + n_h - 2) \end{bmatrix} \in \mathbb{R}^{n_h n_u \times 1},
+    \Delta \bm{U}(k) = \begin{bmatrix} \bm{u}(k) - \bm{u}(k-1) \\ \bm{u}(k+1) - \bm{u}(k) \\ \vdots \\ \bm{u}(k+n_h - 1) - \bm{u}(k + n_h - 2) \end{bmatrix} \in \mathbb{R}^{n_h n_u },
 \end{align*}
-with the vector $\bm{u}(k) \in \mathbb{R}^{n_u \times 1}$ containing all control inputs for all turbines at time~$k$.
+with the vector $\bm{u}(k) \in \mathbb{R}^{n_u }$ containing all control inputs for all turbines at time~$k$.
 
 This baseline MPC scheme is compared with Koopman-based MPC, i.e., an MPC based on a linear wind farm model derived using DMD. Koopman models are used to estimate the effective wind speeds rather than assuming that the measurements are available. To identify the Koopman models, known physical relationships of the NSEs are exploited when choosing the lifted states.
 
