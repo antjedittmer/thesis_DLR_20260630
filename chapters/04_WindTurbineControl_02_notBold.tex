@@ -515,8 +515,9 @@ Note that the plant model requires turbine parameters used to construct the syst
 \subsection{Results} \label{quasiLPVMPCResults}
 The velocity-based qLMPC is evaluated in two scenarios, similar to those used for model verification in Section~\ref{subsec:ResultsqLPVModel}. As in \cite{dittmer2021velocity}, the qLPV model Mdl2 is used as the plant. The controller model consists of a subset of its states with identical parameters, chosen to remain close to the model in \cite{Bianchi2007}. There is therefore no parametric mismatch; only the tower and blade dynamics of the plant are not included in the controller model. This unrealistic best-case scenario was selected for its fast run times, which allowed a quick tuning of the weights, but, more importantly, to investigate the upper limits of possible improvements. In the first scenario, the wind speed is increased stepwise from 4\,m/s to 23\,m/s in steps with a duration of 20\,s, resulting in a simulation time of 400\,s, with the first 15\,s discarded as a transient. In the second scenario, 660\,s of turbulent wind with a mean speed of 18\,m/s and IEC turbulence class B is used to assess controller performance under realistic wind conditions, and the first 60\,s are left out of the analysis. For the turbulent wind case, the wind is filtered before being passed to the PI baseline controller for a fairer comparison of the impact of the qLMPC scheme.
 
-Figure~\ref{fig:CtrlCmpMdlSweep}(a) shows the controller comparison for the stepped wind sweep covering nearly the entire operating range. In below-rated wind conditions, the two controllers achieve comparable performance. In above-rated wind conditions, however, predictive pitch control considerably reduces tower fore-aft acceleration and power variance. Overall, the standard deviation ratios for the tower fore-aft acceleration and power tracking error are 1.60 and 1.18 (corresponding to variance reduction factors of 2.56 and 1.39), as shown in Table~\ref{tab:ControllerComparisonMerged}.
- Figure~\ref{fig:CtrlCmpMdlSweep}(b) shows results for the turbulent wind. The improvements over the baseline PI are even more pronounced than in the stepped sweep case. Regarding the tower fore-aft acceleration and power tracking error, the qLMPC yields standard deviation ratios of 1.73 and 8.10 (equivalent to variance reduction factors of 2.99 and 65.61), as presented in Table~\ref{tab:ControllerComparisonMerged}.
+Figure~\ref{fig:CtrlCmpMdlSweep}(a) shows the controller comparison for the stepped wind sweep covering nearly the entire operating range. In below-rated wind conditions, the two controllers achieve comparable performance. In above-rated wind conditions, however, predictive pitch control considerably reduces tower fore-aft acceleration and power variance. Overall, the standard deviation ratios for the tower fore-aft acceleration and power tracking error are 1.60 and 1.21 (corresponding to variance reduction factors of 2.57 and 1.46), as shown in Table~\ref{tab:ControllerComparisonMerged}.
+%
+ Figure~\ref{fig:CtrlCmpMdlSweep}(b) shows results for the turbulent wind. The improvements over the baseline PI are even more pronounced than in the stepped sweep case. For the tower fore-aft acceleration and power tracking error, the qLMPC yields standard deviation ratios of 1.73 and 8.99 (equivalent to variance reduction factors of 3.00 and 80.85), see Table~\ref{tab:ControllerComparisonMerged}.
 
 \begin{figure} [ht]
     \subfloat[Stepped wind sweep]{\includegraphics[width=0.485\textwidth]{figures/Figures_ADi/cmpCtrlTimeDomain_All_RefSimulinkClosedLoop_beta.eps}}\hfill 
@@ -530,31 +531,31 @@ Figure~\ref{fig:CtrlCmpMdlSweep}(a) shows the controller comparison for the step
     \label{fig:CtrlCmpMdlSweep}
 \end{figure}
 
- The QP is solved using a linear complementarity problem formulation with Lemke's algorithm \cite{cisneros2020velocity}, which enables fast convergence, as real-time capability is a critical requirement for online optimization-based control. Of the 50001 controller cycles at a sampling time of 8\,ms needed for the 400\,s simulation time, only one cycle exceeded the sampling time and only 13 exceeded 2\,ms. The mean CPU time was approximately 1\,ms, as shown in the subplot titles of Figure~\ref{fig:CtrlCmpMdlSweep}. These measurements were obtained in MATLAB R2021b on an Intel Core i7-11850H (2.5\,GHz, 8 cores) running Windows 10. Note that for deployment on a physical turbine, a fallback strategy would be required to handle the rare cases where the solver exceeds the sampling time. This was not implemented in this proof-of-concept, but several options exist, such as blending the last available qLMPC solution with the output of the PI feedback controller.
+ The QP is solved using a linear complementarity problem formulation with Lemke's algorithm \cite{cisneros2020velocity}, which enables fast convergence, as real-time capability is a critical requirement for online optimization-based control. Of the 50001 controller cycles at a sampling time of 8\,ms needed for the 400\,s simulation time of the stepped wind sweep, only one cycle exceeded the sampling time and only 13 exceeded 2\,ms. The mean CPU time was approximately 1\,ms, as shown in the subplot titles of Figure~\ref{fig:CtrlCmpMdlSweep}. These measurements were obtained in MATLAB R2021b on an Intel Core i7-11850H (2.5\,GHz, 8 cores) running Windows 10. Note that for deployment on a physical turbine, a fallback strategy would be required to handle the rare cases where the solver exceeds the sampling time. This was not implemented in this proof-of-concept, but several options exist, such as blending the last available qLMPC solution with the output of the PI feedback controller.
  
  The improvements regarding the reduction of tower acceleration and power variance come at the price of higher pitch activity. As summarized in Table~\ref{tab:ControllerComparisonMerged}, the standard deviation of the blade pitch rate increases by a factor of approximately 3.3 in the stepped wind sweep and 6.3 in the turbulent wind case, and that of the generator torque rate by a factor of approximately 2.7 in the stepped wind sweep. In the turbulent wind case, both controllers operate at rated generator torque throughout, resulting in zero torque rate standard deviation.
+
 \begin{table}[t]
     \centering
-    \caption[Standard deviation comparison: Baseline PI vs.\ qLMPC for stepped wind sweep and
-    turbulent wind.]%
+    \caption[Standard deviation comparison: Baseline PI vs.\ qLMPC for stepped wind sweep and turbulent wind.]%
     {Standard deviation comparison: Baseline PI vs.\ qLMPC for stepped wind sweep and
         turbulent wind (18\,m/s mean, IEC class B).
-        The standard deviations obtained with the PI controller are divided by those obtained with the qLMPC; quotients above~1 indicate improvement.} 
+        The standard deviations obtained with the PI controller are divided by those obtained with the qLMPC;
+        quotients above~1 indicate improvement. Ratios are computed from unrounded values.}
     \label{tab:ControllerComparisonMerged}
     \begin{tabular}{l rr}
         \toprule
         {Standard Deviation of} & {Stepped wind sweep} & {Turbulent wind} \\
-        {Signal (unit)} & \multicolumn{2}{c}{std PI / std qLMPC =  ratio} \\
+        {Signal (unit)} & \multicolumn{2}{c}{std PI / std qLMPC = ratio} \\
         \midrule
-      
-        Tower fore-aft acc. (m/s$^2$) & $0.05 / 0.03 = 1.60$ & $0.13 / 0.08 = 1.73$ \\
-        Power tracking error (kW) & $170.40 / 143.81 = 1.18$ & $95.15 / 11.75 = 8.10$ \\
-        Generator torque rate (kNm/s) & $0.55 / 1.47 = 0.37$ & $0 / 0 = {-}$ \\
-        Blade pitch rate (deg/s) & $0.22 / 0.76 = 0.30$ & $0.71 / 4.44 = 0.16$ \\
+        Tower fore-aft acc. (m/s$^2$) & $0.0548 / 0.0342 = 1.60$ & $0.1300 / 0.0751 = 1.73$ \\
+        Power tracking error (kW) & $187.54 / 154.95 = 1.21$ & $159.33 / 17.72 = 8.99$ \\
+        Generator torque rate (kNm/s) & $0.55 / 1.47 = 0.37$ & $0.00 / 0.00 = {-}$ \\
+        Blade pitch rate (\textdegree/s) & $0.22 / 0.76 = 0.30$ & $0.71 / 4.44 = 0.16$ \\
         \bottomrule
     \end{tabular}
 \end{table}
-Ratios above~1 indicate improvement, confirming the qLMPC reduces both tower loading and power tracking error. But the standard deviation in rates in blade pitch increase, for the turbulent wind test case even considerably so. There is also an increase in generator torque usage observed for the stepped wind test case. In the turbulent wind case, both controllers operate at rated generator torque throughout, resulting in zero torque rate standard deviation for both. As more improvement in power variance was observed for the above rated turbulent wind, the following discussion focuses on this case.
+Ratios above~1 indicate improvement, confirming the qLMPC reduces both tower loading and power tracking error. But the standard deviation in rates in blade pitch increase, leading to a ratio considerably below~1, for the turbulent wind test case even considerably so. There is also an increase in generator torque sage observed for the stepped wind test case,and hence a ratio of~0.37, also considerably below~1. In the turbulent wind case, both controllers operate at rated generator torque throughout, resulting in zero torque rate standard deviation for both. As more improvement in power variance was observed for the above rated turbulent wind, the following discussion focuses on this case.
 
 For the results of this proof-of-concept, visualized in Figure~\ref{fig:CtrlCmpMdlSweep}, no penalty is placed on pitch actuator movement, and the pitch rate limit is set to 13\textdegree/s, which is a relatively high value. Figure~\ref{fig:CtrlCmpRates} shows the results of six test runs with different pitch rate limits: three with the baseline PI controller and three with the qLMPC algorithm. The effect of different pitch rates on the PI controller is depicted in Figure~\ref{fig:CtrlCmpRates}(a), and on the qLMPC design in Figure~\ref{fig:CtrlCmpRates}(b). The selected pitch rate limits of 4\textdegree/s, 8\textdegree/s, and 13\textdegree/s represent a range from conservative to highly responsive actuator capabilities. They were chosen to explore both realistic hardware limitations and the potential performance gains of faster actuation.
 

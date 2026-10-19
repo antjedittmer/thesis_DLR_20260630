@@ -631,19 +631,49 @@ This section presents the principle of Koopman operators, followed by a descript
 
 The Koopman operator $\mathcal{K}$ provides a framework for transforming finite-dimensional nonlinear dynamics into an infinite-dimensional linear system. By approximating this operator with a finite-dimensional representation, the tools of linear system analysis and control theory can be directly applied to nonlinear systems. This approach was originally proposed in \cite{koopman1931hamiltonian}. For its application to controls see, e.g.,\cite{proctor2018generalizing}, or \cite{kaiser2020data}.
 
-Consider a time-invariant, discrete-time autonomous nonlinear dynamical system with state
-$\bm{x} \in \mathbb{R}^{n_{x}}$ and function $F:\mathbb{R}^{n_{x}} \to \mathbb{R}^{n_{x}}$ at sample time $k$:
+Consider a time-invariant, discrete-time autonomous nonlinear dynamical
+system with state $\bm{x}(k) \in \mathbb{R}^{n_x}$ and state-transition
+map $F: \mathbb{R}^{n_x} \to \mathbb{R}^{n_x}$:
 \begin{equation}
-\bm{x}(k+1) = F(\bm{x}(k)). \label{eq:nonLinSysKoop}
+    \bm{x}(k+1) = F(\bm{x}(k)).
+    \label{eq:nonLinSysKoop}
 \end{equation}
-The Koopman framework uses the evolution of functions of the state, instead of the evolution of the state $\bm{x}$, to describe nonlinear dynamics as a linear dynamical system. The functions of the states are referred to as  observables. The infinite-dimensional observable $g_\infty(\bm{x})$ belongs to a Hilbert space $\mathcal{H}$ \footnote{A Hilbert space generalizes the concept of the Euclidean space to possibly infinite dimensions \cite{korda2018linear}.}, creating an infinite-dimensional lifted state:
+%
+The Koopman framework describes nonlinear dynamics through the evolution
+of functions of the state, rather than the state $\bm{x}$ itself. It
+thus represents the dynamics as a linear system in a suitable function
+space. These functions are referred to as lifting functions. A collection of
+lifting functions evaluated at the current state defines the lifted state.
+
+Let $g_\infty$ denote an infinite-dimensional lifting map whose component
+functions belong to a suitable Hilbert space $\mathcal{H}$
+\footnote{A Hilbert space is a complete inner-product space that
+    generalizes Euclidean space to potentially infinite dimensions
+    \cite{korda2018linear}.}.
+The corresponding lifted state is infinite-dimensional:
 \begin{equation}
-\bm{\varphi}_\infty(k) = g_\infty(\bm{x}(k)).
+    \bm{\varphi}_\infty(k) = g_\infty(\bm{x}(k)).
 \end{equation}
-The linear, infinite-dimensional Koopman operator $\mathcal{K}: \mathcal{H} \to \mathcal{H}$ is defined by its action on these observables, propagating them forward in time:
-\begin{equation} \label{eq:KoopmanUnforced}
-\bm{\varphi}_\infty(k+1) = (\mathcal{K}g_\infty)(\bm{x}(k)) = g_\infty(F(\bm{x}(k))) = g_\infty(\bm{x}(k+1)).
+%
+The linear, infinite-dimensional Koopman operator
+$\mathcal{K}: \mathcal{H} \to \mathcal{H}$ acts on the lifting function
+$g \in \mathcal{H}$ according to
+\begin{equation}
+    (\mathcal{K}g)(\bm{x}) = g(F(\bm{x})).
 \end{equation}
+%
+Applying the Koopman operator componentwise to $g_\infty$ yields the
+evolution of the lifted state:
+\begin{equation}
+    \begin{aligned}
+        \bm{\varphi}_\infty(k+1)
+        &= (\mathcal{K}g_\infty)(\bm{x}(k)) \\
+        &= g_\infty(F(\bm{x}(k))) \\
+        &= g_\infty(\bm{x}(k+1)).
+    \end{aligned}
+    \label{eq:KoopmanUnforced}
+\end{equation}
+%
 Figure~\ref{fig:koopman-diagram} visualizes the concept of a Koopman operator applied to an unforced nonlinear system, as described in Equations~\eqref{eq:nonLinSysKoop} to \eqref{eq:KoopmanUnforced}
 \begin{figure}[htb]
 \centering
@@ -660,7 +690,7 @@ Because the Koopman operator $\mathcal{K}$ is infinitely dimensional, it is gene
 By defining $g$ as a finite subset of $\mathcal{H}$, the operator $\mathcal{K}$ can be approximated by a finite-dimensional Koopman matrix $\hat{K}$. Note that in the following the truncated lifting functions and approximated lifted states are simply referred to as lifting function and lifted states, respectively, for better readability.
 
 %
-%Note that the finite function $g(\bm{x}(k))$ is an approximation of the observables $\g_\infty(\bm{x})$ which form a subset of an infinite-dimensional Hilbert space~$\mathcal{H}$, a complete vector space with an inner product that allows notions of length and angle to be defined. A Hilbert space generalizes the concept of the Euclidean space to possibly infinite dimensions \cite{korda2018linear}.% , providing a framework for analyzing functions and operators \cite{korda2018linear}.
+%Note that the finite function $g(\bm{x}(k))$ is an approximation of the lifted states $\g_\infty(\bm{x})$ which form a subset of an infinite-dimensional Hilbert space~$\mathcal{H}$, a complete vector space with an inner product that allows notions of length and angle to be defined. A Hilbert space generalizes the concept of the Euclidean space to possibly infinite dimensions \cite{korda2018linear}.% , providing a framework for analyzing functions and operators \cite{korda2018linear}.
 
 %With lifting function $g$, the linear, infinite-dimensional Koopman operator $\mathcal{K}: \mathcal{H} \to \mathcal{H}$ for the nonlinear dynamical system is defined as
 %\begin{equation} \label{eq:KoopmanUnforced}
@@ -670,7 +700,7 @@ By defining $g$ as a finite subset of $\mathcal{H}$, the operator $\mathcal{K}$ 
 
 
 % Block diagram of the nonlinear system $F$, lifting function $g$, and linear Koopman operator $\mathcal{K}$ propagation for an unforced system (adapted from \cite{brunton2016koopman}).
-% Block diagram of the Koopman operator framework. The top row depicts the nonlinear state evolution $F(\bm{x}(k))$, while the bottom row illustrates the linear evolution of the lifted observables $\boldsymbol{\varphi}(k)$ via the Koopman operator $\mathcal{K}$. 
+% Block diagram of the Koopman operator framework. The top row depicts the nonlinear state evolution $F(\bm{x}(k))$, while the bottom row illustrates the linear evolution of the lifted lifted states $\boldsymbol{\varphi}(k)$ via the Koopman operator $\mathcal{K}$. 
 
 
 This definition extends to nonlinear systems with input $\bm{w}$ as follows. The Koopman operator for controlled systems evolves on the extended state space $\mathbb{R}^{n_{x}} \times \ell(\mathcal{W})$, where $\ell(\mathcal{W})$ denotes the space of all infinite discrete input sequences $\bm{w} = (\bm{w}(k))_{k=1}^\infty$ \cite{arbabi2018data, korda2018linear}. The extended state vector 
@@ -683,7 +713,7 @@ evolves according to the extended dynamics
 \end{align}
 where $F_w$ defines the state transition and the input sequence is moved forward by the shift operator $S$, defined by $S\left( (\bm{w}(k))_{k=1}^\infty \right) = (\bm{w}(k+1))_{k=1}^\infty$. The augmented flow map $\tilde{F}_w$ captures both the state transitions and the evolution of the exogenous signal.
 
-The Koopman operator acts on the observables $\bm{\varphi}_w$ within the function space of the lifting function $g$. In practice, this infinite-dimensional operator is approximated by a finite-dimensional Koopman matrix 
+The Koopman operator acts on the lifted states $\bm{\varphi}_w$ within the function space of the lifting function $g$. In practice, this infinite-dimensional operator is approximated by a finite-dimensional Koopman matrix 
 \begin{align*}
 \hat{\bm{K}} = [\bm{A}_K \;\; \bm{B}_K].
 \end{align*}
@@ -699,7 +729,7 @@ consistent with \cite{arbabi2018data, korda2018linear} and illustrated in Figure
 \label{fig:koopman-diagram-ext}
 \end{figure}
 
-This includes the extended state dynamics \(F_w\), the shift operator \(S\) acting on the input sequence, lifting functions \(g_w\) that map states and inputs to the extended, lifted observable space $\bm{\varphi}$, the Koopman matrix \(\hat{K}\) propagating lifted states and the lifted state at the next sample  $\bm{\varphi}(k+1)$ derived from the extended, lifted observable  $\bm{\varphi}_w(k)$. As before, dashed arrows indicate that the original states and inputs can be recovered from the lifted observables.
+This includes the extended state dynamics \(F_w\), the shift operator \(S\) acting on the input sequence, lifting functions \(g_w\) that map states and inputs to the extended, lifted observable space $\bm{\varphi}$, the Koopman matrix \(\hat{K}\) propagating lifted states and the lifted state at the next sample  $\bm{\varphi}(k+1)$ derived from the extended, lifted state $\bm{\varphi}_w(k)$. As before, dashed arrows indicate that the original states and inputs can be recovered from the lifted states.
 
 An illustrative example of lifting nonlinear dynamics into a higher-dimensional linear system is given in \cite{brunton2016koopman}. Consider the discrete-time nonlinear system
 \begin{align} \label{eq:BruntonEx1}
@@ -761,9 +791,9 @@ which introduces the need for a new observable \( \varphi_2 = x^4 \). Continuing
 \begin{equation}
 \varphi_2(k+1) = x^4(k+1) = (\mu x^2(k))^4 = \mu^4 x^8(k),
 \end{equation}
-and so on, yields an infinite sequence of new observables. Therefore, a finite-dimensional Koopman operator cannot capture the dynamics of this system. The lifted space is, in this example, infinite-dimensional.
+and so on, yields an infinite sequence of new lifted states. Therefore, a finite-dimensional Koopman operator cannot capture the dynamics of this system. The lifted space is, in this example, infinite-dimensional.
 
-In cases where the Koopman operator is infinite-dimensional, one approach is to approximate it with a finite matrix using a suitable set of observables. This Koopman matrix can be identified directly from data by DMD, without requiring a closed-form model of the underlying dynamics. This makes the approach applicable to wind farm control, where the flow and wake dynamics are governed by the Navier-Stokes equations, for which no general analytical solution is known and whose discretization yields a state dimension far too large for an analytical lifting.
+In cases where the Koopman operator is infinite-dimensional, one approach is to approximate it with a finite matrix using a suitable set of lifted states. This Koopman matrix can be identified directly from data by DMD, without requiring a closed-form model of the underlying dynamics. This makes the approach applicable to wind farm control, where the flow and wake dynamics are governed by the Navier-Stokes equations, for which no general analytical solution is known and whose discretization yields a state dimension far too large for an analytical lifting.
 
 
 \subsubsection{Koopman Matrix for Wind Farm Modeling}\label{KoopmanIdentification}
@@ -778,7 +808,7 @@ The discrete-time nonlinear dynamical system can be extended by an output $\bm{y
 with states $\bm{x} \in \mathbb{R}^{n_{x}}$, inputs $\bm{w} \in \mathbb{R}^{n_{w}}$, outputs $\bm{y} \in \mathbb{R}^{n_{y}}$, and nonlinear functions $F_w : \mathbb{R}^{n_{x}} \times \mathbb{R}^{n_{w}} \to \mathbb{R}^{n_{x}}$ and $G : \mathbb{R}^{n_{x}} \times \mathbb{R}^{n_{w}} \to \mathbb{R}^{n_{y}}$.
 
 
-Lifting functions $g$ are defined as before as nonlinear combinations of the original states $\bm{x}$. In this work a new state $\bm{\varphi}\in\mathbb{R}^{n_{g}}$ is defined as a concatenation of the state $\bm{x}$ and the nonlinear combination of the states $g_{\varphi}$, i.e., the observables $\bm{\varphi}_g = g_{\varphi}(\bm{x})$, and hence $ \bm{\varphi} = g(\bm{x})$ with $\bm{\varphi}^T = [\bm{x}^T \; \bm{\varphi}_g^T]^T$.
+Lifting functions $g$ are defined as before as nonlinear combinations of the original states $\bm{x}$. In this work a new state $\bm{\varphi}\in\mathbb{R}^{n_{g}}$ is defined as a concatenation of the state $\bm{x}$ and the nonlinear combination of the states $g_{\varphi}$, i.e., the lifted states $\bm{\varphi}_g = g_{\varphi}(\bm{x})$, and hence $ \bm{\varphi} = g(\bm{x})$ with $\bm{\varphi}^T = [\bm{x}^T \; \bm{\varphi}_g^T]^T$.
 
 A finite linear approximation of the nonlinear system given in Equation~\eqref{eq:nonLinSys} is:
 \begin{align*}
