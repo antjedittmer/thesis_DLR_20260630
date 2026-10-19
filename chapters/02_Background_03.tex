@@ -268,7 +268,7 @@ Table \ref{tab:WFModels} provides an overview of analytical wind farm models and
 \end{center}
 \end{table}
 
-The Jensen Park model, based on mass conservation and the actuator disk model, is widely used for turbines aligned with the main wind direction, meaning turbines without yaw misalignment. Originally proposed by \cite{jensen1983note}, this model assumes a linearly expanding wake with a velocity deficit that depends solely on the distance behind the rotor. This so-called "top-hat" model simplifies calculations and remains relevant for layout optimization and power estimation. 
+The Jensen Park model, based on mass conservation and the actuator disk model, is widely used for turbines aligned with the main wind direction, meaning turbines without yaw misalignment. Originally proposed by \cite{jensen1983note}, this model assumes a linearly expanding wake with a velocity deficit that depends only on the distance behind the rotor. This so-called "top-hat" model simplifies calculations and remains relevant for layout optimization and power estimation. 
 
 The Frandsen model \cite{frandsen2006analytical}, a more recent parametric model, builds upon mass and momentum conservation principles. Unlike the Jensen Park model, the Frandsen model introduces a "tube" concept for near-wake modeling and uses a different approach for merging multiple wakes. Both models have been extended to incorporate Gaussian wake distributions, as studies have shown that Gaussian profiles better match high-fidelity simulations \cite{sizhuang2014analysis} and experimental measurements \cite{chen2020data}.
 
@@ -519,45 +519,45 @@ The following sections introduce the two modeling frameworks applied in this the
 
 \subsection{Quasi-Linear Parameter-Varying Models}
 \label{sec:qLPVmodels}
-
-As described above, wind turbine dynamics are characterized by nonlinearities due to aerodynamic and structural effects. To be able to leverage the existing extensive linear control and estimation frameworks, Linear Parameter-Varying (LPV) and its generalized form, quasi-LPV (qLPV), can be used to represent nonlinear dynamics through a linear structure with time-varying parameters \cite{hoffmann2014survey}. These scheduling parameters capture the nonlinearity while preserving computational efficiency and physical interpretability. In the context of wind energy conversion systems, qLPV modeling enables systematic controller design across the whole operating range of a turbine without requiring full nonlinear computations at each time step.
+As described in the previous section, wind turbine dynamics are characterized by nonlinearities due to aerodynamic and structural effects. To leverage extensive existing linear control and estimation frameworks, Linear Parameter-Varying (LPV) models and their generalized form, quasi-LPV (qLPV) models, can be used to represent nonlinear dynamics through a linear structure with time-varying parameters \cite{hoffmann2014survey}. These scheduling parameters capture the nonlinearity while preserving computational efficiency and physical interpretability. In the context of wind energy conversion systems, qLPV modeling enables systematic controller design across the entire operating range of a turbine without requiring full nonlinear computations at each time step.
 
 \subsubsection{Standard and Velocity-based qLPV Models}
 \label{sec:qLPVmodelTheory}
 
 In general, nonlinear continuous-time dynamics can be expressed as
 \begin{align} \label{eq:stateSpaceGeneral}
-    \dot{\bm{x}}(t) = \bm{f}(\bm{x}, \bm{w}), \quad
-    \bm{y}(t) = \bm{h}(\bm{x}, \bm{w}),
+    \dot{\bm{x}}(t) = \bm{f}(\bm{x}, \bm{u}), \quad
+    \bm{y}(t) = \bm{h}(\bm{x}, \bm{u}),
 \end{align}
-with the state $\bm{x} \in \mathbb{R}^{n_x}$, input $\bm{w} \in \mathbb{R}^{n_w}$, and output $\bm{y} \in \mathbb{R}^{n_y}$. The functions $\bm{f}$ and $\bm{h}$ are nonlinear, but locally smooth in the neighborhood of operating points.
+with the state $\bm{x} \in \mathbb{R}^{n_x\times 1}$, input $\bm{u} \in \mathbb{R}^{n_u \times 1}$, and output $\bm{y} \in \mathbb{R}^{n_y \times 1}$. The functions $\bm{f}$ and $\bm{h}$ are nonlinear, but locally smooth in the neighborhood of operating points.
 
 The matrices of the LPV model are the linearization of Equation~\eqref{eq:stateSpaceGeneral} around relevant operating points, yielding the Jacobian-based matrices
 \begin{equation}\label{eq:contMatricesqLPV}
     \begin{aligned}
-        \bm{A}_c(\bm{x},\bm{w}) &= \nabla_{\bm{x}} \bm{f}(\bm{x},\bm{w}) \in \mathbb{R}^{n_x \times n_x}, \quad
-        \bm{B}_c(\bm{x},\bm{w}) = \nabla_{\bm{w}} \bm{f}(\bm{x},\bm{w}) \in \mathbb{R}^{n_x \times n_u}, \\
-        \bm{C}_c(\bm{x},\bm{w}) &= \nabla_{\bm{x}} \bm{h}(\bm{x},\bm{w}) \in \mathbb{R}^{n_y \times n_x}, \quad
-        \bm{D}_c(\bm{x},\bm{w}) = \nabla_{\bm{w}} \bm{h}(\bm{x},\bm{w})\in \mathbb{R}^{n_y \times n_u}.
+        \bm{A}_c(\bm{x},\bm{u}) &= \nabla_{\bm{x}} \bm{f}(\bm{x},\bm{u}) \in \mathbb{R}^{n_x \times n_x}, \quad
+        \bm{B}_c(\bm{x},\bm{u}) = \nabla_{\bm{u}} \bm{f}(\bm{x},\bm{u}) \in \mathbb{R}^{n_x \times n_u}, \\
+        \bm{C}_c(\bm{x},\bm{u}) &= \nabla_{\bm{x}} \bm{h}(\bm{x},\bm{u}) \in \mathbb{R}^{n_y \times n_x}, \quad
+        \bm{D}_c(\bm{x},\bm{u}) = \nabla_{\bm{u}} \bm{h}(\bm{x},\bm{u})\in \mathbb{R}^{n_y \times n_u}.
     \end{aligned}
 \end{equation}
 The scheduling parameter vector $\bm{\rho}_\Rho$ is constructed from selected states and inputs, and the qLPV model becomes:
+
 \begin{equation} \label{eq:standardqLPV1}
     \begin{aligned}
-        \dot{\bm{x}}(t) &= \bm{A}_c(\bm{\rho}_\Rho) \bm{x}(t) + \bm{B}_c(\bm{\rho}_\Rho) \bm{w}(t), \\
-        \bm{y}(t) &= \bm{C}_c(\bm{\rho}_\Rho) \bm{x}(t) + \bm{D}_c(\bm{\rho}_\Rho) \bm{w}(t). 
+        \dot{\bm{x}}(t) &= \bm{A}_c(\bm{\rho}_\Rho) \bm{x}(t) + \bm{B}_c(\bm{\rho}_\Rho) \bm{u}(t), \\
+        \bm{y}(t) &= \bm{C}_c(\bm{\rho}_\Rho) \bm{x}(t) + \bm{D}_c(\bm{\rho}_\Rho) \bm{u}(t). 
     \end{aligned}
 \end{equation}
-An alternative, velocity-based qLPV formulation considers the derivatives of state and input rather than the states and inputs themselves \cite{cisneros2016efficient}. Differentiating Equation~\eqref{eq:standardqLPV1} gives:
-%\begin{equation}\label{eq:velocityForm}
-\begin{align*}
-    \ddot{\bm{x}}(t) &= \bm{A}_c(\bm{\rho}_\Rho) \dot{\bm{x}}(t) +\bm{B}_c(\bm{\rho}_\Rho) \dot{\bm{w}}(t), \\
-    \dot{\bm{y}}(t) &= \bm{C}_c(\bm{\rho}_\Rho)  \dot{\bm{x}}(t) + \bm{D}_c(\bm{\rho}_\Rho) \dot{\bm{w}}(t).
-\end{align*}
-%\end{equation}
-This velocity-based form has the advantage of steady-state behavior at the origin ($\dot{\bm{x}}=\dot{\bm{w}}=0$), eliminating the need to store equilibrium state and input vectors at each operating point. Therefore, no trimming calculations are required once a physical model is derived based on the nonlinear dynamics. 
+Here, $\bm{x}$, $\bm{u}$, and $\bm{y}$ denote deviations from the respective operating point. If the scheduling parameter $\bm{\rho}_\Rho$ depends solely on exogenous variables (i.e., inputs and parameters), the system is strictly LPV. However, if $\bm{\rho}_\Rho$ depends additionally or purely on endogenous variables (i.e., system states), as in the wind turbine models discussed here, the resulting structure is a qLPV model. This distinction is important as the dependence on model states introduces implicit dependencies that must be accounted for during control design. In the case of qLPV models used for MPC, the scheduling parameter has to be fixed to specific values for all samples of the prediction horizon to calculate the prediction trajectory in dependence of the states, see~\cite{cisneros2016efficient}.
 
-The MPC implementations presented in this thesis are formulated in discrete time within a velocity-based qLPV framework. The matrices $\bm{A}_d\in \mathbb{R}^{n_x \times n_x}$ and $\bm{B}_d\in \mathbb{R}^{n_x \times n_u}$ of the discrete velocity form can be obtained via zero-order hold discretization from their continuous-time counterparts from Equation~\ref{eq:contMatricesqLPV}:
+An alternative, velocity-based qLPV formulation considers the derivatives of state and input rather than the states and inputs themselves \cite{cisneros2020velocity}. Assuming the scheduling parameter $\bm{\rho}_\Rho$ to be frozen, i.e., $\dot{\bm{\rho}}_\Rho = \bm{0}$, differentiating Equation~\eqref{eq:standardqLPV1} gives:
+\begin{align*}
+    \ddot{\bm{x}}(t) &= \bm{A}_c(\bm{\rho}_\Rho) \dot{\bm{x}}(t) +\bm{B}_c(\bm{\rho}_\Rho) \dot{\bm{u}}(t), \\
+    \dot{\bm{y}}(t) &= \bm{C}_c(\bm{\rho}_\Rho)  \dot{\bm{x}}(t) + \bm{D}_c(\bm{\rho}_\Rho) \dot{\bm{u}}(t).
+\end{align*}
+This velocity-based form has the advantage of steady-state behavior at the origin ($\dot{\bm{x}}=\dot{\bm{u}}=0$), eliminating the need to store equilibrium state and input vectors at each operating point. Therefore, no trimming calculations are required once a physical model is derived based on the nonlinear dynamics. 
+
+The MPC implementations presented in this thesis are formulated in discrete time within a velocity-based qLPV framework. The matrices $\bm{A}_d\in \mathbb{R}^{n_x \times n_x}$ and $\bm{B}_d\in \mathbb{R}^{n_x \times n_u}$ of the discrete velocity form can be obtained via zero-order hold discretization from their continuous-time counterparts from Equation~\eqref{eq:contMatricesqLPV}:
 \begin{equation} \label{eq:zoh1}
     \begin{aligned}
         \bm{A}_d(\bm{\rho}_\Rho) &= e^{\bm{A}_c(\bm{\rho}_\Rho)T_s}, \\
@@ -566,22 +566,20 @@ The MPC implementations presented in this thesis are formulated in discrete time
 \end{equation}
 with the sample time $T_s$. A velocity-based discrete state-space model can then be set up as:
 \begin{align} \label{eq:velocityFormDisc}
-    \Delta\bm{x}(k+1) = \bm{A}_d(\bm{\rho}_\Rho) \Delta\bm{x}(k) + \bm{B}_d(\bm{\rho}_\Rho) \Delta\bm{u}(k)
+    \Delta\bm{x}(k+1) = \bm{A}_d(\bm{\rho}_\Rho) \Delta\bm{x}(k) + \bm{B}_d(\bm{\rho}_\Rho) \Delta\bm{u}(k),
 \end{align}
-with $
-\Delta\bm{x}(k) = \bm{x}(k) - \bm{x}(k-1) \text{ and } \Delta\bm{u}(k) = \bm{u}(k) - \bm{u}(k-1).$
+with $\Delta\bm{x}(k) = \bm{x}(k) - \bm{x}(k-1)$ and $\Delta\bm{u}(k) = \bm{u}(k) - \bm{u}(k-1).$
 
-A subset of states $\bm{x}_{\text{sel}} \in \mathbb{R}^{n_{\text{sel}}}$ is selected for explicit inclusion in the qLPV model's state vector, enabling direct constraints on these states within the MPC scheme. The discrete difference vector $\Delta\bm{x}(k)$ at time sample $k$ is augmented with the vector 
+A subset of states $\bm{x}_{\text{sel}} \in \mathbb{R}^{n_{\text{sel}}\times1}$ is selected for explicit inclusion in the qLPV model's state vector, enabling direct constraints on these states within the MPC scheme. The discrete difference vector $\Delta\bm{x}(k)$ at time sample $k$ is augmented with the vector 
 \begin{equation}  \label{eq:differenceSelectedFormDisc}
     \begin{aligned}
-        \bm{x}_{\text{sel}}(k) &= \bm{x}_{\text{sel}}(k-1) + \Delta \bm{x}_{\text{sel}}(k) \\
-        &=  \bm{x}_{\text{sel}}(k-1) +  \bm{A}_{d,\text{sel}}\Delta \bm{x}_{\text{sel}}(k-1) +  \bm{B}_{d,\text{sel}}\Delta \bm{u}_{\text{sel}}(k-1),        
+        \bm{x}_{\text{sel}}(k) &= \bm{x}_{\text{sel}}(k-1) + \Delta \bm{x}_{\text{sel}}(k) \\ 
+           &=  \bm{x}_{\text{sel}}(k-1) +  \bm{A}_{d,\text{sel}}\Delta \bm{x}(k-1) +  \bm{B}_{d,\text{sel}}\Delta \bm{u}(k-1),   
     \end{aligned}
 \end{equation}
-with the matrices $\bm{A}_{d,\text{sel}} \in  \mathbb{R}^{n_{\text{sel}} \times n_x}$ and  $\bm{B}_{d,\text{sel}} \in  \mathbb{R}^{n_{\text{sel}} \times n_x}$ representing the rows of the state and input matrices corresponding to the selected states.
-%
-%
-The resulting augmented state-space model with the expanded state vector $\bm{x}_{\text{ext}} =[\bm{x}_{\text{sel}}^T \; \; \Delta\bm{x}^T ]^T$ is derived based on the matrices used in Equation~\eqref{eq:velocityFormDisc} and ~\eqref{eq:differenceSelectedFormDisc}:
+with the matrices $\bm{A}_{d,\text{sel}} \in  \mathbb{R}^{n_{\text{sel}} \times n_x}$ and  $\bm{B}_{d,\text{sel}} \in  \mathbb{R}^{n_{\text{sel}} \times n_u}$ representing the rows of the state and input matrices corresponding to the selected states.
+
+The resulting augmented state-space model with the expanded state vector $\bm{x}_{\text{ext}} =[\bm{x}_{\text{sel}}^T \; \; \Delta\bm{x}^T ]^T$ is derived based on the matrices used in Equation~\eqref{eq:velocityFormDisc} and~\eqref{eq:differenceSelectedFormDisc}:
 \begin{equation}\label{eq:discreteVelocityqLPV}
     \begin{aligned}
         \begin{bmatrix} \bm{x}_{\text{sel}}(k+1) \\ \Delta\bm{x}(k+1) \end{bmatrix} 
@@ -590,7 +588,7 @@ The resulting augmented state-space model with the expanded state vector $\bm{x}
         \end{bmatrix}
         \begin{bmatrix} \bm{x}_{\text{sel}}(k) \\ \Delta\bm{x}(k) \end{bmatrix}
         + \begin{bmatrix} \bm{B}_{d,\text{sel}}(\bm{\rho}_\Rho) \\ \bm{B}_d(\bm{\rho}_\Rho) \end{bmatrix} \Delta\bm{u}(k), \\
-        y(k) &= \bm{x}_{\text{sel}}(k) = \begin{bmatrix} \bm{I}_{n_{\text{sel}}} & \bm{0}_{n_\text{sel} \times n_x} \end{bmatrix} 
+        \bm{y}(k) &= \bm{x}_{\text{sel}}(k) = \begin{bmatrix} \bm{I}_{n_{\text{sel}}} & \bm{0}_{n_\text{sel} \times n_x} \end{bmatrix} 
         \begin{bmatrix} \bm{x}_{\text{sel}}(k) \\ \Delta\bm{x}(k) \end{bmatrix},
     \end{aligned}
 \end{equation}
@@ -598,27 +596,32 @@ where both the selected states and the discrete differences of all states appear
 
 This structured state expansion, necessary for velocity-based qLPV models used in constrained MPC algorithms, increases, and may even double, the state dimension. This complicates stability analysis and controller synthesis using robustness guarantees such as Linear Matrix Inequality (LMI) schemes. However, for the low-order MPC implementation presented here, the increased state dimension is not critical, and LMI-based robustness guarantees are not pursued.
 
-If the scheduling parameter $\bm{\rho}_\Rho$ depends solely on exogenous variables (i.e., inputs and parameters), the system is strictly LPV. However, if $\bm{\rho}_\Rho$ depends additionally or purely on endogenous variables (i.e., system states), as in the wind turbine models discussed here, the resulting structure is a qLPV model. This distinction is important as the dependence on model states introduces implicit dependencies that must be accounted for during control design. Concretely in the case of qLPV models used for MPC, the scheduling parameter has to be fixed to specific values for all samples of the prediction horizon to calculate the prediction trajectory in dependence of the states, see~\cite{cisneros2016efficient}.
-
-The qLPV framework approximates nonlinear dynamic systems by allowing the model matrices to vary smoothly over the operating range. This can be achieved in several ways, for example through precomputed local linearizations, data-driven identification, or first-principles models combined with physics-based lookup tables. In this work, a combination of first-principles models and physics-based lookup tables is used.
+Finally, the qLPV framework approximates nonlinear dynamic systems by allowing the model matrices to vary smoothly over the operating range. This can be achieved in several ways, for example through precomputed local linearizations, data-driven identification, or first-principles models combined with physics-based lookup tables. In this work, a combination of first-principles models and physics-based lookup tables is used.
 
 
 \subsubsection{qLPV Models based on BEM Models and Actuator Disk Models}
 \label{sec:quasi-LPVTurbineModel}
 
-For wind energy applications, the mapping from the disturbance input wind speed and the control inputs generator torque and pitch angle to turbine states, including, e.g., rotor speed and tower displacement, is obtained from the mathematical representations of wind turbine physics described in Section~\ref{windTurbineModel}. For a wind turbine model, two-dimensional lookup tables for thrust and torque, dependent on blade pitch, wind speed, and rotor speed, are derived from BEM models implemented in the FAST software. When these nonlinear aerodynamic relationships are combined with linearized tower and drivetrain dynamics, the overall model becomes a nonlinear ODE system that can be approximated locally as linear around each operating point. For the BEM-based turbine model, the scheduling vector
-\[
-\bm{\rho}_{\Rho,\text{WT}} = [V_\infty \quad \omega_r \quad \beta]^T, 
-\]
-which is based on wind speed, rotor speed, and blade pitch angle, represents the variations in aerodynamics. The qLPV matrices thus reflect that changes in these three parameters immediately shift the effective aerodynamic of the turbine. Chapter \ref{sec:WindTurbineqLPVModels} provides a detailed derivation of two qLPV wind turbine models, both based on lookup tables for thrust and torque coefficients generated using FAST. 
+For wind energy applications, the mapping from the disturbance input wind speed and the control inputs generator torque and pitch angle to turbine states, including, e.g., rotor speed and tower displacement, is obtained from the mathematical representations of wind turbine physics described in Section~\ref{windTurbineModel}. For the turbine models in this work, two-dimensional lookup tables for the thrust and torque coefficients are derived from BEM models implemented in the FAST software. They depend on the collective blade pitch angle $\beta_0$ and the tip-speed ratio
+\begin{equation} \label{eq:lambda}
+    \lambda = \frac{\omega_r R_r}{V_\infty},
+\end{equation}
+i.e., the ratio of the blade tip speed, given by the rotor speed $\omega_r$ and the rotor radius $R_r$, to the freestream wind speed $V_\infty$. Thus, they depend on wind speed, rotor speed, and pitch angle. When these nonlinear aerodynamic relationships are combined with the linear tower and drivetrain dynamics, the overall model becomes a nonlinear ODE system that can be approximated locally as linear around each operating point. For the BEM-based turbine model, the scheduling vector
+\begin{equation} \label{eq:rhoWT}
+    \bm{\rho}_{\Rho,\text{WT}} = [V_\infty \quad \beta_0 \quad \omega_r]^T,
+\end{equation}
+consisting of wind speed, pitch angle, and rotor speed, captures the variations in the aerodynamics. The qLPV matrices thus reflect that changes in these three parameters immediately change the aerodynamic behavior of the turbine. Note that in the models used for controller design, the pitch angle $\beta_0$ is a state, while the commanded pitch $\beta_{0,\text{ref}}$ is the input, see Equation~\eqref{eq:11} in Chapter~\ref{sec:WindTurbineqLPVModels}. Chapter~\ref{sec:WindTurbineqLPVModels} provides a detailed derivation of two qLPV wind turbine models, both based on lookup tables for the thrust and torque coefficients generated using FAST.
 
-For farm level control, the actuator disk model provided in Section~\ref{windTurbineModel} includes the effective inflow wind speed of all turbines as a scheduling variable for all $n_{\text{WT}}$ wind turbines of a farm
-\[
-\bm{\rho}_{\Rho,\text{WF}} = [V_{r,1} \quad V_{r,2} \quad \ldots \quad V_{r,n_{\text{WT}}} ]^T. 
-\]
-This effective wind speed depends on both exogenous variables (ambient turbulence, upstream wakes) and endogenous system states (thrust and yaw angle of the turbines). Consequently, the scheduling map becomes partially state-dependent which is the defining feature of a qLPV model. 
+For farm-level control, the turbines are represented by the actuator disk model from Section~\ref{windTurbineModel}. Its input matrices depend on the effective inflow wind speeds of the $n_{\text{WT}}$ turbines, which therefore serve as the scheduling parameters of the qLPV wind farm model:
+\begin{equation} \label{eq:rhoWF}
+\bm{\rho}_{\Rho,\text{WF}} = [V_{r1} \quad V_{r2} \quad \ldots \quad V_{r n_{\text{WT}}}]^T.
+\end{equation}
+These effective wind speeds depend on exogenous variables, i.e., the freestream wind including its turbulence, and on endogenous system states, i.e., the filtered thrust coefficients $\hat{C}^\prime_{Ti}$ of the upstream turbines. These signals follow the commanded thrust control inputs $C^\prime_{Ti}$. The scheduling parameters are hence partially state-dependent, which is the defining feature of a qLPV model. Chapter~\ref{sec:ApplicationtoWindFarmControl} describes how these effective wind speeds are predicted with a Koopman model and used in the qLPV wind farm controller.
 
-By combining these qLPV representations with predictive control formulations, one can design MPC controllers that explicitly accommodate nonlinear aerodynamic effects while maintaining convex optimization structure. The qLPV wind farm model used in the MPC formulation implemented in WFSim (see Section~2.3.2) is a representative example.
+By combining these qLPV representations with predictive control formulations, one can design MPC controllers that explicitly accommodate nonlinear aerodynamic effects while maintaining convex optimization structure. 
+
+
+%The qLPV wind farm model used in the MPC formulation implemented in WFSim (see Section~2.3.2) is a representative example.
 
 \subsection{Koopman Theory for System Modeling} \label{sec:Koopman}
 
@@ -633,7 +636,7 @@ $\bm{x} \in \mathbb{R}^{n_{x}}$ and function $F:\mathbb{R}^{n_{x}} \to \mathbb{R
 \begin{equation}
 \bm{x}(k+1) = F(\bm{x}(k)). \label{eq:nonLinSysKoop}
 \end{equation}
-The Koopman framework uses the evolution of functions of the state, instead of the evolution of the state $\bm{x}$, to describe nonlinear dynamics as a linear dynamical system. The functions of the states are referred to as observables. The infinite-dimensional observable $g_\infty(\bm{x})$ belongs to a Hilbert space $\mathcal{H}$ \footnote{A Hilbert space generalizes the concept of the Euclidean space to possibly infinite dimensions \cite{korda2018linear}.}, creating an infinite-dimensional lifted state:
+The Koopman framework uses the evolution of functions of the state, instead of the evolution of the state $\bm{x}$, to describe nonlinear dynamics as a linear dynamical system. The functions of the states are referred to as  observables. The infinite-dimensional observable $g_\infty(\bm{x})$ belongs to a Hilbert space $\mathcal{H}$ \footnote{A Hilbert space generalizes the concept of the Euclidean space to possibly infinite dimensions \cite{korda2018linear}.}, creating an infinite-dimensional lifted state:
 \begin{equation}
 \bm{\varphi}_\infty(k) = g_\infty(\bm{x}(k)).
 \end{equation}
@@ -682,7 +685,7 @@ where $F_w$ defines the state transition and the input sequence is moved forward
 
 The Koopman operator acts on the observables $\bm{\varphi}_w$ within the function space of the lifting function $g$. In practice, this infinite-dimensional operator is approximated by a finite-dimensional Koopman matrix 
 \begin{align*}
-\hat{\bm{K}} = [\bm{A}_K \;\; \bm{B}_K]
+\hat{\bm{K}} = [\bm{A}_K \;\; \bm{B}_K].
 \end{align*}
 This matrix maps the current extended lifted state to the next prediction:
 \[
@@ -749,7 +752,7 @@ As a discrete-time example where the Koopman operator is infinite-dimensional,  
 \begin{equation}
 x(k+1) = \mu x^2(k), \quad x \in \mathbb{R}, \ \mu \in \mathbb{R}
 \end{equation}
-is considered. Note that this system has two fixed points, concretely $x=0$ and $x=1/\mu$ for $\mu \neq 0$. The fixed point at the origin is attracting, since $f'(0)=0$, 
+is considered. Note that this system has two fixed points, which are $x=0$ and $x=1/\mu$ for $\mu \neq 0$. The fixed point at the origin is attracting, since $f'(0)=0$, 
 while the fixed point at $x=1/\mu$ is repelling, since $f'(1/\mu)=2$ with $|2|>1$. Defining the observable \( \varphi_1 = x^2 \) leads to
 \begin{equation}
 \varphi_1(k+1) = x^2(k+1) = (\mu x^2(k))^2 = \mu^2 x^4(k),
@@ -873,7 +876,6 @@ For EDMD, the inputs include the thrust control inputs and the wind measurement 
 \end{align*}
 The output of the EDMD model consists of the two states \( V_{r1} \) and \( V_{r2} \), whereas the output of the EIODMD model is the total wind farm power, i.e., the sum of the power outputs of both turbines.
 
-
 While data-driven approaches such as EIODMD for Koopman MPC are particularly 
 suitable for wind farm control, where complex wake interactions make first-principles 
 modeling challenging, they may not be the optimal choice for individual wind turbines. 
@@ -884,12 +886,21 @@ using ODEs, making first principle-based control strategies more appropriate, wi
 
 \subsection{Model Predictive Control}
 Model Predictive Control (MPC) is an optimization-based control strategy that computes control inputs by repeatedly solving a finite-horizon optimal control problem online, see e.g. \cite{rawlings2017model} for a detailed description. At each discrete time step $k$, a sequence of future control inputs is determined by minimizing a cost function $J$ over a prediction horizon of $n_h$ steps, subject to the system dynamics and any state and input constraints. The general MPC problem takes the form:
-\begin{align} \label{eqMPCGeneral}
-    \begin{array}{l}
-        \underset{\bm{U}(k)}{\text{min }} J(\bm{U}(k)) = \sum_{j=0}^{n_h - 1} \bm{x}(k+j)^T \bm{Q}\, \bm{x}(k+j) + \bm{u}(k+j)^T \bm{R}\, \bm{u}(k+j) \\
-        \text{subject to } \bm{x}(k+j+1) = f(\bm{x}(k+j), \bm{u}(k+j)), \quad j \in \{0, 1, \dots, n_h-1\}
-    \end{array}
-\end{align}
+\begin{equation}\label{eqMPCGeneral}
+    \begin{aligned}
+        \underset{\bm{U}(k)}{\text{min}}\quad
+        J(\bm{U}(k))
+        &= \sum\limits_{j=0}^{n_h-1}
+        \left(
+        \bm{x}(k+j)^T \bm{Q}\,\bm{x}(k+j)
+        + \bm{u}(k+j)^T \bm{R}\,\bm{u}(k+j)
+        \right) \\
+        \text{subject to}\quad
+        &\bm{x}(k+j+1)
+        = f(\bm{x}(k+j),\bm{u}(k+j)),\\
+        &\qquad j \in \{0,1,\dots,n_h-1\}.
+    \end{aligned}
+\end{equation}
 where $\bm{x}$ and $\bm{u}$ denote the state and input vectors, $\bm{Q}$ and $\bm{R}$ are positive semi-definite weighting matrices penalizing state deviation and control effort, respectively. The vector $\bm{U}$ contains the values of the input vector at all samples of the prediction horizon and the vector $\bm{X}$ the corresponding state vectors:
 \begin{align*}
      \bm{U}(k) &= \begin{bmatrix} \bm{u}(k)^T \quad \bm{u}(k+1)^T \quad \ldots \quad  \bm{u}(k+n_h-1)^T \end{bmatrix}^T \in \mathbb{R}^{n_h n_u \times 1},\\
@@ -905,6 +916,9 @@ The original formulation of MPC, as provided in Equation~\ref{eqMPCGeneral}, pen
         \text{subject to Equation } \eqref{eqLinWF}, \quad   k \in \{1, 2, \dots, n_h-1\}
     \end{array}
 \end{align}
+
+
+
 %
 with the weighting matrices $\bm{Q}$ and $\bm{R}$. The trajectory of the farm power tracking error $\bm{E}$ is:
 \begin{align*}
