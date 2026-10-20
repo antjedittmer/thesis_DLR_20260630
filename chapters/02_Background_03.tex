@@ -681,7 +681,7 @@ Figure~\ref{fig:koopman-diagram} visualizes the concept of a Koopman operator ap
 \caption{Block diagram of the nonlinear system, lifting function, and linear Koopman operator propagation for an unforced system (adapted from \cite{brunton2016koopman}).} 
 \label{fig:koopman-diagram}
 \end{figure}
-The solid arrows show the main process flow. The dashed arcs indicate that the original states can be reconstructed from the lifted states and dash-dotted arrows represent the states' link to previous and future states.
+The solid arrows show the main process flow. The dashed arcs indicate that the original states can be reconstructed from the lifted states and dash-dotted arrows represent the states' links to previous and future states.
 
 Because the Koopman operator $\mathcal{K}$ is infinitely dimensional, it is generally impossible to use directly for real-time control calculations. This work hence employs a finite-dimensional approximation. A truncated lifting function $g: \mathbb{R}^{n_{x}} \to \mathbb{R}^{n_{g}}$ is used to create the approximated lifted state $\bm{\varphi} \in \mathbb{R}^{n_{g}}$:
 \begin{equation}

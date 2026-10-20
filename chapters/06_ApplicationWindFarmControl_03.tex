@@ -268,9 +268,9 @@ with $n_w = 3$.
 
 EDMD is employed to calculate the Koopman matrix, which approximates the infinite-dimensional Koopman operator $\mathcal{K}$ \cite{arbabi2018data}. To facilitate this, the extended lifted lifted states, which combine the nonlinear state lifted states and the inputs, are defined as:
 \begin{align}\label{eq:extLiftObs}
-    \bm{\tilde{\varphi}}(\bm{x},\bm{w}) = 
+    \bm{\varphi}_w(\bm{x},\bm{w}) = 
     \begin{bmatrix}
-        \bm{g}(\bm{x}) \\ \bm{w}
+      \bm{ \varphi}\\ \bm{w}
     \end{bmatrix} \in \mathbb{R}^{(n_\varphi + n_w) \times 1}.
 \end{align}
 For the considered setup, this results in a total dimension of $n_\varphi + n_w = 9$. Here, $\bm{\varphi} = \bm{g}(\bm{x}) \in \mathbb{R}^{n_\varphi \times 1}$ denotes the vector of nonlinear state lifted states, and $\bm{w} \in \mathbb{R}^{n_w \times 1}$ is the input vector, which appears linearly in the lifted dynamics.
@@ -317,7 +317,7 @@ For controller design, only the system and input matrices $\bm{A}_{\hat{K}}$ and
     \left\| \bm{g}(\bm{x}(k+1)) - \bm{A}_{\hat{K}} \bm{g}(\bm{x}(k)) - \bm{B}_{\hat{K}} \bm{w}(k) \right\|_2^2.
     \label{eq:ApproxKoopman}
 \end{align}
-
+%
 With the data matrices defined as
 \begin{align}\label{eq:G_Gplus_datamatrices}
     \bm{G} &= \bigl[ \bm{g}(\bm{x}(1)) \;\; \cdots \;\; \bm{g}(\bm{x}(n_o-1)) \bigr] \in \mathbb{R}^{n_\varphi \times (n_o-1)}, \\
@@ -387,19 +387,19 @@ The triggering condition is formulated using the infinity norm, which allows the
     \end{bmatrix}
     -
     \begin{bmatrix}
-        C\hat{K}\bm{\tilde{\varphi}}(z_{k-h-1}) \\[2mm]
-        C\hat{K}\bm{\tilde{\varphi}}\Big(
+        C\hat{K}\bm{\varphi}_w(z_{k-h-1}) \\[2mm]
+        C\hat{K}\bm{\varphi}_w\Big(
         \begin{bmatrix}
-            \hat{K}\bm{\tilde{\varphi}}(z_{k-h-1}) \\
+            \hat{K}\bm{\varphi}_w(z_{k-h-1}) \\
             w_{k-h}
         \end{bmatrix}
         \Big) \\[1mm]
         \vdots \\[1mm]
-        C\hat{K}\bm{\tilde{\varphi}}\Big(
+        C\hat{K}\bm{\varphi}_w\Big(
         \begin{bmatrix}
-            \hat{K}\bm{\tilde{\varphi}}\Big(
+            \hat{K}\bm{\varphi}_w\Big(
             \begin{bmatrix}
-                \hat{K}\bm{\tilde{\varphi}}(\cdots) \\
+                \hat{K}\bm{\varphi}_w(\cdots) \\
                 w_{k-2}
             \end{bmatrix}
             \Big) \\
@@ -409,7 +409,7 @@ The triggering condition is formulated using the infinity norm, which allows the
     \end{bmatrix}
     \right\|_\infty \geq \nu,
 \end{equation}
-where the extended lifted lifted states $\bm{\tilde{\varphi}}$ are defined as in Equation~\eqref{eq:extLiftObs}, and $z_k = [x_k^T \;\; w_k^T]^T$ is a stacked vector selected from $\mathcal{X}_{\nu}$.
+where the extended lifted lifted states $\bm{\varphi}_w$ are defined as in Equation~\eqref{eq:extLiftObs}, and $z_k = [x_k^T \;\; w_k^T]^T$ is a stacked vector selected from $\mathcal{X}_{\nu}$.
 
 When this condition is met, the Koopman matrix is updated using the data matrices $\mathbf{L}_u^+$ and $\mathbf{L}^+$. At initialization, $\mathbf{L}_u$ and $\mathbf{L}$ are the offline correlation matrices defined above. While \cite{cisneros2020data} utilizes only the current measurement, this work incorporates a batch of the last five measurement samples to provide low-pass filtering and reduced sensitivity to noise. The batch data matrices are defined as
 \[
@@ -421,8 +421,8 @@ The recursive updates are computed as a weighted sum of the existing correlation
 \begin{equation} \label{eq:GA_online}
     \begin{split}
         n_{\text{upd}}^+ &= n_{\text{upd}} + 1,\\
-        \mathbf{L}_u^+ &= \frac{1}{n_{\text{upd}}^+} \Big( (n_{\text{upd}}^+-1)\mathbf{L}_u + \bm{\tilde{\varphi}}(z_{k,5}) \bm{\tilde{\varphi}}(z_{k,5})^T \Big),\\
-        \mathbf{L}^+ &= \frac{1}{n_{\text{upd}}^+} \Big( (n_{\text{upd}}^+-1)\mathbf{L} + \bm{\varphi}(x_{k,5}^+) \bm{\tilde{\varphi}}(z_{k,5})^T \Big).
+        \mathbf{L}_u^+ &= \frac{1}{n_{\text{upd}}^+} \Big( (n_{\text{upd}}^+-1)\mathbf{L}_u + \bm{\varphi}_w(z_{k,5}) \bm{\varphi}_w(z_{k,5})^T \Big),\\
+        \mathbf{L}^+ &= \frac{1}{n_{\text{upd}}^+} \Big( (n_{\text{upd}}^+-1)\mathbf{L} + \bm{\varphi}(x_{k,5}^+) \bm{\varphi}_w(z_{k,5})^T \Big).
     \end{split}
 \end{equation}
 The updated Koopman matrix is then obtained as $\hat{\bm{K}}^+ = \mathbf{L}^+ (\mathbf{L}_u^+)^{-1}$ and partitioned as in Equation~\eqref{eq:AugmentedKoopmanMPC}.

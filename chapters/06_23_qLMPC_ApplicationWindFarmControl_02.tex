@@ -53,7 +53,7 @@ The vector $\hat{\bm{V}}_r$ is the scheduling parameter vector $\bm{\rho}_{\Rho,
 \end{align*}
 %
 These vectors are used in combination with the parameter-dependent Toeplitz-like matrices built from $\bm{A}_{\text{WF}}$, $\bm{B}_{\text{WF}}$, and $\bm{C}_{\text{WF}}$ to predict the farm power trajectory, similarly to the approach discussed in Section~\ref{sec:qLMPCOptimizationAlgo} and Equation~\eqref{eq:nearlyToeplitzMat}.
-%
+% \bm{\varphi}_w
 The cost function $J(\bm{U})$ is formulated to minimize the tracking error $\bm{E}$ and control increments $\Delta \bm{U}$:
 \begin{align} \label{eq:NMPCcostAIC}
     J(\bm{U}) = \underbrace{\bm{E}^T Q \bm{E}}_{J_Q (\bm{U})} + \underbrace{\Delta \bm{U}^T R \Delta \bm{U} }_{J_R ( \bm{U})},
@@ -116,9 +116,9 @@ where $\bm{B}_{\text{WF},j} = \bm{B}_{\text{WF}}(\hat{\bm{V}}_r(k+j))$ is the in
 
 To evaluate the qLPV wind farm model over the prediction horizon, the effective wind speeds $\hat{V}_{ri}(k+j)$, $j = 1, \dots, n_h$, are required. They are predicted with the identified Koopman model in its augmented form, see Equation~\eqref{eq:AugmentedKoopmanMPC}. The prediction starts from the lifted state $\hat{\bm{\varphi}}(k)$ predicted at the previous time step. The inputs, i.e., the thrust coefficients $\bm{C}_T^\prime(k-1)$ applied at the previous sample and the measured upstream wind speed $V_1(k)$, are held constant over the horizon:
 \begin{align*}
-    \hat{\bm{\varphi}}(k+j) &= \bm{A}_{\hat{K}}\, \bm{\tilde{\varphi}}(k+j-1) + \bm{B}_{\hat{K},u}\, \bm{C}_T^\prime(k-1) + \bm{B}_{\hat{K},d}\, V_1(k), \\
+    \hat{\bm{\varphi}}(k+j) &= \bm{A}_{\hat{K}}\,  \hat{\bm{\varphi}}(k+j-1) + \bm{B}_{\hat{K},u}\, \bm{C}_T^\prime(k-1) + \bm{B}_{\hat{K},d}\, V_1(k), \\
     \hat{\bm{V}}_r(k+j) &= \bm{C}\, \hat{\bm{\varphi}}(k+j), \\
-    \bm{\tilde{\varphi}}(k+j) &= \bm{\tilde{\varphi}}\big([\hat{\bm{V}}_r^T(k+j) \;\; \bm{C}_T^{\prime T}(k-1) \;\; V_1(k)]^T\big),
+    \bm{\varphi}_w(k+j) &= \bm{\varphi}_w\big([\hat{\bm{V}}_r^T(k+j) \;\; \bm{C}_T^{\prime T}(k-1) \;\; V_1(k)]^T\big),
 \end{align*}
 where $\hat{\bm{V}}_r = [\hat{V}_{r1} \;\; \hat{V}_{r2}]^T$ contains the predicted effective wind speeds and $\bm{C} = [\bm{I}_{2} \;\; \bm{0}]$ selects them from the lifted state. After each prediction step, the lifted states are recomputed from the predicted wind speeds with the lifting functions from Equation~\eqref{eq:extLiftObs}, so that the nonlinear lifted states remain consistent with the predicted states. The predicted effective wind speeds are then inserted into the input matrices $\bm{B}_{\text{WT},i}(\hat{V}_{ri}(k+j))$ of the turbine models in Equation~\eqref{eqPowerWTAIC_vector}, which yields the time-varying matrices $\bm{B}_{\text{WF},j}$ in $\tilde{S}$. The one-step prediction $\hat{\bm{\varphi}}(k+1)$ is stored as the initial lifted state for the next time step. Since the predicted wind speeds do not depend on $\bm{U}(k)$, the matrix $\tilde{S}$ is independent of the decision variables.
 
@@ -259,7 +259,7 @@ The primary distinction between this approach and the individual turbine control
 At each sample time $k$, the controller requires a set of external signals and internally stored variables to compute the optimal control sequence:
 \begin{enumerate}
     \item The reference power trajectory $\bm{P}_{\text{ref}}(k)$ and the current measured wind speed $V_{1}(k)$ in front of the upstream turbine must be provided.
-    \item The algorithm utilizes the current state vector $\bm{x}_{\text{WF}}(k)$, the previously applied control input $\bm{C}_T^\prime(k-1)$, and the lifted state $\hat{\bm{\varphi}}(k)$ predicted at the previous sample. Additionally, it maintains the buffer $\mathcal{X}_{\nu}$ containing the most recent $h+1$ pairs of effective wind speeds and thrust coefficients, which are mapped through the extended lifting $\bm{\tilde{\varphi}}$ to evaluate the discrepancy criterion in Equation~\eqref{eq:add_data}.
+    \item The algorithm utilizes the current state vector $\bm{x}_{\text{WF}}(k)$, the previously applied control input $\bm{C}_T^\prime(k-1)$, and the lifted state $\hat{\bm{\varphi}}(k)$ predicted at the previous sample. Additionally, it maintains the buffer $\mathcal{X}_{\nu}$ containing the most recent $h+1$ pairs of effective wind speeds and thrust coefficients, which are mapped through the extended lifted states $\bm{\varphi}_w$ to evaluate the discrepancy criterion in Equation~\eqref{eq:add_data}.
 \end{enumerate}
 
 %
