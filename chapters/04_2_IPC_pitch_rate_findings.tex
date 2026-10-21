@@ -1,0 +1,36 @@
+% =========================================================================
+% Suggested text for Section 4.2 (IPC results): pitch rates of the IPC at
+% the three pitch rate limits.
+% Data: Combined-IPC-TEFC-for-Load-Reduction-of-Wind-Turbines,
+%   Main/Results_IPC_PI_RateLimitOpt/FadeIn/TimeSeries (fmincon gains of
+%   the re-optimization with the IPC/TEF fade-in), figures from
+%   Main/plotFunktionen/plotIPC_RateLimitComparison.m (fig00a_Timeseries*_fadeIn).
+% Wind: optimization wind field, 18 m/s mean, IEC turbulence class A,
+%   660 s, evaluated from 66 s. Note: the current text of
+%   Section~\ref{subsection: IPCResults} states 16 m/s and class B.
+% =========================================================================
+
+\subsubsection*{Pitch rates of the IPC at the different rate limits}
+The pitch actuator model consists of a rate limiter followed by a first-order lag with the time constant $\tau_{\beta}=0.1$\,s for each blade. The pitch rates discussed here are calculated as finite differences of the blade pitch angles $\beta_i$ returned by OpenFAST at a sampling time of 0.01\,s, for the IPC gains optimized with fmincon for each rate limit (4\textdegree/s: $K_P = 0.2533$, $K_I = 0.1033$; 8\textdegree/s: $K_P = 1.2219$, $K_I = 0.3702$; 13\textdegree/s: $K_P = 1.2227$, $K_I = 0.3653$). Table~\ref{tab:IPCPitchRateLimits} summarizes how often the pitch rate reaches the respective limit and how often it exceeds 8\textdegree/s.
+
+\begin{table}[htbp]
+    \centering
+    \caption[Pitch rates of the IPC at different pitch rate limits.]{Pitch rates of the IPC blades at different pitch rate limits for turbulent wind (18\,m/s mean, IEC turbulence class A), evaluated from 66\,s (59\,400 samples per blade). Time at the limit: share of the samples with $|\dot{\beta}_i| \geq 0.98$ times the rate limit, all three blades.}
+    \label{tab:IPCPitchRateLimits}
+    \begin{tabular}{lccc}
+        \hline
+        IPC rate limit (\textdegree/s) & 4 & 8 & 13 \\
+        \hline
+        Time at the limit (\%) & 2.2 & 0.2 & 0.0 \\
+        Samples above 8\textdegree/s (blades 1/2/3) & 0/0/0 & 2/2/0 & 413/326/440 \\
+        Time above 8\textdegree/s (\%) & 0 & $<$0.01 & 0.55--0.74 \\
+        Maximum pitch rate (\textdegree/s) & 4.10 & 8.14 & 12.1 \\
+        \hline
+    \end{tabular}
+\end{table}
+
+With the rate limit of 13\textdegree/s, the IPC exceeds 8\textdegree/s in 54 to 59 episodes per blade of up to 0.28\,s duration, i.e., during 0.55 to 0.74\% of the time. The limit of 13\textdegree/s itself is never reached; the largest pitch rate is 12.1\textdegree/s. With the rate limit of 8\textdegree/s, the pitch rate reaches the limit during only 0.2\% of the time. It exceeds 8\textdegree/s in four single samples, by at most 0.14\textdegree/s (1.7\%). With the most restrictive limit of 4\textdegree/s, the IPC is held at the limit more often, during 2.2\% of the time. The pitch rate exceeds 4\textdegree/s by at most 0.10\textdegree/s (2.4\%), which is not visible in the time series in Figure~\ref{fig:timeseriesIPC}.
+
+These small exceedances are not a violation of the rate limit by the controller. In continuous time, the first-order lag of the actuator model cannot move faster than its rate-limited input. The exceedances occur in single samples where the rate-limited command enters or leaves the limit, i.e., where its slope changes abruptly. They are most likely caused by the coupling of the Simulink model to OpenFAST: with the interpolation order of two set in the OpenFAST input file, the pitch command from Simulink is extrapolated quadratically over the last time steps, which briefly overshoots at such slope changes. The finite differences at 0.01\,s make these small deviations directly visible in the pitch rate.
+
+In summary, the rate limit acts at all three settings, but to a different extent: at 13\textdegree/s and 8\textdegree/s, the optimized IPC rarely uses the full rate (0.0\% and 0.2\% of the time), while at 4\textdegree/s the rate limit restricts the IPC more frequently. This is consistent with the nearly identical IPC gains and load reductions obtained for 8\textdegree/s and 13\textdegree/s, and with the smaller gains and load reductions at 4\textdegree/s.
