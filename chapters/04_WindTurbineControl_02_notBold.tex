@@ -569,7 +569,7 @@ The last column of Table~\ref{tab:ControllerComparisonMerged} shows the turbulen
 
 As more improvement in power variance was observed for the above-rated turbulent wind, the following discussion focuses on this case. For the results visualized in Figure~\ref{fig:CtrlCmpMdlSweep}, the pitch command increments are penalized, but the pitch rate state is not, and the pitch rate limit is set to 13\textdegree/s, the limit of the turbines in the DLR research wind farm WiValdi. This is a relatively high value compared to the 8\textdegree/s of the NREL 5-MW reference turbine \cite{jonkman2009definition}. Figure~\ref{fig:CtrlCmpRates} shows the results of six test runs with different pitch rate limits on the plant without the wind filters: three with the baseline PI controller and three with the qLMPC algorithm.
 \begin{figure}[h]
-    \subfloat[Baseline PI controller]{\includegraphics[height=0.4655\textheight]{figures/figDirConstr1/cmpTimeDomain_All5PINewLim_NoFilt.eps}}\hfill
+    \subfloat[Baseline PI controller]{\includegraphics[height=0.4658\textheight]{figures/figDirConstr1/cmpTimeDomain_All5PINewLim_NoFilt.eps}}\hfill
     \subfloat[qLMPC algorithm]{\includegraphics[width=0.485\textwidth]{figures/figDirConstr1/cmpTimeDomain_All5MPCNewLim.eps}}\hfill
     \caption[Controller comparison: Baseline PI and qLMPC with different pitch rate limits.]{Controller comparison: Baseline PI and qLMPC with different pitch rate limits for turbulent wind (18\,m/s mean, IEC turbulence  class B (14\%)), both controllers on the plant without the wind filters. Rate limits: Standard 8\textdegree/s~(black line), high 13\textdegree/s~(blue line), and low 4\textdegree/s~(red line). Displayed signals: wind speed, pitch, states, and power.}
     \label{fig:CtrlCmpRates}
