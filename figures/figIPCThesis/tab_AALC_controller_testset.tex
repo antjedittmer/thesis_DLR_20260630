@@ -1,0 +1,38 @@
+% Created by writeAALC_ControllerTableTex from makeAALC_ControllerTable on 2026-10-23
+% AALC: IPC K_P, K_I and TEF K_P, pitch rate limit 8 deg/s, IPC/TEF fade-in; evaluation from 66 s
+% Changes relative to the baseline (IPC and TEF off) on the same wind field; DEL Woehler exponent 8 (blade), 3 (tower)
+\begin{table}[htbp]
+    \centering
+    \caption[AALC gains and changes over the wind speed (test set).]{AALC controller gains and relative changes to the
+        baseline over the mean wind speed for the test wind set (NTM class A, new seeds not used for the tuning). Below rated, the gains were tuned at each
+        wind speed (fminsearch); from 10\,m/s on, the gains tuned at 18\,m/s (fmincon, tower DEL constraint) are used.
+        $\Delta$DEL blade is the change of the worst of the three blade root out-of-plane DELs. The pitch activity
+        change $\Delta$ADC is the change of the mean absolute pitch rate, given in \textdegree/s since the baseline
+        pitch is constant at low wind speeds; where the baseline pitch is active, the relative change is given in brackets.
+        $^\dagger$The test set has no 11\,m/s wind field; this row is simulated on the optimization set.}
+    \label{tab:AALC_controller_testset}
+    \begin{adjustbox}{max width=\textwidth}
+    \begin{tabular}{r rrr rrrr r}
+        \toprule
+        & \multicolumn{3}{c}{Gains} & \multicolumn{4}{c}{Change to baseline (\%)} & \\
+        \cmidrule(lr){2-4} \cmidrule(lr){5-8}
+        $v$ (m/s) & IPC $K_P$ & IPC $K_I$ & TEF $K_P$ & DEL blade & DEL tower & Mean power & Std power & $\Delta$ADC (\textdegree/s) \\
+        \midrule
+        4 & 0.422 & 0.959 & 2.028 & +4.6 & -11.2 & -2.4 & -0.7 & 0.81 \\
+        6 & 2.038 & 1.437 & 2.970 & +1.4 & -8.7 & -3.3 & -2.8 & 1.53 \\
+        8 & -0.043 & 0.826 & 4.939 & -0.4 & -4.8 & -3.5 & -2.8 & 1.22 \\
+        \midrule
+        10 & 0.082 & 0.669 & 0.641 & -17.1 & -4.2 & -2.0 & -1.8 & 1.36 (+3162\,\%) \\
+        11$^\dagger$ & 0.082 & 0.669 & 0.641 & -20.2 & -2.0 & -1.3 & +3.5 & 1.26 (+460\,\%) \\
+        12 & 0.082 & 0.669 & 0.641 & -14.7 & -0.6 & -0.7 & +2.4 & 1.18 (+360\,\%) \\
+        14 & 0.082 & 0.669 & 0.641 & -13.4 & -0.2 & -0.3 & +5.3 & 1.03 (+217\,\%) \\
+        16 & 0.082 & 0.669 & 0.641 & -14.7 & +0.7 & 0.0 & +3.5 & 1.06 (+225\,\%) \\
+        18 & 0.082 & 0.669 & 0.641 & -18.0 & -0.1 & 0.0 & +0.1 & 1.14 (+244\,\%) \\
+        20 & 0.082 & 0.669 & 0.641 & -19.9 & -1.0 & 0.0 & -0.4 & 1.26 (+277\,\%) \\
+        22 & 0.082 & 0.669 & 0.641 & -21.6 & +0.1 & 0.0 & -0.1 & 1.36 (+291\,\%) \\
+        24 & 0.082 & 0.669 & 0.641 & -25.7 & +0.6 & 0.0 & +0.4 & 1.45 (+298\,\%) \\
+        25 & 0.082 & 0.669 & 0.641 & -27.0 & +0.7 & 0.0 & +0.8 & 1.50 (+303\,\%) \\
+        \bottomrule
+    \end{tabular}
+    \end{adjustbox}
+\end{table}
