@@ -1,0 +1,30 @@
+% Created by makeAALC_SummaryTable on 2026-10-25
+\begin{table}[h]
+    \centering
+    \caption[Wind turbine evaluation criteria for AALC: Mean values of the optimization and verification datasets over wind speed ranges]{\label{tabone} Wind turbine evaluation criteria for AALC: Mean values of the optimization and verification datasets over different wind speed ranges, normalized by the baseline without AALC. From 10\,m/s on, the AALC gains optimized at 18\,m/s are used: $K_{P,\text{IPC}} = 0.082$, $K_{I,\text{IPC}} = 0.669$ and $K_{P,\text{TEFC}} = 0.641$; below, the gains are scheduled with the gains optimized at 4, 6 and 8\,m/s. Criteria are tower base and blade DELs, power mean and standard deviation (mean of the ratios of the single wind speeds), and actuator power (ratio of the mean actuator powers, since the baseline pitch is constant at low wind speeds; not given below rated, where the baseline actuator power is close to zero). The first verification set has no wind fields for 11 and 13\,m/s.}
+    \begin{tabular}{@{}l*{7}{c}@{}}
+        \toprule
+        Wind speeds & Dataset & Turb. class & $C_{\text{DEL},b}$ & $C_{\text{DEL},t,\text{Base}}$ & $C_{\bar{P}}$ & $C_{\delta P}$ & $C_{\text{Act}}$ \\
+        \midrule
+        \multirow{3}{*}{All (4--25\,m/s)} & Optim. & A & 0.78 & 0.97 & 0.99 & 1.01 & 4.55 \\
+         & Verif. 1 & A & 0.86 & 0.98 & 0.99 & 1.00 & 4.60 \\
+         & Verif. 2 & B & 0.81 & 0.99 & 0.99 & 1.00 & 4.72 \\
+        \midrule
+        \multirow{3}{*}{Below rated (4--11\,m/s)} & Optim. & A & 0.81 & 0.94 & 0.98 & 1.00 & -- \\
+         & Verif. 1 & A & 0.97 & 0.93 & 0.97 & 0.98 & -- \\
+         & Verif. 2 & B & 0.85 & 0.96 & 0.98 & 0.98 & -- \\
+        \midrule
+        \multirow{3}{*}{Above rated (12--25\,m/s)} & Optim. & A & 0.77 & 0.99 & 1.00 & 1.02 & 3.86 \\
+         & Verif. 1 & A & 0.81 & 1.00 & 1.00 & 1.01 & 3.85 \\
+         & Verif. 2 & B & 0.79 & 1.00 & 1.00 & 1.02 & 4.01 \\
+        \midrule
+        \multirow{3}{*}{18--25\,m/s} & Optim. & A & 0.75 & 1.00 & 1.00 & 1.00 & 3.99 \\
+         & Verif. 1 & A & 0.78 & 1.00 & 1.00 & 1.00 & 3.89 \\
+         & Verif. 2 & B & 0.74 & 1.01 & 1.00 & 1.00 & 4.18 \\
+        \midrule
+        \multirow{3}{*}{18\,m/s} & Optim. & A & 0.77 & 0.99 & 1.00 & 0.99 & 3.64 \\
+         & Verif. 1 & A & 0.82 & 1.00 & 1.00 & 1.00 & 3.49 \\
+         & Verif. 2 & B & 0.78 & 1.03 & 1.00 & 1.00 & 3.76 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
