@@ -1,0 +1,105 @@
+% Updated tables and sentences after the rerun of runGeneratePicsPaper
+% (qLMPC repository, main 871cffc, 2026-10-25):
+% - Plant comparison (Figures fig:TimeCmpMdlSweep and fig:TimeCmpMdlNTM(a)):
+%   Mdl2 on the plant without the wind filters (Mdl_BianchiOL), i.e. also
+%   without the projection factor cos(5 deg); before, Mdl_BianchiOL_WindFiltered
+%   with the filter bypassed. Figure fig:TimeCmpMdlNTM(b) is unchanged.
+% - Controller comparison and pitch rate runs: PI and qLMPC on the same plant
+%   Mdl_BianchiOL. The PI of the turbulent wind comparison is the same run as
+%   the PI at 13 deg/s of the pitch rate table.
+% - All ratios are computed from unrounded values (before, the ratios of
+%   tab:stddev_unified were computed from the rounded standard deviations).
+%
+% Each block below replaces the block of the same label or the paragraph
+% named in the comment. Changes are listed in the comment of each block.
+
+%% ======================================================================
+%% Chapter 3 (03_WindTurbineqLPVmodel_01.tex), subsec:ResultsqLPVModel
+%% ======================================================================
+
+% Replaces the paragraph "The first subplot shows the wind input ..." after
+% fig:TimeCmpMdlSweep. Change: the steady-state pitch offset above rated
+% (about 0.1 deg) now applies to both models; Mdl2 previously had nearly
+% none because of the projection factor cos(5 deg) of the filtered plant.
+The first subplot shows the wind input applied to the turbine, which is identical for all simulations. The second and third subplots display the two control inputs: generator torque and collective blade pitch. The fourth subplot shows the rotor speed, followed by the fifth and sixth subplots showing the tower fore-aft and side-to-side accelerations, respectively. The final subplot depicts the resulting electrical power output. There is a very good fit between FAST and both models for the stepped wind sweep test case, in the transient dynamics as well as in the steady-state gain. Small deviations remain, e.g., a slight steady-state pitch offset of about 0.1\textdegree{} of both models above rated wind speed and a slightly larger pitch overshoot of Mdl2 after the step at 800\,s, see Figure~\ref{fig:TimeCmpMdlSweep}(b). The good fit in steady state corresponds to the resemblance between FAST and both models for the rotor speed and the tower fore-aft acceleration for lower frequencies. As there is little difference both in the generator torque as well as in the rotor speed, there is also a good fit in the power output. There is also a good fit in the amplitude of the fore-aft tower acceleration for all wind speeds. In the tower side-to-side acceleration, both models reproduce the oscillations above rated wind speed with a similar amplitude, but do not capture the short peaks at the wind steps and the continuous low-level oscillation present in the FAST reference. However, the amplitudes of this signal are comparably small and its influence on the overall dynamics is nearly negligible.
+
+% Replaces the paragraph "As shown in Figure~\ref{fig:TimeCmpMdlNTM}(a), without
+% filtering ..." Change: without the projection factor, the generator torque
+% of Mdl2 stays at its rated value; at approximately 325 s, the pitch angle
+% of Mdl2 drops briefly to about 1.5 deg (Mdl1: 7.5 deg, FAST: above 10 deg).
+As shown in Figure~\ref{fig:TimeCmpMdlNTM}(a), without filtering the models exhibit pronounced high-frequency oscillations and overshoot in blade pitch, rotor speed, and generator power, as well as an overestimated tower fore-aft acceleration. For Mdl2, the rotor speed drop at approximately 325\,s even leads to a short pitch drop to about 1.5\textdegree, whereas the pitch angle of the FAST reference remains above 10\textdegree. With the filter active in Figure~\ref{fig:TimeCmpMdlNTM}(b), the blade pitch,  rotor speed fluctuations and power follow the FAST reference more closely, but are still slightly larger and the tower fore-aft acceleration amplitude is underestimated by both models. The tower side-to-side acceleration is not reproduced very accurately by either model in this test case, as it is mainly excited by asymmetric rotor loads resulting from the spatially distributed wind field, which cannot be represented by a scalar wind input. Note that these filters are used only for the turbulent wind comparison with FAST and are not included in the qLMPC controller design, where the freestream wind speed $V_\infty$ is used directly as an input.
+
+%% ======================================================================
+%% Chapter 4 (04_WindTurbineControl_02_notBold.tex), quasiLPVMPCResults
+%% ======================================================================
+
+% Replaces the paragraph "Figure~\ref{fig:CtrlCmpMdlSweep}(b) shows results for
+% the turbulent wind ..." Change: 11.36 -> 11.35, the ratio of
+% tab:ControllerComparisonMerged (PI at 13 deg/s divided by qLMPC at 13 deg/s).
+Figure~\ref{fig:CtrlCmpMdlSweep}(b) shows results for the turbulent wind. The improvements over the baseline PI are even more pronounced than in the stepped sweep case. For the tower fore-aft acceleration and power tracking error, the qLMPC yields standard deviation ratios of 4.14 and 11.35 (equivalent to variance reduction factors of 17.14 and 128.88), see Table~\ref{tab:ControllerComparisonMerged}.
+
+% Replaces tab:ControllerComparisonMerged. Change: pitch rate ratio of the
+% filtered case 1.31 -> 1.32 (0.7082/0.5362 = 1.3206). All other values unchanged.
+\begin{table}[t]
+    \centering
+    \setlength{\tabcolsep}{4pt}
+    \caption[Standard deviation comparison: Baseline PI vs.\ qLMPC for stepped wind sweep and turbulent wind.]%
+    {Standard deviation comparison: Baseline PI vs.\ qLMPC for stepped wind sweep and
+        turbulent wind (18\,m/s mean, IEC class B).
+        The standard deviations obtained with the PI controller are divided by those obtained with the qLMPC;
+        quotients above~1 indicate improvement. Ratios are computed from unrounded values.
+        Stepped wind sweep and turbulent wind: both controllers on the same plant without the
+        rotor-effective wind filters, qLMPC scheduled with the unfiltered wind; filtered: both
+        controllers on the plant with the filters, qLMPC scheduled with the filtered wind.}
+    \label{tab:ControllerComparisonMerged}
+    \begin{tabular}{l rrr}
+        \toprule
+        Std.\ of & Step sweep & Turbulent & Turb., filtered \\
+        Signal (unit) & \multicolumn{3}{c}{std PI / std qLMPC = ratio} \\
+        \midrule
+        Tower acc.\ (m/s$^2$)       & $0.0597 / 0.0342 = 1.74$ & $0.3110 / 0.0751 = 4.14$  & $0.1300 / 0.0723 = 1.80$ \\
+        Power error (kW)            & $176.01 / 154.95 = 1.14$ & $201.12 / 17.72 = 11.35$  & $159.33 / 27.40 = 5.82$ \\
+        Torque rate (kNm/s)         & $0.56 / 1.47 = 0.38$     & $0.00 / 0.00 = {-}$       & $0.00 / 0.00 = {-}$ \\
+        Pitch rate (\textdegree/s)  & $0.21 / 0.76 = 0.28$     & $1.21 / 4.44 = 0.27$      & $0.71 / 0.54 = 1.32$ \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+% Replaces tab:stddev_unified. Changes (ratios from unrounded values):
+% PI pitch rate 1.04 -> 1.05, 0.98 -> 0.97, 1.66 -> 1.67; qLMPC rotor speed
+% 11.40 -> 11.39; qLMPC filtered pitch rate 1.31 -> 1.32. Standard deviations
+% unchanged. Caption: sentence on the unrounded values added.
+\begin{table}[htbp]
+    \centering
+    \setlength{\tabcolsep}{4.5pt}
+    \caption[Standard deviations: Baseline PI vs.\ qLMPC for turbulent wind and different pitch rate limits.]%
+    {Standard deviations: Baseline PI vs.\ qLMPC for turbulent wind and different pitch rate limits
+        (\textdegree/s). Columns 4, 8, 13: plant without rotor-effective wind filters. Last column: plant
+        with filters, qLMPC scheduled with the filtered wind. Brackets: PI value at 8\textdegree/s without
+        filters divided by the entry; for the filtered qLMPC, the filtered PI value is used instead.
+        Ratios are computed from unrounded values.}
+    \label{tab:stddev_unified}
+    \begin{tabular}{ll rrrr}
+        \toprule
+        & & \multicolumn{4}{c}{Rate limit (\textdegree/s)} \\
+        \cmidrule(lr){3-6}
+        Ctrl. & Signal & low: 4 & standard: 8 & high: 13 & filt.: 13 \\
+        \midrule
+        \multirow{4}{*}{PI}
+        & Tower acc.\ (m/s$^2$)      & 0.3076 (1.01) & 0.3108 (1.00) & 0.3110 (1.00) & 0.1300 (2.39) \\
+        & Power error (kW)           & 202.04 (1.00) & 201.22 (1.00) & 201.12 (1.00) & 159.33 (1.26) \\
+        & Rotor speed (rpm)          & 0.4830 (1.00) & 0.4810 (1.00) & 0.4808 (1.00) & 0.3812 (1.26) \\
+        & Pitch rate (\textdegree/s) & 1.13 (1.05)   & 1.18 (1.00)   & 1.21 (0.97)   & 0.71 (1.67) \\
+        \midrule
+        \multirow{4}{*}{qLMPC}
+        & Tower acc.\ (m/s$^2$)      & 0.1204 (2.58) & 0.0813 (3.82)  & 0.0751 (4.14)  & 0.0723 (1.80) \\
+        & Power error (kW)           & 31.35 (6.42)  & 19.56 (10.29)  & 17.72 (11.36)  & 27.40 (5.82) \\
+        & Rotor speed (rpm)          & 0.0743 (6.47) & 0.0464 (10.37) & 0.0422 (11.39) & 0.0655 (5.82) \\
+        & Pitch rate (\textdegree/s) & 2.91 (0.41)   & 4.07 (0.29)    & 4.44 (0.27)    & 0.54 (1.32) \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+% Replaces the paragraph "Figure~\ref{fig:CtrlCmpFilt2} shows both controllers on
+% the plant with the wind filters ..." Change: pitch rate ratio 1.31 -> 1.32.
+Figure~\ref{fig:CtrlCmpFilt2} shows both controllers on the plant with the wind filters at a pitch rate limit of 13\textdegree/s, with the same axis limits as Figure~\ref{fig:CtrlCmpRates}. With the filtered wind, the largest pitch rate is 2.5\textdegree/s for the PI controller and 2.6\textdegree/s for the qLMPC, so all rate limits from 3\textdegree/s upwards are inactive and give identical results. The filters alone reduce the standard deviations of the PI controller by a factor of 2.39 for the tower fore-aft acceleration and 1.26 for the rotor speed and the power tracking error. On the filtered plant, the qLMPC still keeps the rotor speed and the generated power close to their rated values and reduces the standard deviations of the tower fore-aft acceleration, the rotor speed and the power tracking error by factors of 1.80, 5.82 and 5.82 compared with the PI controller, with a lower pitch activity than the PI controller (ratio 1.32). The results with the filtered wind indicate that a large part of the pitch activity required by the qLMPC without the filters results from high-frequency wind fluctuations that a real rotor averages out, while the unfiltered case shows the benefit of high pitch rates for fast disturbances.
