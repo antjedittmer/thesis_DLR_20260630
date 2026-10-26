@@ -1,67 +1,85 @@
-% Suggested text changes for chapter 04_WindTurbineControl_02_notBold.tex.
+% Suggested text changes for chapter 04_WindTurbineControl_02_notBold.tex (main 8050120).
 % Each block: the original lines (commented, "% OLD:", with their line number on main)
-% followed by the suggested new lines. Blocks without OLD lines are insertions.
-% The earlier blocks (tower top DEL, figures, panel references) are merged into the chapter
-% and were removed.
+% followed by the suggested new lines. Blocks without OLD lines are insertions before the
+% given line. Figures and tables: figures/figDirFASTthesis (runGeneratePicsFASTthesis.m
+% of the qLMPC repository). \nameref needs hyperref, which is loaded.
+% The earlier blocks are merged into the chapter and were removed.
 
-% ==== qLMPC on FAST: new subsection and references to it (line numbers on main c5be1a2) ====
+% ==== Adaptations for the Application to FAST: design only ====
 
-% ---- original line 517 (after: "%; only the projection factor $\cos(5^\circ)$ remains in the plant of ")
-% New subsection before \subsection{Results} (line 518): insert, no OLD lines.
-% It describes only the two FAST designs of the comparison (qlmpcDesign.m: flapNotch and
-% flapNotchSmooth12, qLMPC repository); table values from experiments/results_summary.md
-% (FAST 18 m/s tuning wind, 60-600 s).
-% CHECK: the IPC gain set that is scaled by 0.3 (ipc_dlr gain set 2 of initDLRparameter).
-\subsection{Adaptations for the Application to FAST}\label{sec:qLMPCFAST}
+% ---- original line 518 (after: "")
+% The results of the two designs are now in the Results subsection.
+% OLD: The qLMPC design described above is tuned on the qLPV model Mdl2, which also serves as its prediction model. Applied to the FAST model of the NREL 5-MW turbine in turbulent wind, this design does not work: its fast pitch action excites structural modes of FAST that are not contained in the prediction model, i.e.\ the tower fore-aft mode at about 0.32\,Hz, the blade passing frequency 3P, and the drivetrain mode at 1.64\,Hz. For FAST, two designs are therefore derived, the notch filter design and the smooth design, which are evaluated in Section~\ref{subsec:ComparisonWindTurbineControlDesigns}. They differ from the design above as described in the following; the optimization algorithm of Section~\ref{sec:qLMPCOptimizationAlgo} remains unchanged.
+The qLMPC design described above is tuned on the qLPV model Mdl2, which also serves as its prediction model. Applied to the FAST model of the NREL 5-MW turbine in turbulent wind, this design does not work: its fast pitch action excites structural modes of FAST that are not contained in the prediction model, i.e.\ the tower fore-aft mode at about 0.32\,Hz, the blade passing frequency 3P, and the drivetrain mode at 1.64\,Hz. For FAST, two designs are therefore derived, the notch filter design and the smooth design. Their results are presented in the second part of Section~\ref{quasiLPVMPCResults}, \nameref{subsubsec:qLMPCFASTresults}, and they are compared with the other controllers in Section~\ref{subsec:ComparisonWindTurbineControlDesigns}. They differ from the design above as described in the following; the optimization algorithm of Section~\ref{sec:qLMPCOptimizationAlgo} remains unchanged.
 
-The qLMPC design described above is tuned on the qLPV model Mdl2, which also serves as its prediction model. Applied to the FAST model of the NREL 5-MW turbine in turbulent wind, this design does not work: its fast pitch action excites structural modes of FAST that are not contained in the prediction model, i.e.\ the tower fore-aft mode at about 0.32\,Hz, the blade passing frequency 3P, and the drivetrain mode at 1.64\,Hz. For FAST, two designs are therefore derived, the notch filter design and the smooth design, which are evaluated in Section~\ref{subsec:ComparisonWindTurbineControlDesigns}. They differ from the design above as described in the following; the optimization algorithm of Section~\ref{sec:qLMPCOptimizationAlgo} remains unchanged.
+% ---- original line 535 (after: "")
+% Table and results on the tuning wind removed (results now in "Results on FAST", on the
+% turbulent wind of the Mdl2 results); only the IPC paragraph remains.
+% OLD: \begin{table}[htbp]
+% OLD:     \centering
+% OLD:     \caption[qLMPC designs for the application to FAST]{qLMPC designs for the application to FAST: standard deviations of rotor speed, power, tower top fore-aft acceleration, and pitch rate on FAST for the turbulent 18\,m/s wind used for the tuning, evaluated from 60\,s to 600\,s.}
+% OLD:     \label{tab:qLMPCFAST}
+% OLD:     \begin{tabular}{l c rrrr}
+% OLD:         \toprule
+% OLD:         Design & Sample time & Rotor speed & Power & Tower acc. & Pitch rate \\
+% OLD:         & (s) & (rpm) & (kW) & (m/s$^2$) & (\textdegree/s) \\
+% OLD:         \midrule
+% OLD:         PI baseline & -- & 0.286 & 120 & 0.190 & 0.62 \\
+% OLD:         Notch filter design & 0.04 & 0.086 & 38 & 0.290 & 3.60 \\
+% OLD:         Smooth design & 0.12 & 0.155 & 66 & 0.233 & 1.65 \\
+% OLD:         \bottomrule
+% OLD:     \end{tabular}
+% OLD: \end{table}
+% OLD: 
+% OLD: Both designs reduce the standard deviations of rotor speed and power considerably compared with the PI baseline, by about 70\% for the notch filter design and 45\% for the smooth design, see Table~\ref{tab:qLMPCFAST}. The smooth design requires less than half of the pitch activity of the notch filter design. Neither design reaches the tower fore-aft acceleration of the PI baseline, which is 53\% and 23\% higher. For the combination with individual pitch control, the IPC of Section~\ref{section:Individal Pitch PI Control} is added to the collective pitch command of the qLMPC, and the qLMPC receives the mean blade pitch angle as feedback. The IPC gains are not optimized for the combination. On FAST, the unscaled gains increase the blade root moments and the tower acceleration instead of reducing them. They were therefore scaled by hand on the notch filter design with the factors 0.1, 0.3, and 0.5, and the factor 0.3, which gave the lowest blade root moments, is used without the tower damping term for both designs and all pitch rate limits, i.e.\ without retuning for the smooth design.
+For the comparison in Section~\ref{subsec:ComparisonWindTurbineControlDesigns}, both designs are also combined with individual pitch control. The IPC of Section~\ref{section:Individal Pitch PI Control} is added to the collective pitch command of the qLMPC, and the qLMPC receives the mean blade pitch angle as feedback. The IPC gains are not optimized for the combination. On FAST, the unscaled gains increase the blade root moments and the tower acceleration instead of reducing them. They were therefore scaled by hand on the notch filter design with the factors 0.1, 0.3, and 0.5, and the factor 0.3, which gave the lowest blade root moments, is used without the tower damping term for both designs and all pitch rate limits, i.e.\ without retuning for the smooth design.
 
-\textbf{Prediction model and weights.} The prediction model is extended by the tower fore-aft and the blade flap dynamics of Mdl2. The tower states are estimated from the measured tower top fore-aft acceleration by leaky integration with a corner frequency of 0.02\,Hz. The blade flap state is not measured; it is obtained by integrating the blade equation of Mdl2, driven by the measured tower motion and the deviations of rotor speed, pitch angle, and wind speed from their slow means, which is stable due to the aerodynamic damping of the blades. Instead of the pitch reference $r_\beta$, the rotor speed is tracked: the weight on the pitch angle is zero, the rotor speed and the rotor and generator speed increments are weighted with 1000, the pitch increments with $10^5$, and the terminal weight is $10\,\bm{Q}_{\text{WT}}$ instead of $1000\,\bm{Q}_{\text{WT}}$. The controller sample time is 0.04\,s, which extends the prediction horizon from 0.32\,s to 1.6\,s with the same number of prediction steps. The controller is scheduled with the hub height wind speed filtered with the rotor-effective wind filter $V_{\text{filt},\tau}$ introduced at the end of Chapter~\ref{sec:WindTurbineqLPVModels}.
+% ==== Results: two subsubsections, Mdl2 and FAST ====
 
-\textbf{Notch filters.} The measured rotor and generator speeds are filtered with notch filters
-\begin{align*}
-    N(s) = \frac{s^2 + 2\zeta_z\omega_0 s + \omega_0^2}{s^2 + 2\zeta_p\omega_0 s + \omega_0^2},
-\end{align*}
-with $\omega_0 = 2\pi f_0$ at $f_0 = 0.605$\,Hz (3P at the rated rotor speed of 12.1\,rpm) and $f_0 = 1.64$\,Hz (drivetrain mode of FAST), the pole damping $\zeta_p = 0.1$ and the zero damping $\zeta_z = 0.01$, discretized with the Tustin method with prewarping. They prevent the controller from reacting to the rotor speed oscillations at these frequencies. This design is referred to as the notch filter design.
+% ---- original line 555 (after: "\subsection{Results} \label{quasiLPVMPCResults}")
+% Insert before this line (after \subsection{Results}).
+The qLMPC is evaluated first on the qLPV model Mdl2 and then, with the adaptations of Section~\ref{sec:qLMPCFAST}, on FAST.
 
-\textbf{Smooth design.} With a sample time of 0.04\,s, the step-wise changes of the pitch reference still cause pitch activity between 2.4\,Hz and 6\,Hz. For the smooth design, the controller sample time of the notch filter design is increased to 0.12\,s, which extends the horizon to 4.8\,s, and the pitch reference is ramped linearly from the current value to the new reference at the plant sample time of 8\,ms instead of changing step-wise.
+\subsubsection{Results on the qLPV Model}\label{subsubsec:qLMPCMdl2results}
 
-\begin{table}[htbp]
-    \centering
-    \caption[qLMPC designs for the application to FAST]{qLMPC designs for the application to FAST: standard deviations of rotor speed, power, tower top fore-aft acceleration, and pitch rate on FAST for the turbulent 18\,m/s wind used for the tuning, evaluated from 60\,s to 600\,s.}
-    \label{tab:qLMPCFAST}
-    \begin{tabular}{l c rrrr}
-        \toprule
-        Design & Sample time & Rotor speed & Power & Tower acc. & Pitch rate \\
-        & (s) & (rpm) & (kW) & (m/s$^2$) & (\textdegree/s) \\
-        \midrule
-        PI baseline & -- & 0.286 & 120 & 0.190 & 0.62 \\
-        Notch filter design & 0.04 & 0.086 & 38 & 0.290 & 3.60 \\
-        Smooth design & 0.12 & 0.155 & 66 & 0.233 & 1.65 \\
-        \bottomrule
-    \end{tabular}
-\end{table}
+% ---- original line 653 (after: "")
+% Insert before this line (the closing paragraph of the qLMPC results).
+\subsubsection{Results on FAST}\label{subsubsec:qLMPCFASTresults}
 
-Both designs reduce the standard deviations of rotor speed and power considerably compared with the PI baseline, by about 70\% for the notch filter design and 45\% for the smooth design, see Table~\ref{tab:qLMPCFAST}. The smooth design requires less than half of the pitch activity of the notch filter design. Neither design reaches the tower fore-aft acceleration of the PI baseline, which is 53\% and 23\% higher. For the combination with individual pitch control, the IPC of Section~\ref{section:Individal Pitch PI Control} is added to the collective pitch command of the qLMPC, and the qLMPC receives the mean blade pitch angle as feedback. The IPC gains are not optimized for the combination. On FAST, the unscaled gains increase the blade root moments and the tower acceleration instead of reducing them. They were therefore scaled by hand on the notch filter design with the factors 0.1, 0.3, and 0.5, and the factor 0.3, which gave the lowest blade root moments, is used without the tower damping term for both designs and all pitch rate limits, i.e.\ without retuning for the smooth design.
+Figure~\ref{fig:CtrlCmpFAST} shows the baseline PI controller, the original qLMPC of the first part, and the notch filter and smooth designs of Section~\ref{sec:qLMPCFAST} on FAST v8.16 for the stepped wind sweep and the turbulent 18\,m/s wind field of the first part, with a pitch rate limit of 13\textdegree/s. The standard deviations and loads are summarized in Tables~\ref{tab:CtrlComparisonFASTSweep_PI_beta_flapNotch_flapNotchSmooth12} and~\ref{tab:CtrlComparisonFASTNTM18B_PI_beta_flapNotch_flapNotchSmooth12}, with the ratio of the baseline PI value to the value of the respective controller in parentheses.
 
-% ---- original line 519 (after: "\subsection{Results} \label{quasiLPVMPCResults}")
-% Sentence appended at the end of the paragraph.
-% OLD: The velocity-based qLMPC is evaluated in two scenarios, similar to those used for model verification in Section~\ref{subsec:ResultsqLPVModel}. As in \cite{dittmer2021velocity}, the qLPV model Mdl2 is used as the plant. The controller model consists of a subset of its states with identical parameters, chosen to remain close to the model in \cite{Bianchi2007}. There is therefore no parametric mismatch; only the tower and blade dynamics of the plant are not included in the controller model. This unrealistic best-case scenario was selected for its fast run times, which allowed a quick tuning of the weights, but, more importantly, to investigate the upper limits of possible improvements. In the first scenario, the wind speed is increased stepwise from 4\,m/s to 23\,m/s in steps with a duration of 20\,s, resulting in a simulation time of 400\,s, with the first 15\,s discarded as a transient. In the second scenario, 660\,s of turbulent wind with a mean speed of 18\,m/s and IEC turbulence class B is used to assess controller performance under realistic wind conditions, and the first 60\,s are left out of the analysis.
-The velocity-based qLMPC is evaluated in two scenarios, similar to those used for model verification in Section~\ref{subsec:ResultsqLPVModel}. As in \cite{dittmer2021velocity}, the qLPV model Mdl2 is used as the plant. The controller model consists of a subset of its states with identical parameters, chosen to remain close to the model in \cite{Bianchi2007}. There is therefore no parametric mismatch; only the tower and blade dynamics of the plant are not included in the controller model. This unrealistic best-case scenario was selected for its fast run times, which allowed a quick tuning of the weights, but, more importantly, to investigate the upper limits of possible improvements. In the first scenario, the wind speed is increased stepwise from 4\,m/s to 23\,m/s in steps with a duration of 20\,s, resulting in a simulation time of 400\,s, with the first 15\,s discarded as a transient. In the second scenario, 660\,s of turbulent wind with a mean speed of 18\,m/s and IEC turbulence class B is used to assess controller performance under realistic wind conditions, and the first 60\,s are left out of the analysis. The adaptations for FAST of Section~\ref{sec:qLMPCFAST} are not used here; the FAST designs are evaluated in Section~\ref{subsec:ComparisonWindTurbineControlDesigns}.
+In the turbulent wind, the original qLMPC, which performs well on Mdl2, fails on FAST: the rotor speed varies between 10\,rpm and 14.3\,rpm, and the standard deviations of the rotor speed and of the power tracking error are 3.7 and 3.6 times those of the baseline PI controller. The notch filter design reduces these standard deviations by factors of 3.8 and 3.3 compared with the baseline PI controller, and the smooth design by factors of 2.2 and 2.0. This is less than the factor of 11.4 on Mdl2 (Table~\ref{tab:stddev_unified}), but still a considerable smoothing of the power output. In contrast to Mdl2, however, the tower fore-aft acceleration is not reduced but increased, by 35\% for the notch filter design and 16\% for the smooth design, and the tower base DEL increases by 27\% and 12\%. The blade DEL is at most 4\% higher than with the baseline PI controller. The pitch rate standard deviation is 5.9 times that of the baseline PI controller for the notch filter design and 2.4 times for the smooth design.
 
-% ---- original line 617 (after: "")
-% The old text promised considerably reduced DELs; on FAST the tower DEL increases.
+In the stepped wind sweep, the differences between the controllers are small. The original qLMPC performs about as well as the baseline PI controller. Neither FAST design improves the power tracking, whose standard deviation is 2\% and 10\% higher than with the baseline PI controller, while the tower fore-aft acceleration increases by 48\% and 21\% and the tower base DEL by 5\%.
+
+The adaptations thus make the qLMPC applicable to FAST and retain a large part of the power smoothing in turbulent wind, but not the reduction of the tower loads achieved on Mdl2. The smooth design trades part of the power smoothing for considerably less pitch activity and a smaller increase of the tower loads.
+
+\begin{figure}[htbp]
+    \subfloat[Stepped wind sweep]{\includegraphics[width=0.49\textwidth]{figures/figDirFASTthesis/cmpCtrlFASTthesis_Sweep_PI_beta_flapNotch_flapNotchSmooth12.eps}}\hfill
+    \subfloat[Turbulent wind, IEC class B, 18~m/s mean speed]{\includegraphics[width=0.49\textwidth]{figures/figDirFASTthesis/cmpCtrlFASTthesis_NTM18B_PI_beta_flapNotch_flapNotchSmooth12.eps}}
+    \caption[Controller comparison on FAST: baseline PI, original qLMPC, and the qLMPC designs for FAST]{Controller comparison on FAST v8.16: baseline PI controller, original qLMPC, notch filter design, and smooth design for the stepped wind sweep and turbulent wind (18\,m/s mean, IEC turbulence class B), pitch rate limit 13\textdegree/s. Displayed signals: wind speed, generator torque, blade 1 pitch angle, rotor speed, tower fore-aft acceleration, generator power with its reference (black dashed line), and blade 1 root out-of-plane moment.}
+    \label{fig:CtrlCmpFAST}
+\end{figure}
+
+\input{figures/figDirFASTthesis/resultsFASTthesis_Sweep_PI_beta_flapNotch_flapNotchSmooth12}
+\input{figures/figDirFASTthesis/resultsFASTthesis_NTM18B_PI_beta_flapNotch_flapNotchSmooth12}
+
+
+% ---- original line 653 (after: "")
+% Closing paragraph: on FAST the tower loads increase.
 % OLD: The application of the proposed velocity-based qLMPC concept significantly reduces tower movements and minimizes power output fluctuations. As noted at the start of this section, DEL reduction is not directly a qLMPC objective. However, it will be shown in Sections~\ref{subsection: IPCResults} and~\ref{subsec:ComparisonWindTurbineControlDesigns} that the reduced tower movement also results in considerably reduced DELs and the corresponding values are included in comparisons with other control schemes in the Figures~\ref{fig:EvalCrit1} and~\ref{fig:CtrlCompAll}.
-The application of the proposed velocity-based qLMPC concept to the qLPV model significantly reduces tower movements and minimizes power output fluctuations. As noted at the start of this section, DEL reduction is not directly a qLMPC objective. On FAST, with the adaptations of Section~\ref{sec:qLMPCFAST}, the qLMPC still reduces the power fluctuations, but the tower DEL increases, as shown in Section~\ref{subsec:ComparisonWindTurbineControlDesigns} and in Figure~\ref{fig:CtrlCompBarPareto}.
+The application of the proposed velocity-based qLMPC concept to the qLPV model significantly reduces tower movements and minimizes power output fluctuations. As noted at the start of this section, DEL reduction is not directly a qLMPC objective. On FAST, with the adaptations of Section~\ref{sec:qLMPCFAST}, the qLMPC still reduces the power fluctuations, but the tower loads increase, see \nameref{subsubsec:qLMPCFASTresults} above and the comparison with the other controllers in Section~\ref{subsec:ComparisonWindTurbineControlDesigns}.
 
-% ---- original line 1025 (after: "mainly due to the mismatch between the prediction model and the FAST t")
-% Reference to the new subsection; rotor speed tracking is part of both FAST designs.
+% ==== Comparison of Wind Turbine Control Designs ====
+
+% ---- original line 1061 (after: "mainly due to the mismatch between the prediction model and the FAST t")
+% Reference to the new subsection and subsubsection.
 % OLD: the structural modes not contained in the prediction model. When filters were used, the
 % OLD: improvements were partly recovered. With a prediction model extended by the tower fore-aft and
 the structural modes not contained in the prediction model. When filters were used, the
-improvements were partly recovered (Section~\ref{sec:qLMPCFAST}). With rotor speed tracking, a prediction model extended by the tower fore-aft and
+improvements were partly recovered (Section~\ref{sec:qLMPCFAST} and \nameref{subsubsec:qLMPCFASTresults}). With rotor speed tracking, a prediction model extended by the tower fore-aft and
 
-% ---- original line 1089 (after: "the power standard deviation curves hardly change. The smooth design c")
+% ---- original line 1125 (after: "the power standard deviation curves hardly change. The smooth design c")
 % The IPC gains of the combination are not tuned for the smooth design.
 % OLD: about the actuator power of the IPC and the AALC. It almost reaches the blade DEL reduction of the
 % OLD: IPC, 0.85 compared with 0.79, and in addition reduces the power standard deviation by about 24\%,
@@ -73,3 +91,17 @@ neither IPC nor AALC achieve. As the IPC gains of the combination were only scal
 notch filter design and not retuned for the smooth design (Section~\ref{sec:qLMPCFAST}), part of
 the remaining blade DEL difference may be due to the tuning rather than to the design. The tower
 DEL of this combination, however, is about 12 percentage points higher than with IPC.
+
+% ---- original line 1129 (after: "than with IPC.")
+% Insert before this line: time series of the notch filter design with IPC.
+
+Figure~\ref{fig:CtrlCmpFASTIPC} and Table~\ref{tab:CtrlComparisonFASTNTM18B_PI_flapNotch_flapNotchIPC} show the effect of the IPC on the notch filter design in the time domain, for the turbulent wind field of Section~\ref{quasiLPVMPCResults} and a pitch rate limit of 13\textdegree/s; note that the bar and Pareto plots above are based on the second verification set and a pitch rate limit of 8\textdegree/s. The IPC reduces the standard deviation of the blade root out-of-plane moment by 23\% and the blade DEL by 18\%, i.e.\ to 14\% below that of the baseline PI controller, while the rotor speed and the power tracking remain unchanged. In return, the blade pitch rate increases slightly, from 4.39\textdegree/s to 4.64\textdegree/s, and the tower base DEL by a further 4\%.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.49\textwidth]{figures/figDirFASTthesis/cmpCtrlFASTthesis_NTM18B_PI_flapNotch_flapNotchIPC.eps}
+    \caption[Notch filter design with and without IPC on FAST for turbulent wind]{Notch filter design without and with IPC compared with the baseline PI controller on FAST v8.16 for turbulent wind (18\,m/s mean, IEC turbulence class B), pitch rate limit 13\textdegree/s. Displayed signals: wind speed, generator torque, blade 1 pitch angle, rotor speed, tower fore-aft acceleration, generator power with its reference (black dashed line), and blade 1 root out-of-plane moment.}
+    \label{fig:CtrlCmpFASTIPC}
+\end{figure}
+
+\input{figures/figDirFASTthesis/resultsFASTthesis_NTM18B_PI_flapNotch_flapNotchIPC}
