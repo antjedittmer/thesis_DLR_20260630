@@ -1006,7 +1006,7 @@ Above rated, the blade DEL decreases by 19\% to 23\%, and from 18\,m/s on by 22\
 
 The evaluation of the power criteria confirms that the AALC leads only to negligible changes in both power mean and variance above rated. Below rated, the mean power is decreased by 2\% to 3\%, as the flap and pitch deflections reduce the aerodynamic efficiency, cf.\ Figure~\ref{fig:OLval}. The additional rotational movement of the blade demanded by IPC is the only criterion leading to an unavoidable increase, similar to the two controller schemes discussed in previous sections: above rated, the actuator power is increased by a factor of 3.8 to 4.0, and from 18\,m/s on by a factor of 3.9 to 4.2. Below rated, the baseline pitch angle is almost constant, so that the baseline actuator power is close to zero and no meaningful ratio is obtained. To assess the overall performance of AALC relative to the other discussed control strategies, the following section presents a comparison of all three investigated algorithms on load reduction and  power standard deviation at different pitch rate limits.
 
-\subsection{Comparison of Wind Turbine Control Designs}
+\section{Comparison of Wind Turbine Control Designs}
 \label{subsec:ComparisonWindTurbineControlDesigns}
 
 In a first comparison, the qLMPC was evaluated on the simplified turbine model that is also
@@ -1014,20 +1014,20 @@ used as its prediction model, for turbulent wind with a mean of 16\,m/s. Without
 mismatch, it achieved large improvements over the PI baseline: the tower DEL was reduced by 23\%, 30\%, and 54\% for the pitch rate limits of
 4\textdegree/s, 8\textdegree/s, and 13\textdegree/s, the blade DEL, estimated from the blade
 movement, by 8\%, 13\%, and 24\%, and the power standard deviation $C_{\delta P}$ dropped to
-approximately 0.22. These improvements did not hold up. Applied to the FAST model of the NREL 5-MW
-turbine, the original qLMPC design increased the power tracking error instead of reducing it,
-mainly due to the mismatch between the prediction model and the high-fidelity turbine, e.g.\
+approximately 0.22. These improvements did not hold up when the controller was applied to the FAST model of the NREL 5-MW
+turbine. The original qLMPC design increased the power tracking error instead of reducing it,
+mainly due to the mismatch between the prediction model and the FAST turbine implementation, e.g.\
 the structural modes not contained in the prediction model. When filters were used, the
 improvements were partly recovered. With a prediction model extended by the tower fore-aft and
 blade flap dynamics, notch filters at the 3P frequency and the drivetrain mode in the measured
 speeds, and, for the smooth design, a longer controller sample time with a ramped pitch
-reference, the qLMPC reduces the power variance on FAST again, but at the cost of the tower
-loads. On the simplified model, the
+reference, the qLMPC reduces the power variance on FAST again. However, the increase in tower
+loads was only partially reduced, and the tower DELs remained higher than those obtained with the baseline PI controller. Note that on the simplified model implemented in Simulink, the
 rotor-effective wind filters shown in Table~\ref{tab:stddev_unified} have a similar effect: they
-remove a large part of the excitation, so both the pitch activity and the improvement of the
-qLMPC become smaller.
+remove a large part of the wind excitation. With this the pitch activity was reduced to be smaller than the one for the baseline PI, but their was decrease in improvement of the
+qLMPC regarding tower DEL and power standard deviation reduction.
 
-All designs are therefore compared again for the same wind, the turbulent 18\,m/s wind of the
+All designs are therefore compared for the same wind, the turbulent 18\,m/s wind of the
 second verification set (IEC turbulence class~B), with the pitch rate limits 4\textdegree/s,
 8\textdegree/s, and 13\textdegree/s. The qLMPC is evaluated on the simplified model Mdl2 as the
 ideal case without model mismatch, and on FAST v8.16 with the filter designs, both on their own
@@ -1037,28 +1037,27 @@ AALC gains of Section~\ref{subsec:ResultsTEF} at 8\textdegree/s. All criteria ar
 PI baseline on the same plant and with the same pitch rate limit, so values below unity
 indicate an improvement. The blade DEL and the DELs of the tower base and the tower top fore-aft moments are computed by
 rainflow counting with W\"ohler exponents of 10 for the blades, summed over the three blades, and
-4 for the steel tower; all criteria are evaluated from 66\,s onwards to exclude the start-up. Mdl2 contains neither blade loads nor a pitch moment. For the qLMPC on Mdl2, the standard deviation of the
+4 for the steel tower; all criteria are evaluated from 60\,s onwards to exclude the start-up. Mdl2 contains neither blade loads nor a pitch moment. For the qLMPC on Mdl2, the standard deviation of the
 tower top fore-aft acceleration replaces the tower base DEL, no blade and tower top DELs are given, and $C_\text{Act}$ is calculated with a pitch moment estimated from the pitch angle, its derivatives, and the wind
 speed. This estimate is fitted to FAST runs and reproduces the actuator power of the qLMPC on
 FAST within 2\%.
 
 Figure~\ref{fig:CtrlCompBarPareto}(a) shows the evaluation criteria of all controllers at the standard
 pitch rate limit of 8\textdegree/s, grouped by controller. It is important to note that no controller changes the mean power
-$C_{\bar{P}}$ depicted in grey as the fourth bar; all values are within 0.5\% of the baseline and hence this bar is always exactly at the value of one for all seven algorithms.
+$C_{\bar{P}}$ depicted in grey as the fourth bar; all values are within 0.5\% of the baseline and hence this bar is always exactly at the value of one for all seven algorithms. Figure~\ref{fig:CtrlCompBarPareto}(b) disregards the power criterion and visualizes the three DEL criteria and  
+as functions of the actuator power for all three pitch rate limits.
 
 \begin{figure}[htbp]
     \centering
-    \subfloat[Bar plot\label{fig:EvalCrit1}]{\includegraphics[width=0.49\textwidth]{figures/figures_WESC25/afig01_IPCMPCbar.eps}}\hfill
+    \subfloat[Bar plot at a pitch rate limit 8\textdegree/s\label{fig:EvalCrit1}]{\includegraphics[width=0.49\textwidth]{figures/figures_WESC25/afig01_IPCMPCbar.eps}}\hfill
     \subfloat[Pareto plot\label{fig:CtrlCompAll}]{\includegraphics[width=0.49\textwidth]{figures/figures_WESC25/afig01_IPCMPCpareto.eps}}
-    \caption[Evaluation criteria of qLMPC, IPC, and AALC for turbulent wind]{Evaluation criteria of the controllers for turbulent wind (18\,m/s mean, IEC turbulence class~B, second verification set), normalized by the PI baseline with the same pitch rate limit. Panels: qLMPC (top), IPC and AALC (middle), qLMPC combined with IPC (bottom). (a)~Bar plot at a pitch rate limit of 8\textdegree/s: blade DEL $C_{\mathrm{DEL},b}$, tower base and tower top DELs $C_{\mathrm{DEL},t,\mathrm{Base}}$ and $C_{\mathrm{DEL},t,\mathrm{Top}}$, mean power $C_{\bar{P}}$, power standard deviation $C_{\delta P}$, and actuator power $C_\text{Act}$. (b)~Pareto plot: $C_{\mathrm{DEL},b}$ (blue), $C_{\mathrm{DEL},t,\mathrm{Base}}$ (green), $C_{\mathrm{DEL},t,\mathrm{Top}}$ (dark green), and $C_{\delta P}$ (purple) over $C_\text{Act}$ for the pitch rate limits 4\textdegree/s (white markers), 8\textdegree/s (grey), and 13\textdegree/s (black); the controllers of the other panels are shown pale. The dashed ovals enclose all points of one controller; their colour matches the background of the same controller in the same panel of the bar plot. $^*$qLMPC on Mdl2 (no model mismatch): tower top fore-aft acceleration instead of the tower base DEL, no blade and tower top DELs, $C_\text{Act}$ with the pitch moment estimated from a model fitted to FAST. The arrow points towards better results.}
+    \caption[Evaluation criteria of qLMPC, IPC, and AALC for turbulent wind]{Evaluation criteria of the controllers for turbulent wind (18\,m/s mean, IEC turbulence class~B, second verification set), normalized by the PI baseline with the same pitch rate limit. Panels: qLMPC (top), IPC and AALC (middle), qLMPC combined with IPC (bottom). (a)~Bar plots: blade DEL $C_{\mathrm{DEL},b}$, tower base and top DELs $C_{\mathrm{DEL},t,\mathrm{Base}}$ and $C_{\mathrm{DEL},t,\mathrm{Top}}$, mean power $C_{\bar{P}}$, power standard deviation $C_{\delta P}$, and actuator power $C_\text{Act}$. (b)~Pareto plot: $C_{\mathrm{DEL},b}$ (blue), $C_{\mathrm{DEL},t,\mathrm{Base}}$ (green), $C_{\mathrm{DEL},t,\mathrm{Top}}$ (dark green), and $C_{\delta P}$ (purple) over $C_\text{Act}$ for the pitch rate limits 4\textdegree/s (white markers), 8\textdegree/s (grey), and 13\textdegree/s (black); the controllers of the other panels are shown pale. The dashed ovals enclose all points of one controller; their colour matches the background of the same controller in the same panel of the bar plot. The qLMPC on Mdl2 (no model mismatch): tower top fore-aft acceleration instead of the tower base DEL, no blade and tower top DELs, $C_\text{Act}$ with the pitch moment estimated from a model fitted to FAST. The arrow points towards better results.}
     \label{fig:CtrlCompBarPareto}
 \end{figure}
 
 
-
-
-Panel~(a) shows the qLMPC. On Mdl2, i.e.\ without model mismatch, the qLMPC reduces the power
-standard deviation by 39\% and the standard deviation of the tower fore-aft acceleration by
+The two top panels show the qLMPC schemes. On Mdl2, i.e.\ without model mismatch, the test case presented in \cite{dittmer2021velocity} to investigate the potentical of the velocity based qLMPC the power
+standard deviation is reduced by 39\% and the standard deviation of the tower fore-aft acceleration by
 54\%. The Verif.~2 wind is more turbulent than the test case of Section~\ref{quasiLPVMPCResults} and
 falls below rated wind speed several times, so the improvements are smaller than the factors
 reported there. The actuator power increases by a factor of 4.5, as the qLMPC compensates the
@@ -1069,7 +1068,7 @@ of the PI baseline. The smooth design trades part of the power smoothing, a redu
 for considerably less pitch activity: its actuator power of 2.6 is the lowest of all controllers,
 and the tower DEL increase is halved to 16\%.
 
-Panel~(b) shows the IPC and the AALC, which act on the blade loads. They reduce the blade DEL by
+The middle panels shows the IPC and the AALC, which act on the blade loads. They reduce the blade DEL by
 21\% and 23\%, with a small increase of the tower DEL by 6\%, and leave the power standard
 deviation unchanged. The AALC achieves the larger blade load reduction at a lower actuator power
 than the IPC, 3.8 compared with 5.0, as part of the load reduction is taken over by the trailing
@@ -1079,8 +1078,6 @@ Panel~(c) shows the qLMPC designs combined with IPC. Adding IPC reduces the blad
 and 15\% instead of 2\%, while the tower DEL and the power standard deviation remain close to the
 values of the qLMPC alone. The additional individual pitch action increases the actuator power to
 7.3 for the notch filter design and to 3.9 for the smooth design.
-
-
 
 
 
