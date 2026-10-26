@@ -703,7 +703,7 @@ with $\text{DEL}_{bi,\text{IPC}}$ derived from the blade flapwise root DEL accum
 To evaluate and quantify the impact of an IPC controller's performance, four additional criteria are calculated, previously used in \cite{hoffmann2018load} as optimization criteria in a multi-objective optimization approach: The tower DELs derived from the bending moments at the base of the tower, the mean and standard deviation of the generated power and the additional power requirements of the actuator due to individual pitch control. The evaluation criteria can be summarized as below.
 
 \subsubsection*{Load Criteria: Blade $C_{\text{DEL},b} = J$ and tower DEL $C_{\text{DEL},t}$}
-Reducing the blade DEL is the main incentive for using IPC to decrease the Power Spectral Density (PSD) at 1P. A reduction at the 1P frequency does not influence the tower DEL, however, finding a controller that decreases the peak at 1P tends to also result in a lower PSD for a wider frequency range including the peak at 2P. Thus, a small decrease in the tower DEL is also achieved although this criterion is not included in the objective function. In Section~\ref{sec:CombinedIPC-TrailingEdgeFlapControl} it will be discussed that decreasing the PSD at the 2P frequency via the flaps does decrease the tower DELs further. 
+Reducing the blade DEL is the main incentive for using IPC to decrease the Power Spectral Density (PSD) at 1P. A reduction at the 1P frequency does not influence the tower DEL, however, finding a controller that decreases the peak at 1P tends to also result in a lower PSD for a wider frequency range including the peak at 2P. Thus, a small decrease in the tower DEL is also achieved although this criterion is not included in the objective function. In Section~\ref{sec:CombinedIPC-TrailingEdgeFlapControl} it will be discussed that decreasing the PSD at the 2P frequency via the flaps does decrease the tower DELs further. In addition to the tower base DEL $C_{\text{DEL},t,\text{Base}}$, the DEL of the tower top fore-aft bending moment $C_{\text{DEL},t,\text{Top}}$ is evaluated, which is affected directly by the rotor tilt moment. Both tower DELs are calculated with the Wöhler exponent of steel. 
 
 The blade DEL is calculated as
 \begin{align*}
@@ -814,8 +814,7 @@ The IPC gains are optimized with a single wind field at 18\,m/s. To check whethe
 \end{table}
 
 
-Above rated, the blade DEL decreases by 19\% to 22\%, and from 18\,m/s on by 23\% to 24\%, for all three datasets. The reduction grows with the wind speed: for the second verification set of turbulence class~B, it increases from 12\% to 15\% between 12 and 16\,m/s to 24\% to 27\% from 20\,m/s on. The gains optimized at a single wind speed hence carry over to the whole of Region~III and to both verification sets, so that no gain scheduling is required above rated. The tower base DEL is not changed considerably, with criteria between 0.99 and 1.01; the largest increase of a single wind speed is 3\% at 18\,m/s for turbulence class~B. Close to rated wind speed, the mean power decreases by up to 0.6\% and its standard deviation increases slightly, so that the power criteria above rated are 1.00 and 1.01 to 1.02. The pitch rate reaches the limit of 8\textdegree/s at all wind speeds, and the actuator power is increased by a factor of 5.4 to 5.7 above rated and of 5.8 to 6.0 from 18\,m/s on. Compared with the AALC (Table~\ref{tabone}), the IPC achieves about the same blade DEL reduction above rated (AALC: 19\% to 23\%), but at a clearly higher actuator power (AALC: factor 3.9 to 4.0); from 18\,m/s on, the AALC reduces the blade DEL slightly more (22\% to 26\%).
-
+Above rated, the blade DEL decreases by 19\% to 22\%, and from 18\,m/s on by 23\% to 24\%, for all three datasets. The reduction grows with the wind speed: for the second verification set of turbulence class~B, it increases from 12\% to 15\% between 12 and 16\,m/s to 24\% to 27\% from 20\,m/s on. The gains optimized at a single wind speed hence carry over to the whole of Region~III and to both verification sets, so that no gain scheduling is required above rated. The tower base DEL is not changed considerably, with criteria between 0.99 and 1.01; the largest increase of a single wind speed is 3\% at 18\,m/s for turbulence class~B. The tower top DEL is reduced slightly, by 2\% to 4\% above rated and by 3\% to 6\% at 18\,m/s. Close to rated wind speed, the mean power decreases by up to 0.6\% and its standard deviation increases slightly, so that the power criteria above rated are 1.00 and 1.01 to 1.02. The pitch rate reaches the limit of 8\textdegree/s at all wind speeds, and the actuator power is increased by a factor of 5.4 to 5.7 above rated and of 5.8 to 6.0 from 18\,m/s on. Compared with the AALC (Table~\ref{tabone}), the IPC achieves about the same blade DEL reduction above rated (AALC: 19\% to 23\%), but at a clearly higher actuator power (AALC: factor 3.9 to 4.0); from 18\,m/s on, the AALC reduces the blade DEL slightly more (22\% to 26\%).
 
 
 IPC was shown in this section to reduce blade loads, with the amount of reduction progressively increasing with higher pitch rate limits, at the cost of increased actuator energy. It was also shown to decrease tower loads to a certain degree. The IPC gains optimized at a single wind speed of 18\,m/s carry over to the whole of Region~III and to both verification datasets, with blade DEL reductions of 19\% to 22\% above rated at unchanged tower base DEL and power, but with an actuator power increased by a factor of 5.4 to 5.7. 
@@ -967,7 +966,9 @@ Figure~\ref{fig:PSDTEF}\,(b) demonstrates that considerable improvement with res
 From this study, it seems unlikely that a parameter optimization of the suggested, carefully designed controller can decrease the blade damage equivalent loads considerably. Further investigations might be made with respect to how much improvement is achievable with a more sophisticated MIMO controller.
 
 Apart from the blade root flapwise moment, the influence of the obtained controller parameters is compared with respect to the evaluation criteria provided in Section~\ref{sec:ControllerParameterOptimization}.
-Table~\ref{tabone} contains the five evaluation criteria to quantify the effect of the AALC: blade and tower base DEL, mean of generated power $\bar{P}_{g}$, its standard deviation $\sigma P$, and actuator power $C_{\text{Act}}$, Equation~\eqref{eq:CAct}, normalized by simulations without AALC for the same wind test cases. From 10\,m/s on, the parameters optimized at 18\,m/s are used. Below, the AALC parameters are scheduled with the parameters optimized separately at 4, 6, and 8\,m/s. The criteria are averaged over five wind speed ranges: all wind speeds, the wind speeds below and above rated, the wind speeds from 18\,m/s, and the optimization wind speed of 18\,m/s.
+%
+Table~\ref{tabone} contains the evaluation criteria to quantify the effect of the AALC: blade, tower base, and tower top DEL, mean of generated power $\bar{P}_{g}$, its standard deviation $\sigma P$, and actuator power $C_{\text{Act}}$, Equation~\eqref{eq:CAct}, normalized by simulations without AALC for the same wind test cases. From 10\,m/s on, the parameters optimized at 18\,m/s are used. Below, the AALC parameters are scheduled with the parameters optimized separately at 4, 6, and 8\,m/s. The criteria are averaged over five wind speed ranges: all wind speeds, the wind speeds below and above rated, the wind speeds from 18\,m/s, and the optimization wind speed of 18\,m/s.
+
 
 % Created by makeAALC_SummaryTable on 2026-10-26
 \begin{table}[h]
@@ -1001,8 +1002,7 @@ Table~\ref{tabone} contains the five evaluation criteria to quantify the effect 
 \end{table}
 
 
-
-Above rated, the blade DEL decreases by 19\% to 23\%, and from 18\,m/s on by 22\% to 26\%, with the largest reduction for the second verification set of turbulence class~B. The parameters optimized at a single wind speed hence carry over to the whole of Region~III and to both verification sets, so that no gain scheduling is required above rated. The tower base DEL is not changed considerably above rated, with criteria between 0.99 and 1.00; the largest increase of a single wind speed is 3\% at 18\,m/s for turbulence class~B. Below rated, the blade DEL is reduced by 19\% for the optimization set and by 15\% for the second verification set, but only by 3\% for the first verification set, i.e., the parameters optimized below rated do not carry over reliably to other wind fields. Here, the tower base DEL is reduced by 4\% to 7\%. Including all wind speeds, the blade DEL is reduced by 14\% to 22\%.
+Above rated, the blade DEL decreases by 19\% to 23\%, and from 18\,m/s on by 22\% to 26\%, with the largest reduction for the second verification set of turbulence class~B. The parameters optimized at a single wind speed hence carry over to the whole of Region~III and to both verification sets, so that no gain scheduling is required above rated. The tower base DEL is not changed considerably above rated, with criteria between 0.99 and 1.00; the largest increase of a single wind speed is 3\% at 18\,m/s for turbulence class~B. The tower top DEL, in contrast, is reduced by 5\% to 8\% above rated and by 5\% to 10\% at 18\,m/s, i.e., more than by the IPC alone (Table~\ref{tab:IPC_summary}: 2\% to 4\% above rated). Below rated, the blade DEL is reduced by 19\% for the optimization set and by 15\% for the second verification set, but only by 3\% for the first verification set, i.e., the parameters optimized below rated do not carry over reliably to other wind fields. Here, the tower base DEL is reduced by 4\% to 7\% and the tower top DEL by 3\% to 8\%. Including all wind speeds, the blade DEL is reduced by 14\% to 22\%.
 
 The evaluation of the power criteria confirms that the AALC leads only to negligible changes in both power mean and variance above rated. Below rated, the mean power is decreased by 2\% to 3\%, as the flap and pitch deflections reduce the aerodynamic efficiency, cf.\ Figure~\ref{fig:OLval}. The additional rotational movement of the blade demanded by IPC is the only criterion leading to an unavoidable increase, similar to the two controller schemes discussed in previous sections: above rated, the actuator power is increased by a factor of 3.8 to 4.0, and from 18\,m/s on by a factor of 3.9 to 4.2. Below rated, the baseline pitch angle is almost constant, so that the baseline actuator power is close to zero and no meaningful ratio is obtained. To assess the overall performance of AALC relative to the other discussed control strategies, the following section presents a comparison of all three investigated algorithms on load reduction and  power standard deviation at different pitch rate limits.
 
@@ -1035,26 +1035,27 @@ and combined with the individual pitch controller of Section~\ref{section:Indivi
 IPC and AALC are evaluated on OpenFAST with the optimized gains for each rate limit and the
 AALC gains of Section~\ref{subsec:ResultsTEF} at 8\textdegree/s. All criteria are normalized by the
 PI baseline on the same plant and with the same pitch rate limit, so values below unity
-indicate an improvement. The blade and tower DELs are computed by rainflow counting with
-W\"ohler exponents of 10 for the blades, summed over the three blades, and 4 for the steel
-tower; all criteria are evaluated from 66\,s onwards to exclude the start-up. Mdl2 contains
-neither blade loads nor a pitch moment. For the qLMPC on Mdl2, the standard deviation of the
-tower top fore-aft acceleration replaces the tower DEL, no blade DEL is given, and $C_\text{Act}$
-is calculated with a pitch moment estimated from the pitch angle, its derivatives, and the wind
+indicate an improvement. The blade DEL and the DELs of the tower base and the tower top fore-aft moments are computed by
+rainflow counting with W\"ohler exponents of 10 for the blades, summed over the three blades, and
+4 for the steel tower; all criteria are evaluated from 66\,s onwards to exclude the start-up. Mdl2 contains neither blade loads nor a pitch moment. For the qLMPC on Mdl2, the standard deviation of the
+tower top fore-aft acceleration replaces the tower base DEL, no blade and tower top DELs are given, and $C_\text{Act}$ is calculated with a pitch moment estimated from the pitch angle, its derivatives, and the wind
 speed. This estimate is fitted to FAST runs and reproduces the actuator power of the qLMPC on
 FAST within 2\%.
 
+Figure~\ref{fig:CtrlCompBarPareto}(a) shows the evaluation criteria of all controllers at the standard
+pitch rate limit of 8\textdegree/s, grouped by controller. It is important to note that no controller changes the mean power
+$C_{\bar{P}}$ depicted in grey as the fourth bar; all values are within 0.5\% of the baseline and hence this bar is always exactly at the value of one for all seven algorithms.
+
 \begin{figure}[htbp]
-    \begin{center}
-        \includegraphics[width=0.485\textwidth]{figures/figures_WESC25/afig01_IPCMPCbar.eps}
-        \caption[Evaluation criteria of qLMPC, IPC, and AALC for turbulent wind at a pitch rate limit of 8\textdegree/s]{Evaluation criteria of the controllers for turbulent wind (18\,m/s mean, IEC turbulence class~B, second verification set) and a pitch rate limit of 8\textdegree/s, normalized by the PI baseline with the same rate limit: blade and tower DELs $C_{\mathrm{DEL},b}$ and $C_{\mathrm{DEL},t}$, mean power $C_{\bar{P}}$, power standard deviation $C_{\delta P}$, and actuator power $C_\text{Act}$. (a)~qLMPC, (b)~IPC and AALC, (c)~qLMPC combined with IPC. $^*$qLMPC on Mdl2 (no model mismatch): $C_\text{Act}$ with the pitch moment estimated from a model fitted to FAST, $C_{\mathrm{DEL},t}$ replaced by the standard deviation of the tower top fore-aft acceleration, no blade DEL.}
-        \label{fig:EvalCrit1}
-    \end{center}
+    \centering
+    \subfloat[Bar plot\label{fig:EvalCrit1}]{\includegraphics[width=0.49\textwidth]{figures/figures_WESC25/afig01_IPCMPCbar.eps}}\hfill
+    \subfloat[Pareto plot\label{fig:CtrlCompAll}]{\includegraphics[width=0.49\textwidth]{figures/figures_WESC25/afig01_IPCMPCpareto.eps}}
+    \caption[Evaluation criteria of qLMPC, IPC, and AALC for turbulent wind]{Evaluation criteria of the controllers for turbulent wind (18\,m/s mean, IEC turbulence class~B, second verification set), normalized by the PI baseline with the same pitch rate limit. Panels: qLMPC (top), IPC and AALC (middle), qLMPC combined with IPC (bottom). (a)~Bar plot at a pitch rate limit of 8\textdegree/s: blade DEL $C_{\mathrm{DEL},b}$, tower base and tower top DELs $C_{\mathrm{DEL},t,\mathrm{Base}}$ and $C_{\mathrm{DEL},t,\mathrm{Top}}$, mean power $C_{\bar{P}}$, power standard deviation $C_{\delta P}$, and actuator power $C_\text{Act}$. (b)~Pareto plot: $C_{\mathrm{DEL},b}$ (blue), $C_{\mathrm{DEL},t,\mathrm{Base}}$ (green), $C_{\mathrm{DEL},t,\mathrm{Top}}$ (dark green), and $C_{\delta P}$ (purple) over $C_\text{Act}$ for the pitch rate limits 4\textdegree/s (white markers), 8\textdegree/s (grey), and 13\textdegree/s (black); the controllers of the other panels are shown pale. The dashed ovals enclose all points of one controller; their colour matches the background of the same controller in the same panel of the bar plot. $^*$qLMPC on Mdl2 (no model mismatch): tower top fore-aft acceleration instead of the tower base DEL, no blade and tower top DELs, $C_\text{Act}$ with the pitch moment estimated from a model fitted to FAST. The arrow points towards better results.}
+    \label{fig:CtrlCompBarPareto}
 \end{figure}
 
-Figure~\ref{fig:EvalCrit1} shows the evaluation criteria of all controllers at the standard
-pitch rate limit of 8\textdegree/s, grouped by controller. No controller changes the mean power
-$C_{\bar{P}}$; all values are within 0.5\% of the baseline.
+
+
 
 Panel~(a) shows the qLMPC. On Mdl2, i.e.\ without model mismatch, the qLMPC reduces the power
 standard deviation by 39\% and the standard deviation of the tower fore-aft acceleration by
@@ -1079,25 +1080,12 @@ and 15\% instead of 2\%, while the tower DEL and the power standard deviation re
 values of the qLMPC alone. The additional individual pitch action increases the actuator power to
 7.3 for the notch filter design and to 3.9 for the smooth design.
 
-\begin{figure}[htbp]
-    \begin{center}
-        \includegraphics[width=0.485\textwidth]{figures/figures_WESC25/afig01_IPCMPCpareto.eps}
-        \caption[Evaluation criteria of qLMPC, IPC, and AALC over the actuator power for turbulent wind]{Evaluation criteria $C_{\mathrm{DEL},b}$ (blue), $C_{\mathrm{DEL},t}$ (green), and $C_{\delta P}$ (purple) over the actuator power $C_\text{Act}$ for turbulent wind (18\,m/s mean, IEC turbulence class~B, second verification set), normalized by the PI baseline with the same pitch rate limit. Marker fill: pitch rate limit 4\textdegree/s (white), 8\textdegree/s (grey), and 13\textdegree/s (black). (a)~qLMPC on Mdl2 and FAST, IPC and AALC pale, (b)~IPC and AALC, qLMPC pale, (c)~qLMPC combined with IPC on FAST, qLMPC and IPC alone pale. qLMPC on Mdl2: tower top fore-aft acceleration instead of the tower DEL, $C_\text{Act}$ with the estimated pitch moment. The arrow points towards better results.}
-        \label{fig:CtrlCompAll}
-    \end{center}
-\end{figure}
 
 
-\begin{figure} [h]
-    \subfloat[Baseline (black), IPC (blue), and TEFC (green)]{\includegraphics[width=0.485\textwidth]{figures/figures_WESC25/afig01_IPCMPCbar.eps}}\hfill
-    \subfloat[AALC (red), and AALC optimized (pink)]{\includegraphics[width=0.485\textwidth]{figures/figures_WESC25/afig01_IPCMPCpareto.eps}}\hfill
-    \caption{Power Spectral Density of the blade root out-of-plane moment for the optimization set, turbulence class A, with mean wind speed 18~m/s.}
-    \label{fig:CtrlCompAllComb}
-\end{figure}
-%
 
 
-Figure~\ref{fig:CtrlCompAll} shows the blade DEL, the tower DEL, and the power standard deviation
+
+Figure~\ref{fig:CtrlCompBarPareto}(b) shows the blade DEL, the tower DEL, and the power standard deviation
 as functions of the actuator power for all three pitch rate limits. Each line connects the
 results of one controller for the rate limits of 4\textdegree/s, 8\textdegree/s, and 13\textdegree/s,
 indicated by white, grey, and black marker fill. The AALC was optimized for 8\textdegree/s only and
