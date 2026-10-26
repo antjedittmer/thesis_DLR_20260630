@@ -50,3 +50,63 @@ by 33\% while the tower top DEL remains unchanged, and requires the highest actu
 and 15\% instead of 2\%, while the tower base DEL and the power standard deviation remain close to the
 values of the qLMPC alone. In contrast to the IPC on OpenFAST, the combination increases the tower top DEL by 8\%. The additional individual pitch action increases the actuator power to
 
+% ==== Figures (line numbers on the current main) ====
+
+% ---- original line 1047 (after: "")
+% Bar plot (fig:EvalCrit1) and Pareto plot (fig:CtrlCompAll) side by side in one figure;
+% it replaces this figure and the Pareto figure at line 1082 (next block).
+% The old labels are kept for the subfigures, so \ref{fig:EvalCrit1} and
+% \ref{fig:CtrlCompAll} in the text still work (they then print e.g. 4.12a and 4.12b);
+% fig:CtrlCompBarPareto refers to the whole figure.
+% The panels inside the plots have no letters (a), (b), (c) any more; the caption
+% and the text (blocks below) call them top, middle, and bottom panel.
+% OLD: \begin{figure}[htbp]
+% OLD:     \begin{center}
+% OLD:         \includegraphics[width=0.6\textwidth]{figures/figures_WESC25/afig01_IPCMPCbar.eps}
+% OLD:         \caption[Evaluation criteria of qLMPC, IPC, and AALC for turbulent wind at a pitch rate limit of 8\textdegree/s]{Evaluation criteria of the controllers for turbulent wind (18\,m/s mean, IEC turbulence class~B, second verification set) and a pitch rate limit of 8\textdegree/s, normalized by the PI baseline with the same rate limit: blade and tower DELs $C_{\mathrm{DEL},b}$ and $C_{\mathrm{DEL},t}$, mean power $C_{\bar{P}}$, power standard deviation $C_{\delta P}$, and actuator power $C_\text{Act}$. (a)~qLMPC, (b)~IPC and AALC, (c)~qLMPC combined with IPC. $^*$qLMPC on Mdl2 (no model mismatch): $C_\text{Act}$ with the pitch moment estimated from a model fitted to FAST, $C_{\mathrm{DEL},t}$ replaced by the standard deviation of the tower top fore-aft acceleration, no blade DEL.}
+% OLD:         \label{fig:EvalCrit1}
+% OLD:     \end{center}
+% OLD: \end{figure}
+\begin{figure}[htbp]
+    \centering
+    \subfloat[Bar plot\label{fig:EvalCrit1}]{\includegraphics[width=0.49\textwidth]{figures/figures_WESC25/afig01_IPCMPCbar.eps}}\hfill
+    \subfloat[Pareto plot\label{fig:CtrlCompAll}]{\includegraphics[width=0.49\textwidth]{figures/figures_WESC25/afig01_IPCMPCpareto.eps}}
+    \caption[Evaluation criteria of qLMPC, IPC, and AALC for turbulent wind]{Evaluation criteria of the controllers for turbulent wind (18\,m/s mean, IEC turbulence class~B, second verification set), normalized by the PI baseline with the same pitch rate limit. Panels: qLMPC (top), IPC and AALC (middle), qLMPC combined with IPC (bottom). (a)~Bar plot at a pitch rate limit of 8\textdegree/s: blade DEL $C_{\mathrm{DEL},b}$, tower base and tower top DELs $C_{\mathrm{DEL},t,\mathrm{Base}}$ and $C_{\mathrm{DEL},t,\mathrm{Top}}$, mean power $C_{\bar{P}}$, power standard deviation $C_{\delta P}$, and actuator power $C_\text{Act}$. (b)~Pareto plot: $C_{\mathrm{DEL},b}$ (blue), $C_{\mathrm{DEL},t,\mathrm{Base}}$ (green), $C_{\mathrm{DEL},t,\mathrm{Top}}$ (dark green), and $C_{\delta P}$ (purple) over $C_\text{Act}$ for the pitch rate limits 4\textdegree/s (white markers), 8\textdegree/s (grey), and 13\textdegree/s (black); the controllers of the other panels are shown pale. The dashed ovals enclose all points of one controller; their colour matches the background of the same controller in the same panel of the bar plot. $^*$qLMPC on Mdl2 (no model mismatch): tower top fore-aft acceleration instead of the tower base DEL, no blade and tower top DELs, $C_\text{Act}$ with the pitch moment estimated from a model fitted to FAST. The arrow points towards better results.}
+    \label{fig:CtrlCompBarPareto}
+\end{figure}
+
+% ---- original line 1082 (after: "")
+% Pareto figure: delete, it is now part of the figure above (no new lines).
+% OLD: \begin{figure}[htbp]
+% OLD:     \begin{center}
+% OLD:         \includegraphics[width=0.6\textwidth]{figures/figures_WESC25/afig01_IPCMPCpareto.eps}
+% OLD:         \caption[Evaluation criteria of qLMPC, IPC, and AALC over the actuator power for turbulent wind]{Evaluation criteria $C_{\mathrm{DEL},b}$ (blue), $C_{\mathrm{DEL},t}$ (green), and $C_{\delta P}$ (purple) over the actuator power $C_\text{Act}$ for turbulent wind (18\,m/s mean, IEC turbulence class~B, second verification set), normalized by the PI baseline with the same pitch rate limit. Marker fill: pitch rate limit 4\textdegree/s (white), 8\textdegree/s (grey), and 13\textdegree/s (black). (a)~qLMPC on Mdl2 and FAST, IPC and AALC pale, (b)~IPC and AALC, qLMPC pale, (c)~qLMPC combined with IPC on FAST, qLMPC and IPC alone pale. qLMPC on Mdl2: tower top fore-aft acceleration instead of the tower DEL, $C_\text{Act}$ with the estimated pitch moment. The arrow points towards better results.}
+% OLD:         \label{fig:CtrlCompAll}
+% OLD:     \end{center}
+% OLD: \end{figure}
+
+% ==== Panel references: top, middle, bottom instead of (a), (b), (c) ====
+
+% ---- original line 1059 (after: "")
+% OLD: Panel~(a) shows the qLMPC. On Mdl2, i.e.\ without model mismatch, the qLMPC reduces the power
+The top panel shows the qLMPC. On Mdl2, i.e.\ without model mismatch, the qLMPC reduces the power
+
+% ---- original line 1071 (after: "")
+% OLD: Panel~(b) shows the IPC and the AALC, which act on the blade loads. They reduce the blade DEL by
+The middle panel shows the IPC and the AALC, which act on the blade loads. They reduce the blade DEL by
+
+% ---- original line 1077 (after: "")
+% OLD: Panel~(c) shows the qLMPC designs combined with IPC. Adding IPC reduces the blade DEL by 18\%
+The bottom panel shows the qLMPC designs combined with IPC. Adding IPC reduces the blade DEL by 18\%
+
+% ---- original line 1098 (after: "")
+% OLD: Panel~(a) highlights the qLMPC. On Mdl2, higher pitch rate limits continuously reduce the tower
+The top panel highlights the qLMPC. On Mdl2, higher pitch rate limits continuously reduce the tower
+
+% ---- original line 1110 (after: "")
+% OLD: Panel~(b) highlights the IPC and the AALC. The IPC reduces the blade DEL from 0.87 at
+The middle panel highlights the IPC and the AALC. The IPC reduces the blade DEL from 0.87 at
+
+% ---- original line 1117 (after: "")
+% OLD: Panel~(c) highlights the combination of qLMPC and IPC. Compared with the pale qLMPC curves, adding
+The bottom panel highlights the combination of qLMPC and IPC. Compared with the pale qLMPC curves, adding
