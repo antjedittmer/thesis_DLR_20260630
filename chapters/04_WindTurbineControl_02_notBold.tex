@@ -1046,7 +1046,7 @@ FAST within 2\%.
 
 \begin{figure}[htbp]
     \begin{center}
-        \includegraphics[width=0.6\textwidth]{figures/figures_WESC25/afig01_IPCMPCbar.eps}
+        \includegraphics[width=0.485\textwidth]{figures/figures_WESC25/afig01_IPCMPCbar.eps}
         \caption[Evaluation criteria of qLMPC, IPC, and AALC for turbulent wind at a pitch rate limit of 8\textdegree/s]{Evaluation criteria of the controllers for turbulent wind (18\,m/s mean, IEC turbulence class~B, second verification set) and a pitch rate limit of 8\textdegree/s, normalized by the PI baseline with the same rate limit: blade and tower DELs $C_{\mathrm{DEL},b}$ and $C_{\mathrm{DEL},t}$, mean power $C_{\bar{P}}$, power standard deviation $C_{\delta P}$, and actuator power $C_\text{Act}$. (a)~qLMPC, (b)~IPC and AALC, (c)~qLMPC combined with IPC. $^*$qLMPC on Mdl2 (no model mismatch): $C_\text{Act}$ with the pitch moment estimated from a model fitted to FAST, $C_{\mathrm{DEL},t}$ replaced by the standard deviation of the tower top fore-aft acceleration, no blade DEL.}
         \label{fig:EvalCrit1}
     \end{center}
@@ -1081,11 +1081,21 @@ values of the qLMPC alone. The additional individual pitch action increases the 
 
 \begin{figure}[htbp]
     \begin{center}
-        \includegraphics[width=0.6\textwidth]{figures/figures_WESC25/afig01_IPCMPCpareto.eps}
+        \includegraphics[width=0.485\textwidth]{figures/figures_WESC25/afig01_IPCMPCpareto.eps}
         \caption[Evaluation criteria of qLMPC, IPC, and AALC over the actuator power for turbulent wind]{Evaluation criteria $C_{\mathrm{DEL},b}$ (blue), $C_{\mathrm{DEL},t}$ (green), and $C_{\delta P}$ (purple) over the actuator power $C_\text{Act}$ for turbulent wind (18\,m/s mean, IEC turbulence class~B, second verification set), normalized by the PI baseline with the same pitch rate limit. Marker fill: pitch rate limit 4\textdegree/s (white), 8\textdegree/s (grey), and 13\textdegree/s (black). (a)~qLMPC on Mdl2 and FAST, IPC and AALC pale, (b)~IPC and AALC, qLMPC pale, (c)~qLMPC combined with IPC on FAST, qLMPC and IPC alone pale. qLMPC on Mdl2: tower top fore-aft acceleration instead of the tower DEL, $C_\text{Act}$ with the estimated pitch moment. The arrow points towards better results.}
         \label{fig:CtrlCompAll}
     \end{center}
 \end{figure}
+
+
+\begin{figure} [h]
+    \subfloat[Baseline (black), IPC (blue), and TEFC (green)]{\includegraphics[width=0.485\textwidth]{figures/figures_WESC25/afig01_IPCMPCbar.eps}}\hfill
+    \subfloat[AALC (red), and AALC optimized (pink)]{\includegraphics[width=0.485\textwidth]{figures/figures_WESC25/afig01_IPCMPCpareto.eps}}\hfill
+    \caption{Power Spectral Density of the blade root out-of-plane moment for the optimization set, turbulence class A, with mean wind speed 18~m/s.}
+    \label{fig:CtrlCompAllComb}
+\end{figure}
+%
+
 
 Figure~\ref{fig:CtrlCompAll} shows the blade DEL, the tower DEL, and the power standard deviation
 as functions of the actuator power for all three pitch rate limits. Each line connects the
