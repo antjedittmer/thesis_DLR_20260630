@@ -36,7 +36,7 @@ speeds \cite{wilson2009combined, henriksen2013model, he2018combined}, the contro
 here is demonstrated across Regions II and III, using one training dataset and two independent
 verification datasets.
 %
-Section~\ref{subsec:ComparisonWindTurbineControlDesigns} compares qLMPC, IPC, and AALC showing the trade-offs between DEL reduction and actuator activity relative to the PI CPC
+Section~\ref{subsec:ComparisonWindTurbineControlDesigns} compares qLMPC, IPC, and AALC, discussing the potential of the different schemes and showing the trade-offs between DEL reduction and actuator activity relative to the PI CPC
 baseline. The results for the qLMPC controller have been published in \cite{dittmer2021velocity}, and the AALC control strategy in \cite{dittmer2024combined}.
 
 \section{qLMPC Design and Application}\label{sec:quasiLPVMPCDesign}
@@ -415,19 +415,19 @@ where $J_{QP} = J_Q + J_P$ is the penalty on the states, with the matrices
 %
 The initial state of the cost function, the state $\bm{x}_{\text{MPC}^\prime}$ from Equation~\eqref{eq:stateMPC} at sample $k$, can be calculated from the known state and control input at the previous sample $k-1$. 
 
-The following property is used to derive the optimal control trajectory $\Delta \bm{U}^*$ by solving a QP: for the constrained optimization problem with an objective function $V: \mathbb{R}^{n_v \times 1} \to \mathbb{R}$ and a parameter vector $u \in \mathbb{R}^{n_v \times 1}$,
+The following property is used to derive the optimal control trajectory $\Delta \bm{U}^*$ by solving a QP: for the constrained optimization problem with an objective function $J: \mathbb{R}^{n_v \times 1} \to \mathbb{R}$ and a parameter vector $u \in \mathbb{R}^{n_v \times 1}$,
 \begin{align*}
-    \underset{u}{\text{minimize}} & \quad V(u) \\
+    \underset{u}{\text{minimize}} & \quad J(u) \\
     \text{subject to} & \quad h(u) = \bm{0}_{n_{\text{eq}} \times 1}, \\
     & \quad g(u) \leq \bm{0}_{n_{\text{ineq}} \times 1},
 \end{align*}
 a quadratic subproblem can be formulated as:
 \begin{align}
-    \underset{\tilde{u}}{\text{minimize}} & \quad \frac{1}{2} \tilde{u}^T \nabla^2 V(u^l) \tilde{u} + \nabla V(u^l)^T \tilde{u} \\
+    \underset{\tilde{u}}{\text{minimize}} & \quad \frac{1}{2} \tilde{u}^T \nabla^2 J(u^l) \tilde{u} + \nabla J(u^l)^T \tilde{u} \\
     \text{subject to} & \quad \nabla h(u^l)\tilde{u} + h(u^l) = \bm{0}_{n_{\text{eq}} \times 1}, \\
     & \quad \nabla g(u^l)\tilde{u} + g(u^l) \leq \bm{0}_{n_{\text{ineq}} \times 1} \label{eq:linsubproblemIneqConst},
 \end{align}
-where \( \nabla V(u^l) \) and $\nabla^2 V(u^l)$ denote the gradient and Hessian of the function \( V \) at \( u^l \), respectively, with \( u^l \) as the solution estimate at the current iteration \( l \) and \( \tilde{u} = u - u^l \). The functions $h: \mathbb{R}^{n_v \times 1} \to \mathbb{R}^{n_{\text{eq}} \times 1}$ and $g: \mathbb{R}^{n_v \times 1} \to \mathbb{R}^{n_{\text{ineq}} \times 1}$ denote the equality and inequality constraints, respectively.
+where \( \nabla J(u^l) \) and $\nabla^2 J(u^l)$ denote the gradient and Hessian of the function \( J \) at \( u^l \), respectively, with \( u^l \) as the solution estimate at the current iteration \( l \) and \( \tilde{u} = u - u^l \). The functions $h: \mathbb{R}^{n_v \times 1} \to \mathbb{R}^{n_{\text{eq}} \times 1}$ and $g: \mathbb{R}^{n_v \times 1} \to \mathbb{R}^{n_{\text{ineq}} \times 1}$ denote the equality and inequality constraints, respectively.
 
 As in \cite{gonzalez2020nonlinear}, the gradients of the summands of the cost function can be calculated with the matrices $\bm{\Lambda}$ and $\bm{S}$ from Equation~\eqref{eq:nearlyToeplitzMat},
 \begin{align*}
@@ -511,8 +511,44 @@ The controller algorithm requires the following inputs:
     \item Current scheduling parameter vector $\bm{\rho}_{\Rho,k}$.
 \end{enumerate}
 %
-Note that the plant model requires turbine parameters used to construct the system matrices \(\bm{A}_d\) and \(\bm{B}_d\), as well as the lookup table for the torque coefficient \(c_Q\). These parameters must be supplied to the controller, which is implemented as a MATLAB function integrated into the Simulink controller model. All required data is stored in a MATLAB data dictionary. In this thesis, the same data is used in both the Simulink controller and plant models. The results for two wind test cases, a stepped wind speed profile and a turbulent wind signal at above-rated conditions, are presented and discussed in the next section.
+Note that the plant model requires turbine parameters used to construct the system matrices \(\bm{A}_d\) and \(\bm{B}_d\), as well as the lookup table for the torque coefficient \(c_Q\). These parameters must be supplied to the controller, which is implemented as a MATLAB function integrated into the Simulink controller model. All required data is stored in a MATLAB data dictionary. In this thesis, the same data is used in both the Simulink controller and plant models. The results for two wind test cases, a stepped wind speed profile and a turbulent wind signal at above-rated conditions, are presented and discussed in the Subsection~\ref{quasiLPVMPCResults}.
 
+\subsection{Adaptations for the Application to FAST}\label{sec:qLMPCFAST}
+
+The qLMPC design described above is tuned on the qLPV model Mdl2, which also serves as its prediction model. Applied to the FAST model of the NREL 5-MW turbine in turbulent wind, this design does not work: its fast pitch action excites structural modes of FAST that are not contained in the prediction model, i.e.\ the tower fore-aft mode at about 0.32\,Hz, the blade passing frequency 3P, and the drivetrain mode at 1.64\,Hz. For FAST, two designs are therefore derived, the notch filter design and the smooth design, which are evaluated in Section~\ref{subsec:ComparisonWindTurbineControlDesigns}. They differ from the design above as described in the following; the optimization algorithm of Section~\ref{sec:qLMPCOptimizationAlgo} remains unchanged.
+
+%\textbf{Prediction model and weights.} 
+The prediction model is extended by the tower fore-aft and the blade flap dynamics of Mdl2. The tower states are estimated from the measured tower top fore-aft acceleration by leaky integration with a corner frequency of 0.02\,Hz. The blade flap state is not measured; it is obtained by integrating the blade equation of Mdl2, driven by the measured tower motion and the deviations of rotor speed, pitch angle, and wind speed from their slow means, which is stable due to the aerodynamic damping of the blades. Instead of the pitch reference $r_\beta$, the rotor speed is tracked: the weight on the pitch angle is zero, the rotor speed and the rotor and generator speed increments are weighted with 1000, the pitch increments with $10^5$, and the terminal weight is $10\,\bm{Q}_{\text{WT}}$ instead of $1000\,\bm{Q}_{\text{WT}}$. The controller sample time is 0.04\,s, which extends the prediction horizon from 0.32\,s to 1.6\,s with the same number of prediction steps. The controller is scheduled with the hub height wind speed filtered with the rotor-effective wind filter $V_{\text{filt},\tau}$ introduced at the end of Chapter~\ref{sec:WindTurbineqLPVModels}.
+
+%\textbf{Notch filters.} 
+
+The measured rotor and generator speeds are filtered with notch filters
+\begin{align*}
+    N(s) = \frac{s^2 + 2\zeta_z\omega_0 s + \omega_0^2}{s^2 + 2\zeta_p\omega_0 s + \omega_0^2},
+\end{align*}
+with $\omega_0 = 2\pi f_0$ at $f_0 = 0.605$\,Hz (3P at the rated rotor speed of 12.1\,rpm) and $f_0 = 1.64$\,Hz (drivetrain mode of FAST), the pole damping $\zeta_p = 0.1$ and the zero damping $\zeta_z = 0.01$, discretized with the Tustin method with prewarping. They prevent the controller from reacting to the rotor speed oscillations at these frequencies. This design is referred to as the notch filter design.
+
+%\textbf{Smooth design.}
+
+ With a sample time of 0.04\,s, the step-wise changes of the pitch reference still cause pitch activity between 2.4\,Hz and 6\,Hz. For the smooth design, the controller sample time of the notch filter design is increased to 0.12\,s, which extends the horizon to 4.8\,s, and the pitch reference is ramped linearly from the current value to the new reference at the plant sample time of 8\,ms instead of changing step-wise.
+
+\begin{table}[htbp]
+    \centering
+    \caption[qLMPC designs for the application to FAST]{qLMPC designs for the application to FAST: standard deviations of rotor speed, power, tower top fore-aft acceleration, and pitch rate on FAST for the turbulent 18\,m/s wind used for the tuning, evaluated from 60\,s to 600\,s.}
+    \label{tab:qLMPCFAST}
+    \begin{tabular}{l c rrrr}
+        \toprule
+        Design & Sample time & Rotor speed & Power & Tower acc. & Pitch rate \\
+        & (s) & (rpm) & (kW) & (m/s$^2$) & (\textdegree/s) \\
+        \midrule
+        PI baseline & -- & 0.286 & 120 & 0.190 & 0.62 \\
+        Notch filter design & 0.04 & 0.086 & 38 & 0.290 & 3.60 \\
+        Smooth design & 0.12 & 0.155 & 66 & 0.233 & 1.65 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+Both designs reduce the standard deviations of rotor speed and power considerably compared with the PI baseline, by about 70\% for the notch filter design and 45\% for the smooth design, see Table~\ref{tab:qLMPCFAST}. The smooth design requires less than half of the pitch activity of the notch filter design. Neither design reaches the tower fore-aft acceleration of the PI baseline, which is 53\% and 23\% higher. For the combination with individual pitch control, the IPC of Section~\ref{section:Individal Pitch PI Control} is added to the collective pitch command of the qLMPC, and the qLMPC receives the mean blade pitch angle as feedback. The IPC gains are not optimized for the combination. On FAST, the unscaled gains increase the blade root moments and the tower acceleration instead of reducing them. They were therefore scaled by hand on the notch filter design with the factors 0.1, 0.3, and 0.5, and the factor 0.3, which gave the lowest blade root moments, is used without the tower damping term for both designs and all pitch rate limits, i.e.\ without retuning for the smooth design.
 %; only the projection factor $\cos(5^\circ)$ remains in the plant of the PI controller.
 
 \subsection{Results} \label{quasiLPVMPCResults}
