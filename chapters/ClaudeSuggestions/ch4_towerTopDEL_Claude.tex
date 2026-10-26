@@ -149,7 +149,7 @@ with $\omega_0 = 2\pi f_0$ at $f_0 = 0.605$\,Hz (3P at the rated rotor speed of 
     \end{tabular}
 \end{table}
 
-Both designs reduce the standard deviations of rotor speed and power considerably compared with the PI baseline, by about 70\% for the notch filter design and 45\% for the smooth design, see Table~\ref{tab:qLMPCFAST}. The smooth design requires less than half of the pitch activity of the notch filter design. Neither design reaches the tower fore-aft acceleration of the PI baseline, which is 53\% and 23\% higher. For the combination with individual pitch control, the IPC of Section~\ref{section:Individal Pitch PI Control} is added to the collective pitch command of the qLMPC, with the gains scaled by 0.3 and without its tower damping term, as the unscaled gains increase the blade root moments and the tower acceleration on FAST instead of reducing them; the qLMPC receives the mean blade pitch angle as feedback.
+Both designs reduce the standard deviations of rotor speed and power considerably compared with the PI baseline, by about 70\% for the notch filter design and 45\% for the smooth design, see Table~\ref{tab:qLMPCFAST}. The smooth design requires less than half of the pitch activity of the notch filter design. Neither design reaches the tower fore-aft acceleration of the PI baseline, which is 53\% and 23\% higher. For the combination with individual pitch control, the IPC of Section~\ref{section:Individal Pitch PI Control} is added to the collective pitch command of the qLMPC, and the qLMPC receives the mean blade pitch angle as feedback. The IPC gains are not optimized for the combination. On FAST, the unscaled gains increase the blade root moments and the tower acceleration instead of reducing them. They were therefore scaled by hand on the notch filter design with the factors 0.1, 0.3, and 0.5, and the factor 0.3, which gave the lowest blade root moments, is used without the tower damping term for both designs and all pitch rate limits, i.e.\ without retuning for the smooth design.
 
 % ---- original line 518 (after: "\subsection{Results} \label{quasiLPVMPCResults}")
 % Sentence appended at the end of the paragraph.
@@ -186,3 +186,16 @@ reference, the qLMPC reduces the power variance on FAST again, but at the cost o
 loads. On the simplified model, the rotor-effective wind filters shown in
 Table~\ref{tab:stddev_unified} have a similar effect: they remove a large part of the excitation,
 so both the pitch activity and the improvement of the qLMPC become smaller.
+
+% ---- original line 1120 (after: "the power standard deviation curves hardly change. The smooth design c")
+% The IPC gains of the combination are not tuned for the smooth design.
+% OLD: about the actuator power of the IPC and the AALC. It almost reaches the blade DEL reduction of the
+% OLD: IPC, 0.85 compared with 0.79, and in addition reduces the power standard deviation by about 24\%,
+% OLD: which neither IPC nor AALC achieve. Its tower DEL, however, is about 12 percentage points higher
+% OLD: than with IPC.
+about the actuator power of the IPC and the AALC. Its blade DEL of 0.85 comes close to the 0.79 of
+the IPC alone, and in addition it reduces the power standard deviation by about 24\%, which
+neither IPC nor AALC achieve. As the IPC gains of the combination were only scaled by hand on the
+notch filter design and not retuned for the smooth design (Section~\ref{sec:qLMPCFAST}), part of
+the remaining blade DEL difference may be due to the tuning rather than to the design. The tower
+DEL of this combination, however, is about 12 percentage points higher than with IPC.
