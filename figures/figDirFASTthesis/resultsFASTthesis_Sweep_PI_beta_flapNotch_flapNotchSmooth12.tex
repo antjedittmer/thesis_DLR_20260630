@@ -1,0 +1,28 @@
+\begin{table}[h]
+\centering
+\caption[Controller comparison on FAST, sweep.]{Controller comparison on FAST v8.16, sweep, pitch rate limit 13\textdegree/s. Standard deviations (top) and blade pitch rate, blade root out-of-plane moment standard deviation and damage equivalent loads of the blade root (W\"ohler exponent 10, maximum of the blades) and tower base (exponent 4) (bottom); in parentheses the ratio baseline PI/controller, values above 1 indicate an improvement.}
+\label{tab:CtrlComparisonFASTSweep_PI_beta_flapNotch_flapNotchSmooth12}
+\begin{tabular}{lccccc}
+\toprule
+{Controller} & {$\omega_r$ (rpm)} & {$|P_{g,\text{ref}}-P_g|$ (kW)} & {Twr$_\text{FA}$ (m/s$^2$)} & {$\dot T_g$ (kNm/s)} & {$\dot\beta$ (\textdegree/s)} \\
+\midrule
+Baseline PI & 1.698 & 141.9 & 0.056 & 0.57 & 0.22 \\
+original qLMPC & 1.626 (1.04) & 136.1 (1.04) & 0.052 (1.08) & 0.68 (0.83) & 0.12 (1.76) \\
+notch filter design & 1.499 (1.13) & 144.6 (0.98) & 0.083 (0.67) & 0.68 (0.83) & 0.50 (0.44) \\
+smooth design & 1.772 (0.96) & 156.7 (0.91) & 0.068 (0.82) & 1.17 (0.49) & 0.39 (0.55) \\
+\bottomrule
+\end{tabular}
+
+\vspace{2mm}
+
+\begin{tabular}{lcccc}
+\toprule
+{Controller} & {$\dot\beta_1$ (\textdegree/s)} & {$M_{yb}$ (kNm)} & {DEL$_b$ (kNm)} & {DEL$_t$ (kNm)} \\
+\midrule
+Baseline PI & 0.29 & 1889 & 4618 & 13866 \\
+original qLMPC & 0.23 (1.29) & 1931 (0.98) & 4515 (1.02) & 13152 (1.05) \\
+notch filter design & 0.71 (0.41) & 1731 (1.09) & 4140 (1.12) & 14562 (0.95) \\
+smooth design & 0.45 (0.66) & 1895 (1.00) & 4999 (0.92) & 14623 (0.95) \\
+\bottomrule
+\end{tabular}
+\end{table}
