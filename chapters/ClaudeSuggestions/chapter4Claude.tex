@@ -692,9 +692,9 @@ In the turbulent wind, the original qLMPC, which performs very well on Mdl2 for 
 
 %\input{figures/figDirFASTthesis/resultsFASTthesis_NTM18B_PI_beta_flapNotch_flapNotchSmooth12}
 
-The application of the proposed velocity-based qLMPC concept to the qLPV model significantly reduces tower movements and minimizes power output fluctuations. As noted at the start of this section, DEL reduction is not directly a qLMPC objective. On FAST, with the adaptations of Section~\ref{sec:qLMPCFAST}, the qLMPC still reduces the power fluctuations, but the tower loads increase above and the comparison with the other controllers in Section~\ref{subsec:ComparisonWindTurbineControlDesigns}.
+The application of the proposed velocity-based qLMPC concept to the qLPV model significantly reduces tower movements and minimizes power output fluctuations. As noted at the start of this section, DEL reduction is not directly a qLMPC objective. On FAST, with the adaptations of Section~\ref{sec:qLMPCFAST}, the qLMPC still reduces the power fluctuations, but the tower loads increase, as shown above and in the comparison with the other controllers in Section~\ref{subsec:ComparisonWindTurbineControlDesigns}.
 
-The performance improvement comes at the cost of requiring accurate wind information, either obtained through expensive sensors such as lidars or through wind estimations. A purely feedback-based improvement over standard collective pitch control is individual pitch control, which uses blade root moments and rotor azimuth position as additional feedback signals and is already widely deployed in commercial turbines. This approach is extensively investigated in both theoretical studies and field tests and has proven to be an effective strategy, either as an alternative or in addition to MPC, to further reduce mechanical loads. While its primary focus is on reducing blade loads, a reduction in tower loads is also possible, as will be discussed in the next section.
+This study shows that considerable performance improvements are possible without model mismatch, and this best-case scenario underlines the potential of the algorithm. However, even the model mismatch between the carefully tuned qLPV model and FAST deteriorates the performance of the original qLMPC. With the adaptations for FAST, a large part of the power smoothing is retained, but the tower loads increase, which shows the sensitivity of the qLMPC to model mismatch. Moreover, the performance improvement comes at the cost of requiring accurate wind information, obtained either through expensive sensors such as lidars or through wind speed estimation. A purely feedback-based improvement over standard collective pitch control is individual pitch control, which uses blade root moments and the rotor azimuth position as additional feedback signals and is already widely deployed in commercial turbines. This approach has been extensively investigated in both theoretical studies and field tests and has proven to be an effective strategy to further reduce mechanical loads, either as an alternative or in addition to MPC. While its primary focus is on reducing blade loads, a slight reduction in tower loads is also possible, as will be discussed in the next section.
 
 \section{Individual Pitch Control Design and Application}\label{section:Individal Pitch PI Control}
 Individual Pitch Control (IPC) is a control technique designed to mitigate cyclic loads on wind turbine blades by independently adjusting the pitch angle of each blade. These cyclic loads primarily result from wind shear, i.e., the increase in wind speed with altitude due to reduced surface friction farther from the ground. Additional causes of load imbalances include yaw misalignment, rotor tilt, turbulence, gusts and tower shadow effects. These effects lead to asymmetric aerodynamic loading, which induces bending moments perpendicular to the rotor plane at the blade roots, referred to as out-of-plane bending moments. They occur at specific multiples of the rotor's rotational frequency, commonly referred to as $n\text{P}$ frequencies, e.g., $1\text{P}$ and $2\text{P}$ correspond to once and twice per revolution, respectively. These periodic loads accumulate fatigue damage in the blades and, via the resulting tilt and yaw moments, in the hub, shaft and nacelle. In addition, they can excite the turbine's natural structural modes if an $n\text{P}$ frequency coincides with a natural frequency, which further accelerates fatigue and reduces component lifespan.
@@ -769,7 +769,7 @@ where the signal $q_i$ denotes $\beta_{i,\text{IPC}}$ in IPC for the $i$-th blad
  Note that the transpose of the matrix $V_{\theta_{r}}$ from equation~(\ref{eq:inverseMBC}), multiplied by $2/3$, is equal to the last two rows of the MBC matrix, see also \cite{ossmann2017load}. In the context of this work, and as is common in related literature, see e.g.~\cite{he2018combined}, the pitch and yaw moments $M_c$ and $M_s$ are controlled via $q_c$ and $q_s$ independently, i.e., any remaining coupling following the MBC transformation between $q_c$ and $M_s$ as well as $q_s$ and $M_c$ is neglected. As the wind turbine dynamics can be modeled as a LTI system after transforming rotor blade dynamics into a fixed coordinate system, using MBC from equation~(\ref{eq:MBC}), a simple, intuitive control approach is adopted. Two separate SISO controllers, one for the pitch and one for the yaw moment, respectively, are designed to reduce the transformed moments $M_c$ and $M_s$. In this work, the same controller parameters are used, resulting in two parameters to be tuned for this PI controller. As already stated above, only PI controllers were investigated as the inclusion of a derivative component did not yield gains significantly different from zero during the tuning process. Note that the moment $M_0$, the collective out-of-plane moment caused by the rotor thrust, is determined by the collective pitch angle set by the baseline power controller and is not used in the IPC controls.
 
 \subsection{IPC Parameter Optimization} \label{subsection: IPCOptCriteria}
-The primary objective of wind turbine control is to minimize the Levelized Cost of Energy (LCoE) by balancing the conflicting goals of maximizing power output while minimizing mechanical loads, particularly damage equivalent loads (DELs) on the tower and blades. This work leverages controller optimization criteria originally used by \cite{hoffmann2018load}, where a standard baseline wind turbine controller, comprising generator torque control and a gain-scheduled PI pitch controller, is augmented with an IPC PI controller and tower damping. The optimization criteria in a multi-objective optimization were the minimization of blade and tower DELs, actuator activity, power tracking error, and the standard deviation of the generated power. However, as in \cite{dittmer2024combined}, only the minimization of the blade DEL is implemented in this work, and the other criteria are used as evaluation criteria.
+The primary objective of wind turbine control is to minimize the Levelized Cost of Energy (LCoE) by balancing the conflicting goals of maximizing power output while minimizing mechanical loads, particularly damage equivalent loads (DELs) on the tower and blades. This work leverages controller optimization criteria originally used by \cite{hoffmann2018load}, where a standard baseline wind turbine controller, comprising generator torque control and a gain-scheduled PI pitch controller, is augmented with an IPC PI controller and tower damping. The optimization criteria in a multi-objective optimization were the minimization of blade and tower DELs, actuator activity, power tracking error, and the standard deviation of the generated power. However, as in \cite{dittmer2024combined}, only the minimization of the blade DEL is implemented in this work, and the other criteria are used as evaluation criteria. In the following study, the optimization and simulation environment presented in \cite{dittmer2024combined} was used, which leverage OpenFAST 3.1.2. As before, this software is referred to as FAST.
 
 The PI controller design presented in this thesis consists of a two-step approach. In the first step, the integral and proportional gains of the IPC are initialized with one and optimized with the Nelder-Mead simplex algorithm implemented in MATLAB's \textit{fminsearch.m} to reduce the blade DEL. In the second step, for cases where the tower DEL increased above the value obtained without the IPC active, another optimization using the interior point method as implemented in \textit{fmincon.m} is performed.
 For all steps of the controller tuning, the quality of an IPC controller is quantified via the decrease in blade root DEL. The cost function $J$ to be minimized in the optimization is the maximum of the DELs of the three blades:
@@ -822,18 +822,18 @@ The controller parameters are optimized for different pitch rate limits, as the 
 
 \subsection{Results} \label{subsection: IPCResults}
 The IPC gains are tuned separately for each pitch rate limit with a single wind field, which is taken from the optimization dataset that is also used for training the combined IPC-TEFC controller in Section~\ref{sec:CombinedIPC-TrailingEdgeFlapControl}: the turbulent wind field with a mean wind speed of 18\,m/s and turbulence class~A (16\%). The simulations run for 660\,s. The IPC is faded in between 20\,s and 30\,s, and all criteria are evaluated from 66\,s onward, so that the start-up of the simulation does not influence the results. The proportional and integral gains are optimized with the sequential quadratic programming algorithm of MATLAB's \textit{fmincon.m}, minimizing the cost function in Equation~\eqref{eq:costFunIPC} subject to the constraint that the tower base DEL must not exceed that of the baseline controller. The resulting gains are $K_P = 0.2533$, $K_I = 0.1033$ for 4\textdegree/s, $K_P = 1.2219$, $K_I = 0.3702$ for 8\textdegree/s, and $K_P = 1.2227$, $K_I = 0.3653$ for 13\textdegree/s. The gains for 8\textdegree/s and 13\textdegree/s are nearly identical, since the controller optimized for 8\textdegree/s already reaches the rate limit only rarely, as discussed below.
-
-Figure~\ref{fig:timeseriesIPC} visualizes the results of the baseline CPC and two IPC controllers, with parameters optimized for the 4\textdegree/s and 13\textdegree/s pitch rate limits. In all test cases, the turbine is excited with the same wind signal, i.e., the wind field used for the controller tuning. The first subplot shows the wind speed signal. The subsequent plots display pitch angles, pitch rates, rotor speed, tower fore-aft acceleration, generator power, and blade root out-of-plane moments. The generator torque is not shown, as it is constant at its rated value in this Region~III test case for all controllers.
+%
+Figure~\ref{fig:timeseriesIPC} visualizes the results of the baseline CPC and two IPC controllers, with parameters optimized for the 4\textdegree/s and 13\textdegree/s pitch rate limits. In all test cases, the turbine is excited with the same wind signal, i.e., the wind field used for the controller tuning. The first subplot shows the wind speed signal. The subsequent plots display pitch angles, pitch rates, rotor speed, tower fore-aft acceleration, generator power, and blade root out-of-plane moments. The generator torque is not shown, as it is constant at its rated value in this Region~III test case for all controllers. Rotor speed and generator power remain nearly unchanged between the two IPC configurations and the baseline PI CPC. This is expected, as the power control logic, which sets the generator torque and collective pitch demand, is identical across all controllers. Differences in tower fore-aft motion are also nearly imperceptible in this time series. The most notable differences appear in the pitch signals, which oscillate at the 1P frequency in both IPC cases, and in the resulting blade root out-of-plane moments. At the lower pitch rate limit of 4\textdegree/s, shown in the left column, the pitch rates of the IPC frequently reach the limit, i.e., during 2.2\% of the time, which limits the amplitude of the 1P pitch oscillations and thus also the effect of the IPC on the blade root out-of-plane moments. In contrast, the right column, corresponding to the very high pitch rate limit of 13\textdegree/s, shows larger pitch rates that exceed 8\textdegree/s only in short episodes, while the limit of 13\textdegree/s itself is never reached. Here the individual pitch actuators significantly reduce the variance of the out-of-plane moments, thereby improving load reduction on the blades.
+As expected, increasing the allowable pitch rate enhances the effectiveness of the IPC controller in alleviating structural loads. Above 8\textdegree/s, however, a further increase of the rate limit brings hardly any additional benefit for this test case.
 \begin{figure} [H]
     \subfloat[Pitch rate limit 4\textdegree/s]{\includegraphics[width=0.49\textwidth]{figures/figures_WESC25/fig00a_Timeseries1.eps}}\hfill
     \subfloat[Pitch rate limit 13\textdegree/s]{\includegraphics[width=0.49\textwidth]{figures/figures_WESC25/fig00a_Timeseries3.eps}}\hfill
     \caption[Controller comparison: Baseline and IPC PI with different pitch rate limits.]{Controller comparison: Baseline CPC (purple) and IPC PI (blue, red and yellow lines pitch signals of blades 1 to 3, blue all other signals) with different pitch rate limits for turbulent wind (18\,m/s mean, IEC turbulence class A (16\%), wind field of the optimization dataset). Rate limits: Low (4\textdegree/s) and high (13\textdegree/s) for IPC, standard  (8\textdegree/s) for baseline PI. Dashed lines in the pitch rate plots: $\pm 4$\textdegree/s and $\pm 8$\textdegree/s. Displayed signals: wind speed, pitch, pitch rate, states, power, and out-of-plane blade root moments.}
     \label{fig:timeseriesIPC}
 \end{figure}
+%
 
-Rotor speed and generator power remain nearly unchanged between the two IPC configurations and the baseline PI CPC. This is expected, as the power control logic, which sets the generator torque and collective pitch demand, is identical across all controllers. Differences in tower fore-aft motion are also nearly imperceptible in this time series. The most notable differences appear in the pitch signals, which oscillate at the 1P frequency in both IPC cases, and in the resulting blade root out-of-plane moments. At the lower pitch rate limit of 4\textdegree/s, shown in the left column, the pitch rates of the IPC frequently reach the limit, i.e., during 2.2\% of the time, which limits the amplitude of the 1P pitch oscillations and thus also the effect of the IPC on the blade root out-of-plane moments. In contrast, the right column, corresponding to the very high pitch rate limit of 13\textdegree/s, shows larger pitch rates that exceed 8\textdegree/s only in short episodes, while the limit of 13\textdegree/s itself is never reached. Here the individual pitch actuators significantly reduce the variance of the out-of-plane moments, thereby improving load reduction on the blades.
-As expected, increasing the allowable pitch rate enhances the effectiveness of the IPC controller in alleviating structural loads. Above 8\textdegree/s, however, a further increase of the rate limit brings hardly any additional benefit for this test case.
-
+%
 Figure~\ref{fig:PSDIPC} shows the Power Spectral Density (PSD) of the blade root out-of-plane moment to visualize and explain the gradual improvement with increasing pitch rate for all three test cases. The black line represents the baseline CPC. The blue line, representing IPC with a 4\textdegree/s rate limit, reduces the 1P peak by 91\%, while the red line, representing IPC with an 8\textdegree/s rate limit, further lowers it, achieving a 96\% reduction. At the 2P frequency, the blue line shows only a small decrease of 11\% compared to the baseline, while the red line lowers the 2P peak by 44\%. As expected, the 8\textdegree/s rate limit offers better load reduction across both 1P and 2P frequencies. The controller tuned with the rate limit set to 13\textdegree/s, depicted as a yellow line, lies almost on top of the red line, with 1P and 2P peak reductions of 96\% and 45\%, respectively.
 \begin{figure}[h]
     \begin{center}
@@ -842,7 +842,7 @@ Figure~\ref{fig:PSDIPC} shows the Power Spectral Density (PSD) of the blade root
         \label{fig:PSDIPC}
     \end{center}
 \end{figure}
-
+%
 Table~\ref{tab:stddev_unified_IPC} summarizes the standard deviation of the signals shown in Figure~\ref{fig:timeseriesIPC} for IPC rate limits of 4\textdegree/s, 8\textdegree/s, and 13\textdegree/s. For all three cases, the baseline is the PI CPC with the standard rate limit of 8\textdegree/s. For the rotor speed and the power output, the introduction of IPC does not produce any observable effect, with ratios between 0.99 and 1.00. The tower fore-aft acceleration, whose differences are hardly visible in the time series, decreases slightly by 2\% to 3\%. The pitch rate standard deviation increases unavoidably for the IPC test cases: by a factor of 2.81 at the most restrictive limit of 4\textdegree/s, and by factors of 4.58 and 4.61 at 8\textdegree/s and 13\textdegree/s, respectively. In contrast, the blade root out-of-plane moment is reduced by 18\%, 25\%, and 25\% across the three limits, consistent with the spectral load reductions at 1P and 2P visible in Figure~\ref{fig:PSDIPC}.
 \begin{table}[htbp]
     \centering
@@ -865,9 +865,9 @@ Table~\ref{tab:stddev_unified_IPC} summarizes the standard deviation of the sign
         \bottomrule
     \end{tabular}
 \end{table}
-
+%
 The IPC gains are optimized with a single wind field at 18\,m/s. To check whether they carry over to the whole of Region~III and to other wind fields, the IPC with the gains for 8\textdegree/s is simulated for all above rated wind speeds of the optimization dataset and of the two verification datasets, which are also used for the AALC in Section~\ref{subsec:ResultsTEF}. Table~\ref{tab:IPC_summary} contains the five evaluation criteria, normalized by simulations without IPC for the same wind test cases and averaged over three wind speed ranges: all wind speeds above rated, the wind speeds from 18\,m/s, and the optimization wind speed of 18\,m/s.
-
+%
 % Created by makeIPC_SummaryTable on 2026-10-26
 \begin{table}[h]
     \centering
@@ -1088,7 +1088,7 @@ The evaluation of the power criteria confirms that the AALC leads only to neglig
 \label{subsec:ComparisonWindTurbineControlDesigns}
 
 In a first comparison, the qLMPC was evaluated on the simplified turbine model that is also
-used as its prediction model, for turbulent wind with a mean of 16\,m/s. Without any model
+used as its prediction model, for turbulent wind with a mean of 18\,m/s. Without any model
 mismatch, it achieved large improvements over the PI baseline across all evaluated pitch rate limits.
 As presented in Table~\ref{tab:stddev_unified}, the standard deviation of the tower fore-aft acceleration was reduced
 by factors of 2.58, 3.82, and 4.14 for the pitch rate limits of 4\textdegree/s, 8\textdegree/s, and
@@ -1113,12 +1113,32 @@ Figure~\ref{fig:CtrlCmpFASTIPC} and Table~\ref{tab:CtrlComparisonFASTNTM18B_PI_f
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.49\textwidth]{figures/figDirFASTthesis/cmpCtrlFASTthesis_NTM18B_PI_flapNotch_flapNotchIPC.eps}
+    \includegraphics[width=0.62\textwidth]{figures/figDirFASTthesis/cmpCtrlFASTthesis_NTM18B_PI_flapNotch_flapNotchIPC.eps}
     \caption[Notch filter design with and without IPC on FAST for turbulent wind]{Notch filter design without and with IPC compared with the baseline PI controller on FAST for turbulent wind (18\,m/s mean, IEC turbulence class B), pitch rate limit 13\textdegree/s. Displayed signals: wind speed, generator torque, blade 1 pitch angle, rotor speed, tower fore-aft acceleration, generator power with its reference (black dashed line), and blade 1 root out-of-plane moment.}
     \label{fig:CtrlCmpFASTIPC}
 \end{figure}
 
-\input{figures/figDirFASTthesis/resultsFASTthesis_NTM18B_PI_flapNotch_flapNotchIPC}
+\begin{table}[h]
+    \centering
+    \caption[Controller comparison on FAST, 18 m/s turbulent (class B): notch filter design with and without IPC.]{Controller comparison on FAST v8.16, 18\,m/s turbulent wind (IEC turbulence class B), pitch rate limit 13\textdegree/s, notch filter design with and without IPC. Top: standard deviations of the tower fore-aft acceleration, the power tracking error, the rotor speed, the (collective) pitch rate, and the blade root out-of-plane moment (mean of the blades). Bottom: damage equivalent loads of the blade root (W\"ohler exponent 10, maximum of the blades) and the tower base (exponent 4). In parentheses the ratio baseline PI/controller; values above 1 indicate an improvement.}
+    \label{tab:CtrlComparisonFASTNTM18B_PI_flapNotch_flapNotchIPC}
+    \begin{tabular}{l rrr}
+        \toprule
+        & & \multicolumn{2}{c}{Notch filter design} \\
+        \cmidrule(lr){3-4}
+        Signal & Baseline PI & without IPC & with IPC \\
+        \midrule
+        Tower acc.\ (m/s$^2$)        & 0.1712 & 0.2310 (0.74) & 0.2393 (0.72) \\
+        Power error (kW)             & 59.60  & 17.90 (3.33)  & 18.08 (3.30) \\
+        Rotor speed (rpm)            & 0.2460 & 0.0653 (3.77) & 0.0660 (3.73) \\
+        Pitch rate (\textdegree/s)   & 0.49   & 2.87 (0.17)   & 2.88 (0.17) \\
+        Blade root OoP moment (kNm)  & 1574   & 1559 (1.01)   & 1207 (1.30) \\
+        \midrule
+        Blade root DEL (kNm)         & 6002   & 6249 (0.96)   & 5145 (1.17) \\
+        Tower base DEL (kNm)         & 15394  & 19493 (0.79)  & 20232 (0.76) \\
+        \bottomrule
+    \end{tabular}
+\end{table}
 
 
 All designs are therefore compared for the same wind, the turbulent 18\,m/s wind of the
