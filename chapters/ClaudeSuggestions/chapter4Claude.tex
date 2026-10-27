@@ -1098,9 +1098,8 @@ by factors of 6.42, 10.29, and 11.36 (reductions between 84\% and 91\%), while t
 standard deviation showed matching improvements with reductions up to a factor of 11.40 at the
 13\textdegree/s rate limit. These improvements did not hold up when the controller was applied to the FAST model of the NREL 5MW
 turbine. The original qLMPC design increased the power tracking error instead of reducing it,
-mainly due to the mismatch between the prediction model and the FAST turbine implementation, e.g.\
-the structural modes not contained in the prediction model. When filters were used, the
-improvements were partly recovered (Section~\ref{sec:qLMPCFAST} and \nameref{subsubsec:qLMPCFASTresults}). With rotor speed tracking, a prediction model extended by the tower fore-aft and
+mainly due to the mismatch between the prediction model and the FAST turbine implementation which is caused by only a subset of the structural modes modeled in FAST included in the qLPV prediction model. When filters were used, the
+improvements were partly recovered. With rotor speed tracking, a prediction model extended by the tower fore-aft and
 blade flap dynamics, notch filters at the 3P frequency and the drivetrain mode in the measured
 speeds, and, for the smooth design, a longer controller sample time with a ramped pitch
 reference, the qLMPC reduces the power variance on FAST again. However, the increase in tower
