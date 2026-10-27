@@ -1,0 +1,1312 @@
+% ch4_optimization_Claude.tex: chapter 04_WindTurbineControl_02_notBold.tex (main 9c6458c) with the
+% suggestions on the IPC/AALC optimization procedure (start values, fade-in, fminsearch/fmincon, Woehler
+% exponents of the optimization and of the evaluation), the evaluation from 60 s and the exponents 10/4 of
+% the IPC/AALC tables (ch4_eval60_Claude.tex) and the actuator power estimate (ch4_actuatorPower_Claude.tex)
+% merged. Changed text is shown in blue (\claude). Each change is marked with "% CLAUDE" and the original
+% line as "% OLD:". It uses the same labels as the chapter, so it is meant to be \include-d instead of the
+% chapter (dissertation_ADi.tex), not in addition to it.
+\providecommand{\claude}[1]{\textcolor{blue}{#1}}
+
+% chapter4Claude.tex: chapter 04_WindTurbineControl_02_notBold.tex (main 8050120) with all
+% suggestions of ClaudeSuggestions/ch4_towerTopDEL_Claude.tex merged. It uses the same labels as
+% the chapter, so it is meant to be \input instead of the chapter, not in addition to it.
+
+%Modern megawatt wind turbines are both speed-controlled and pitch-controlled \cite{pao2011control, mulders2018delft, elkodama2023control}. Controllers and their parameters are often fine-tuned to fit not only a specific wind turbine type but also individual turbines, taking into account factors such as manufacturing and installation variations, including rotor blade weight imbalances and aging processes \cite{en14238083}. These conventional feedback control designs, typically relying solely on generator speed as input and controlling the blade pitch angles collectively, are well-engineered and technologically mature. However, further reduction of the cost of energy production can be achieved by introducing additional control inputs or sensors. Moreover, using a predictive scheme like qLMPC allows leveraging wind measurements or estimates and incorporating this information over a prediction horizon. It also accounts for how the system states, e.g., the rotor and generator speed, are expected to react to the wind trajectory and future control inputs within that horizon. This chapter investigates control strategies that leverage such improvements: a qLMPC design, which incorporates preview wind information, and PI Individual Pitch Control (IPC), the latter both as a standalone method and in combination with Trailing Edge Flap Control (TEFC), aimed at reducing mechanical loads. These control approaches are evaluated in terms of power reference tracking, actuator activity, and mechanical loads.
+%In Section~\ref{sec:quasiLPVMPCDesign}, the design of a velocity-based qLMPC controller based on a first-principles model is presented. Section~\ref{section:Individal Pitch PI Control} introduces IPC, explaining the multi-blade coordinate transformation and comparing IPC simulation results to those from baseline Collective Pitch Control (CPC). Section~\ref{sec:CombinedIPC-TrailingEdgeFlapControl} describes the combination of IPC and TEFC, including the necessary model extensions and the achieved load reductions on the blades and tower. A brief comparison and conclusion section summarizes the results obtained with the three wind turbine controller designs. The results for the qLMPC controller have been published in \cite{dittmer2021velocity}, and the TEFC control strategy in \cite{dittmer2024combined}.
+\chapter{Wind Turbine Control}  \label{sec:Application to Wind Turbine Control4} 
+Modern megawatt wind turbines are both speed-controlled and pitch-controlled \cite{pao2011control,mulders2018delft, elkodama2023control}. Controllers and their parameters are often fine-tuned to
+fit not only a specific wind turbine type but also individual turbines, taking into account factors
+such as manufacturing and installation variations, including rotor blade weight imbalances and
+aging processes \cite{en14238083}. These conventional feedback control designs, typically relying
+solely on generator speed as input and controlling the blade pitch angles collectively, are
+well-engineered and technologically mature. However, further reduction of the cost of energy
+production can be achieved by introducing additional control inputs or sensors. Moreover, using a
+predictive scheme like qLMPC allows leveraging wind measurements or estimates and incorporating
+this information over a prediction horizon. It also accounts for how the system states, e.g., the
+rotor and generator speed, are expected to react to the wind trajectory and future control inputs
+within that horizon. This chapter investigates control strategies that leverage such improvements:
+a qLMPC design, which incorporates wind information, and PI Individual Pitch Control
+(IPC), the latter both as a standalone method and in combination with Trailing Edge Flap Control
+(TEFC), aimed at reducing mechanical loads. These control approaches are evaluated in terms of
+power reference tracking, actuator activity, and mechanical loads.
+%
+In Section~\ref{sec:quasiLPVMPCDesign}, the design of a velocity-based qLMPC controller based on
+the first-principles model of Chapter~\ref{sec:WindTurbineqLPVModels} is presented. Where qLMPC
+has so far been applied to wind turbines as a SISO scheme \cite{mulders2020preventing, pamososuryo2022individual,
+    fonseca2024windTurbineSideSide}, the design presented here actuates generator torque and
+collective pitch simultaneously as a MIMO scheme, covering the entire operating range. It is
+reformulated as a QP and solved via a linear complementarity formulation with Lemke's algorithm
+\cite{cisneros2020velocity}, yielding mean solver times below 2\,ms at a controller sampling time
+of 8\,ms and thus real-time capability.
+%
+Section~\ref{section:Individal Pitch PI Control} introduces IPC, explaining the multiblade
+coordinate transformation and comparing IPC simulation results to those from baseline Collective
+Pitch Control (CPC). The simulation environment is also used to tune the IPC gains, by a grid
+search followed by a Nelder-Mead simplex optimization of the blade root DEL.
+%
+Section~\ref{sec:CombinedIPC-TrailingEdgeFlapControl} describes the combination of IPC and TEFC, in the following called Active Aerodynamic Load Control (AALC), including the necessary model extensions and the achieved load reductions on the blades and tower. Whereas earlier studies combining the two actuation principles report results for single mean wind
+speeds \cite{wilson2009combined, henriksen2013model, he2018combined}, the controller presented
+here is demonstrated across Regions II and III, using one training dataset and two independent
+verification datasets.
+%
+Section~\ref{subsec:ComparisonWindTurbineControlDesigns} compares qLMPC, IPC, and AALC, discussing the potential of the different schemes and showing the trade-offs between DEL reduction and actuator activity relative to the PI CPC
+baseline. The results for the qLMPC controller have been published in \cite{dittmer2021velocity}, and the AALC control strategy in \cite{dittmer2024combined}.
+
+\section{qLMPC Design and Application}\label{sec:quasiLPVMPCDesign}
+Wind turbine controller design in the above-rated region focuses on smooth power control and in the below-rated region on power optimization, as described in \cite{Bianchi2007}. The proposed MIMO qLMPC uses two control inputs, the collective blade pitch angle $\beta_{0,\text{ref}}$ and the generator torque reference $T_{g,\text{ref}}$. The baseline controller consists of two SISO controllers, one for generator torque and one for blade pitch control, see Section~\ref{sec:WindTurbineControl}. These can be replaced by a MIMO qLMPC controller, see Figure~\ref{fig:BlockMPC}. 
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.7\textwidth,trim={0 0cm 0cm 0.1cm},clip]{figures/Figures_ADi/turbineCtrlBetaMPC1.pdf}
+    \caption[Block diagram of the closed-loop wind turbine control structure with qLMPC replacing the baseline PI controller]{Block diagram of the closed-loop wind turbine control structure with qLMPC (dashed box) replacing the baseline PI controller (solid line)}
+    \label{fig:BlockMPC}
+\end{figure}
+
+Optimal reference signals $r_\beta$ and $r_{T_g}$ for the two actuator states are calculated from the wind speed $V_\infty$. The cost function penalizes the deviation of the actuator states from $r_\beta$ and $r_{T_g}$, the changes of all states, which in the velocity-based form drives the system to a steady state, and the changes in the control inputs. This results in smoother power output and reduced tower movement compared to the baseline. DEL reduction is not an explicit objective of the qLMPC design. However, the five evaluation criteria used to compare all control strategies introduced in Section~\ref{subsection Control Objectives}, i.e., blade and tower DEL, power mean and variance, and actuator activity, are also calculated for this controller to enable a direct comparison with the IPC and AALC designs.
+
+In this work, the velocity-based approach from \cite{cisneros2020velocity}, presented in Section~\ref{sec:qLPVmodels} of this thesis, is applied to a model based on the wind turbine model used for qLPV-based MIMO controller design in \cite{Bianchi2007}. The model in \cite{Bianchi2007} contains three turbine states, the drive-train torsion angle $\theta_s$ and the rotor and generator speed $\omega_r$ and $\omega_{gr}$, as well as the pitch actuator state $\beta_0$. These four states are a subset of the state vector of the extended model Mdl2$^\prime$ in Equation~\eqref{eq:11} and are sufficient to control the power output. Smoother rotor speed and pitch activity also reduce thrust variations and thus, indirectly, tower and blade movement. Hence, for the sake of simplicity, the decision was made to base the qLMPC scheme on a model close to the one in \cite{Bianchi2007} instead of the extended model Mdl2$^\prime$, as the lower model order reduces the size of the optimization problem and thus the computation time. As control inputs, \cite{Bianchi2007} uses the blade pitch command $\beta_{0,\text{ref}}$ and the zero torque speed $\omega_Z$, which is linearly dependent on the generator torque $T_g$. Three modifications are made to this model:
+\begin{enumerate}
+    \item The reference generator torque $T_{g,\text{ref}}$ is used as the second control input instead of $\omega_Z$. The reference torque is selected because FAST expects a torque command as input. The optimal trajectory of the reference generator torque $T_{g,\text{ref}}$ over a prediction horizon is calculated based on an optimal reference signal $r_{T_g}$, which is itself calculated from the wind speed.
+    \item The generator torque $T_g$, which lags the commanded control signal $T_{g,\text{ref}}$, is used as an additional state to eliminate direct feedthrough, i.e., to avoid a non-zero feedthrough matrix. This fifth state enables the use of the optimization framework for reference tracking and disturbance rejection proposed in \cite{cisneros2020velocity}. Incorporating a filtered control input as an additional state is a common practice, and is, for example, also employed in the MPC algorithm implemented in WFSim \cite{boersma2018control}. %~\(\bm{D} \)
+    \item A desired pitch signal $r_{\beta}$ is used as a reference for the prediction horizon in the MPC optimization to calculate the optimal pitch command $\beta_{0,\text{ref}}$. In \cite{Bianchi2007}, a reference value for the generator speed is tracked. This choice was made to directly optimize the two actuators to avoid handling the large difference in dynamic bandwidth of the actuators and the plant dynamics in the optimization calculation.
+\end{enumerate}
+%
+The resulting state, input and output vectors are given below. As before, different indices are used for the generator speed on the high-speed shaft, denoted $\omega_g$, and the generator speed referred to the low-speed shaft, $\omega_{gr}$. In the state vector, $\omega_{gr}$ is used, as it is in the same reference frame as the rotor speed $\omega_r$:
+\begin{equation}\label{eq:xMPCyMPC}
+    \begin{aligned}
+        \bm{x}_{\text{MPC}} &= [\theta_{s} \quad \omega_r \quad \omega_{gr} \quad T_g \quad \beta_0]^T \in \mathbb{R}^{5 \times 1},\\
+        \bm{w}_{\text{Mdl}^\prime} &= [V_{\infty} \quad T_{g,\text{ref}} \quad \beta_{0,\text{ref}}]^T \in \mathbb{R}^{3 \times 1}, \quad
+        \bm{y}_{\text{MPC}} = [T_g \quad \beta_0]^T \in \mathbb{R}^{2 \times 1}.
+    \end{aligned}
+\end{equation}
+%
+Note that $\bm{y}_{\text{MPC}}$ contains the outputs of the prediction model, i.e., the controlled variables tracked in the cost function, whereas the outputs of the controller are the commanded signals $T_{g,\text{ref}}$ and $\beta_{0,\text{ref}}$ in $\bm{w}_{\text{Mdl}^\prime}$. The nonlinear dynamics of the three turbine states and the two actuator states are:
+\begin{align}
+    \dot{\theta}_s(t) &= \omega_r(t)-\omega_{gr}(t) \label{eq:NLDyn1},\\
+    \dot{\omega}_r(t) &= -\frac{K_{sr}}{J_r}\theta_s(t)-\frac{B_{sr}}{J_r}\omega_r(t)+\frac{B_{sr}}{J_r}\omega_{gr}(t)+\frac{T_r(\omega_r, \beta_0, V_\infty)}{J_r},\\
+    \dot{\omega}_{gr}(t) &= \frac{K_{sr}}{J_{gr}}\theta_s(t)+\frac{B_{sr}}{J_{gr}}\omega_r(t)-\frac{B_{sr}}{J_{gr}}\omega_{gr}(t)-\frac{N_g T_g(t)}{J_{gr}} \label{eq:NLDyn3},\\
+    \dot{T}_{g}(t) &= -\frac{1}{\kappa}T_{g}(t)+\frac{1}{\kappa}T_{g,\text{ref}}(t),\\
+    \dot{\beta}_0(t) &= -\frac{1}{\tau}\beta_0(t)+\frac{1}{\tau}\beta_{0,\text{ref}}(t).\label{eq:NLDyn5}
+\end{align}
+%
+To avoid having to derive a grid of initial states for the different combinations of the state vector, a velocity based linearization is designed.
+
+\subsection{Velocity-Based qLPV Model for Reference Tracking}
+The velocity-based linearization method from \cite{cisneros2020velocity}, introduced in Section~\ref{sec:qLPVmodels}, is implemented for the model serving as the basis of the qLMPC design. The nonlinear system dynamics
+\[
+\dot{\bm{x}}_{\text{MPC}}(t) = \bm{f}_{\text{MPC}}(\bm{x}_{\text{MPC}}, \bm{w}_{\text{Mdl}^\prime}), \quad \bm{y}_{\text{MPC}}(t) = \bm{h}_{\text{MPC}}(\bm{x}_{\text{MPC}})
+\]
+are described by the relationship between the derivatives of the states, inputs, and outputs:
+\begin{align*}
+    \ddot{\bm{x}}_{\text{MPC}}(t) &= \nabla_{\bm{x}_{\text{MPC}}} \bm{f}_{\text{MPC}}(\bm{x}_{\text{MPC}}, \bm{w}_{\text{Mdl}^\prime}) \dot{\bm{x}}_{\text{MPC}}(t) + \nabla_{\bm{w}_{\text{Mdl}^\prime}} \bm{f}_{\text{MPC}}(\bm{x}_{\text{MPC}}, \bm{w}_{\text{Mdl}^\prime}) \dot{\bm{w}}_{\text{Mdl}^\prime}(t),\\
+    \dot{\bm{y}}_{\text{MPC}}(t) &= \nabla_{\bm{x}_{\text{MPC}}} \bm{h}_{\text{MPC}}(\bm{x}_{\text{MPC}}) \dot{\bm{x}}_{\text{MPC}}(t).
+\end{align*}
+By considering the derivatives instead of the original states, the need for storing steady-state vectors for input, output, and states at each operating point is eliminated.
+As in the actuator-augmented model in Equation~\eqref{eq:11}, the input vector $\bm{w}_{\text{Mdl}^\prime} = [V_{\infty} \;\; T_{g,\text{ref}} \;\; \beta_{0,\text{ref}}]^T$ contains the commanded signals, and the actuator outputs $T_g$ and $\beta_0$ are states.
+%
+The continuous-time system, input, and output matrices are
+\begin{align*}
+    \bm{A}_c(\bm{\rho}_\Rho) &= \nabla_{\bm{x}_{\text{MPC}}} \bm{f}_{\text{MPC}}(\bm{x}_{\text{MPC}}, \bm{w}_{\text{Mdl}^\prime}),\quad
+    \bm{B}_c(\bm{\rho}_\Rho) = \nabla_{\bm{w}_{\text{Mdl}^\prime}} \bm{f}_{\text{MPC}}(\bm{x}_{\text{MPC}}, \bm{w}_{\text{Mdl}^\prime}),\\
+    \bm{C}_c &= \nabla_{\bm{x}_{\text{MPC}}} \bm{h}_{\text{MPC}}(\bm{x}_{\text{MPC}}),
+\end{align*}
+with the state vector $\bm{x}_{\text{MPC}}$ and output vector $\bm{y}_{\text{MPC}}$ as defined in Equation~\eqref{eq:xMPCyMPC}. Since $\bm{y}_{\text{MPC}}$ consists of two states, $\bm{C}_c$ is constant. The scheduling parameter vector consists of the wind speed $V_{\infty}$, the pitch angle $\beta_0$, and the rotor speed $\omega_r$,
+\[
+\bm{\rho}_\Rho = [V_{\infty} \quad \beta_0 \quad \omega_{r}]^T \in \mathbb{R}^{3 \times 1}.
+\]
+At the current time step, the measured or estimated values are used. Over the prediction horizon, $\omega_r$ and $\beta_0$ are taken from the predicted trajectories of the previous optimization step, while $V_{\infty}$ is held constant. Although the control scheme is velocity-based, i.e., based on state derivatives or, in discrete time, state differences, the scheduling parameters are taken in their original non-derivative form. This is because partial derivatives such as \( \partial T_r / \partial \omega_r \), \( \partial T_r / \partial \beta_0 \), and \( \partial T_r / \partial V_{\infty} \) are functions of the current physical states, not of their time derivatives.
+
+The matrices depend on the physical parameters described in Section~\ref{sec:MechanicalAerodynamicSubsystemModel} and can be set up from Equations~\eqref{eq:NLDyn1} to~\eqref{eq:NLDyn5}:
+\begin{equation}
+    \begin{aligned}
+        \bm{A}_c(\bm{\rho}_{\Rho}) &=
+        \begin{bmatrix}
+            0  & 1 & -1 & 0 & 0 \\ 
+            -\frac{K_{sr}}{J_r}  & -\frac{B_{sr}}{J_r} + \frac{1}{J_r}\frac{\partial T_r}{\partial{\omega_r}} & \frac{B_{sr}}{J_r} & 0 & \frac{1}{J_r}\frac{\partial T_r}{\partial \beta_0} \\
+            \frac{K_{sr}}{J_{gr}} & \frac{B_{sr}}{J_{gr}} & -\frac{B_{sr}}{J_{gr}} & -\frac{N_g}{J_{gr}} & 0 \\ 
+            0 & 0 & 0 & -\frac{1}{\kappa} & 0 \\ 
+            0 & 0 & 0 & 0 & -\frac{1}{\tau} 
+        \end{bmatrix} \in \mathbb{R}^{5 \times 5},\\
+        \bm{B}_c(\bm{\rho}_{\Rho}) &=
+        \left[
+        \begin{array}{c|cc}
+            0 & 0 & 0 \\
+            \frac{1}{J_r}\frac{\partial T_r}{\partial V_{\infty}} & 0 & 0 \\
+            0 & 0 & 0 \\
+            0 & \frac{1}{\kappa} & 0 \\
+            0 & 0 & \frac{1}{\tau}
+        \end{array}
+        \right]
+        =
+        \begin{bmatrix}
+            \bm{B}_{c,V} & \bm{B}_{c,u}
+        \end{bmatrix}
+        \in \mathbb{R}^{5 \times 3},\\
+        \bm{C}_c &=
+        \begin{bmatrix}
+            0 & 0 & 0 & 1 & 0 \\
+            0 & 0 & 0 & 0 & 1
+        \end{bmatrix} \in \mathbb{R}^{2 \times 5}.
+    \end{aligned}
+\end{equation}
+%
+The wind affects the system through the first column of the input matrix, denoted here as $\bm{B}_{c,V}$. The wind speed $V_{\infty}$ cannot be controlled and only its current value is assumed to be known and constant over the prediction horizon. Nevertheless, the column $\bm{B}_{c,V}$ must be retained, as the change in wind speed $\Delta V_{\infty}$ is treated as a disturbance input between time steps. To reflect this structure, the input matrix $\bm{B}_c$ is partitioned into the wind disturbance input $\bm{B}_{c,V}$ in the first column and the control input influence $\bm{B}_{c,u}$ in the second and third columns. For implementation in the predictive controller, the wind speed change $\Delta V_{\infty}$ is moved into the system matrix as an additional state, since it represents a known but uncontrollable input.
+
+This continuous-time qLPV model needs to be discretized for its application in a real-time qLMPC design. The model in discretized form is:
+\begin{align}\label{eq4:DiscreteForm}
+    \Delta \bm{x}_{\text{MPC}}(k+1) = \bm{A}_{d}(\bm{\rho}_\Rho)\Delta \bm{x}_{\text{MPC}}(k) + \bm{B}_{d}(\bm{\rho}_\Rho) \Delta \bm{w}_{\text{Mdl}^\prime}(k)
+\end{align}
+with the discretized system and input matrices $\bm{A}_d \in \mathbb{R}^{5 \times 5}$ and $\bm{B}_d \in \mathbb{R}^{5 \times 3}$ dependent on the scheduling parameter vector $\bm{\rho}_{\Rho}$ at the $k{\text{th}}$ sample.
+%
+%
+As in \cite{cisneros2019wide}, the discrete-time matrices $\bm{A}_d$ and $\bm{B}_d$ in Equation~\eqref{eq:zoh1} are approximated by truncating their series expansion after the fourth-order term. The discrete-time system and input matrices used here are therefore:
+\begin{align*}
+    \bm{A}_{d}(\bm{\rho}_\Rho) &= \frac{T_s^4}{24}\bm{A}_c^4(\bm{\rho}_\Rho) + \frac{T_s^3}{6}\bm{A}_c^3(\bm{\rho}_\Rho) + \frac{T_s^2}{2}\bm{A}_c^2(\bm{\rho}_\Rho) + T_s \bm{A}_c(\bm{\rho}_\Rho) + \bm{I},\\
+    \bm{B}_{d}(\bm{\rho}_\Rho) &= \left( \frac{T_s^4}{24}\bm{A}_c^3(\bm{\rho}_\Rho) + \frac{T_s^3}{6}\bm{A}_c^2(\bm{\rho}_\Rho) + \frac{T_s^2}{2}\bm{A}_c(\bm{\rho}_\Rho) + T_s \bm{I} \right) \bm{B}_c(\bm{\rho}_\Rho).
+\end{align*}
+%
+The discrete-time outputs can be calculated as the sum of the former sampled outputs and their current change:
+\begin{align*}
+    T_{g}(k+1) = T_{g}(k) + \Delta T_{g}(k+1), \quad \beta_{0}(k+1) = \beta_{0}(k) + \Delta \beta_{0}(k+1).
+\end{align*}
+%
+Including the output signal values, the discrete state at step $k+1$ is calculated as presented in Equation~\eqref{eq:discreteVelocityqLPV}:
+\[
+\begin{bmatrix}
+    \bm{y}_{\text{MPC}}(k+1) \\
+    \Delta \bm{x}_{\text{MPC}}(k+1)
+\end{bmatrix} = \begin{bmatrix}
+    \bm{I}_{2\times2} & \bm{A}_{d,y}(\bm{\rho}_\Rho) \\
+    \bm{0}_{5\times2} & \bm{A}_{d}(\bm{\rho}_\Rho)
+\end{bmatrix} \begin{bmatrix}
+    \bm{y}_{\text{MPC}}(k) \\
+    \Delta \bm{x}_{\text{MPC}}(k)
+\end{bmatrix} + \begin{bmatrix}
+    \bm{B}_{d,y}(\bm{\rho}_\Rho) \\
+    \bm{B}_{d}(\bm{\rho}_\Rho)
+\end{bmatrix} \Delta \bm{w}_{\text{Mdl}^\prime}(k)
+\]
+with $\bm{A}_{d,y} = \bm{C}_c\bm{A}_d \in \mathbb{R}^{2 \times 5}$ and $\bm{B}_{d,y} = \bm{C}_c\bm{B}_d \in \mathbb{R}^{2 \times 3}$ denoting the rows of the matrices corresponding to the outputs. Here, $\bm{C}_c$ is the output matrix from the continuous-time model, which selects the two actuator states $T_g$ and $\beta_0$ from $\bm{x}_{\text{MPC}}$:
+\[
+\bm{C}_c = \begin{bmatrix} \bm{0}_{2\times3} & \bm{I}_{2\times2} \end{bmatrix} \in \mathbb{R}^{2 \times 5}.
+\]
+The resulting intermediate state vector is
+\begin{align*}
+    \tilde{\bm{x}}_{\text{MPC}} = \begin{bmatrix} \bm{y}_{\text{MPC}}^T & \Delta\bm{x}_{\text{MPC}}^T \end{bmatrix}^T = \begin{bmatrix} T_{g} & \beta_{0} & \Delta \theta_{s} & \Delta \omega_{r} & \Delta \omega_{gr} & \Delta T_{g} & \Delta \beta_{0} \end{bmatrix}^T \in \mathbb{R}^{7 \times 1}.
+\end{align*}
+%
+Since the optimization can only determine the control inputs and the wind speed acts as an uncontrollable disturbance, the input vector $\bm{w}_{\text{Mdl}^\prime}$ and the input matrix are split into a disturbance part and a control part.
+The control input vector $\bm{u}_{\text{Mdl}^\prime} = [T_{g,\text{ref}} \;\; \beta_{0,\text{ref}}]^T$ consists of the two control inputs contained in $\bm{w}_{\text{Mdl}^\prime} = [V_{\infty} \;\; T_{g,\text{ref}} \;\; \beta_{0,\text{ref}}]^T$, with its discrete-time velocity-based form
+\begin{align} \label{eq:DeltaUinput}
+    \Delta \bm{u}_{\text{Mdl}^\prime} = \begin{bmatrix} \Delta T_{g,\text{ref}} & \Delta \beta_{0,\text{ref}} \end{bmatrix}^T.
+\end{align}
+%
+For MPC, the augmented discrete-time state-space model can be written as:
+\begin{equation*}
+    \begin{aligned}
+        \begin{bmatrix}
+            \bm{y}_{\text{MPC}}(k+1) \\
+            \Delta \bm{x}_{\text{MPC}}(k+1)
+        \end{bmatrix} &= \begin{bmatrix}
+            \bm{I}_{2\times2} & \bm{A}_{d,y}(\bm{\rho}_\Rho) \\
+            \bm{0}_{5\times2} & \bm{A}_d(\bm{\rho}_\Rho)
+        \end{bmatrix}
+        \begin{bmatrix}
+            \bm{y}_{\text{MPC}}(k) \\
+            \Delta \bm{x}_{\text{MPC}}(k)
+        \end{bmatrix}
+        +
+        \begin{bmatrix}
+            \bm{B}_{d,y,V}(\bm{\rho}_\Rho) \\
+            \bm{B}_{d,V}(\bm{\rho}_\Rho)
+        \end{bmatrix} \Delta V_{\infty}(k) \\
+        &\quad +
+        \begin{bmatrix}
+            \bm{B}_{d,y,u}(\bm{\rho}_\Rho) \\
+            \bm{B}_{d,u}(\bm{\rho}_\Rho)
+        \end{bmatrix} \Delta \bm{u}_{\text{Mdl}^\prime}(k)
+    \end{aligned}
+\end{equation*}
+where $\bm{B}_{d,V} \in \mathbb{R}^{5 \times 1}$ and $\bm{B}_{d,u} \in \mathbb{R}^{5 \times 2}$ are the columns of the input matrix related to the changes in the disturbance input, i.e., wind speed $\Delta V_{\infty}$, and the two control inputs, respectively, acting on the changes in states. The matrices $\bm{B}_{d,y,V} = \bm{C}_c\bm{B}_{d,V} \in \mathbb{R}^{2 \times 1}$ and $\bm{B}_{d,y,u} = \bm{C}_c\bm{B}_{d,u} \in \mathbb{R}^{2 \times 2}$ directly influence the two outputs $T_g$ and $\beta_0$ in the vector $\bm{y}_{\text{MPC}}$. 
+
+The wind is considered to only change at the first sample of the prediction horizon. This reflects that the wind measurement or estimate at each controller sample might be different from the last controller sample, but that the wind is then, in the absence of better information, assumed to be constant over the prediction horizon. The wind change $\Delta V_{\infty}$ is implemented as an eighth state:
+\begin{equation} \label{eq:AugmentedStateSpace}
+    \begin{aligned}
+        \begin{bmatrix}
+            \bm{y}_{\text{MPC}}(k+1) \\
+            \Delta \bm{x}_{\text{MPC}}(k+1) \\
+            \Delta V_{\infty}(k+1)
+        \end{bmatrix}
+        &=
+        \underbrace{\begin{bmatrix}
+                \bm{I}_{2\times2} & \bm{A}_{d,y}(\bm{\rho}_\Rho) & \bm{B}_{d,y,V}(\bm{\rho}_\Rho) \\
+                \bm{0}_{5\times2} & \bm{A}_d(\bm{\rho}_\Rho) & \bm{B}_{d,V}(\bm{\rho}_\Rho) \\
+                \bm{0}_{1\times2} & \bm{0}_{1\times5} & 0
+        \end{bmatrix}}_{\bm{A}_{\Delta V}}
+        \underbrace{\begin{bmatrix}
+                \bm{y}_{\text{MPC}}(k) \\
+                \Delta \bm{x}_{\text{MPC}}(k) \\
+                \Delta V_{\infty}(k)
+        \end{bmatrix}}_{\bm{x}_{\text{MPC},\Delta V}(k)} \\
+        &\quad +
+        \underbrace{
+            \begin{bmatrix}
+                \bm{B}_{d,y,u}(\bm{\rho}_\Rho) \\
+                \bm{B}_{d,u}(\bm{\rho}_\Rho) \\
+                \bm{0}_{1\times2}
+        \end{bmatrix}}_{\bm{B}_{\Delta V}} \Delta \bm{u}_{\text{Mdl}^\prime}(k)
+    \end{aligned}
+\end{equation}
+with the system matrix $\bm{A}_{\Delta V} \in \mathbb{R}^{8 \times 8}$, the input matrix $\bm{B}_{\Delta V} \in \mathbb{R}^{8 \times 2}$ and the state vector
+\begin{align}\label{eq:AugmentedStateVector}
+    \bm{x}_{\text{MPC},\Delta V} = \begin{bmatrix} T_g & \beta_0 & \Delta \theta_s & \Delta \omega_r & \Delta \omega_{gr} & \Delta T_g & \Delta \beta_0 & \Delta V_{\infty} \end{bmatrix}^T \in \mathbb{R}^{8 \times 1}.
+\end{align}
+Regarding the wind speed, two simplifying assumptions are made. First, the current wind speed is known exactly, i.e., $\hat{V}_\infty = V_\infty$. In the simulation, the undisturbed longitudinal wind speed at hub height, provided by the FAST InflowWind module, is passed directly to the qLMPC algorithm. Second, this wind speed is assumed to remain constant over the prediction horizon of 0.32\,s, that is 40 steps of 0.008\,s, consistent with $\Delta V_{\infty}(k+1) = 0$ in Equation~\eqref{eq:AugmentedStateSpace}. Neither wind preview nor a stochastic wind model is used. The second assumption is reasonable, as the wind speed changes only little over such short time scales.
+
+In practical wind turbine operation, the wind speed is typically measured using nacelle-mounted anemometers, which provide local measurements at hub height but are affected by the rotor wake \cite{smith2002applicability}. A more advanced alternative is the spinner anemometer, mounted at the front of the rotor hub, which measures less disturbed inflow \cite{demurtas2017spinaranemometer}. Alternatively, the rotor-effective wind speed can be estimated from the measured generator speed, generator torque, and pitch angle using the aerodynamic model of the rotor \cite{soltani2013estimation}. Since these estimators are continuously corrected by the measured rotor speed, their error does not accumulate over time, but they are sensitive to errors in the aerodynamic model. Lidar systems, although more costly, can measure the wind speed at multiple upstream locations and thus provide a wind preview, which is particularly valuable for MPC \cite{schlipf2013nonlinear}. As the focus of this work is on the qLMPC algorithm rather than on the benefits of wind preview, and no lidar simulation was readily available, only the current wind speed is used. This is conservative with respect to wind preview, while the exact knowledge of the current wind speed is optimistic compared to a real wind speed estimator.
+
+Additionally, the actuator commands are applied with a delay of one sample, which is introduced in the simulation to avoid an algebraic loop between controller and plant. To account for this, the control increments from the last step, $\Delta \bm{u}_{\text{Mdl}^\prime}(k-1)$, are included in the state vector, so that the increment computed at step $k$ acts on the plant at step $k+1$. 
+%\needspace{12\baselineskip}
+With this, the discrete state at step $k+1$ is calculated as:
+\begin{equation} \label{eq:FinalStateSpace}
+    \begin{aligned}
+        \begin{bmatrix}
+            \bm{y}_{\text{MPC}}(k+1) \\
+            \Delta \bm{x}_{\text{MPC}}(k+1) \\
+            \Delta V_{\infty}(k+1) \\
+            \Delta \bm{u}_{\text{Mdl}^\prime}(k)
+        \end{bmatrix}
+        &=
+        \underbrace{\begin{bmatrix}
+                \bm{I}_{2\times2} & \bm{A}_{d,y}(\bm{\rho}_\Rho) & \bm{B}_{d,y,V}(\bm{\rho}_\Rho) & \bm{B}_{d,y,u}(\bm{\rho}_\Rho) \\
+                \bm{0}_{5\times2} & \bm{A}_{d}(\bm{\rho}_\Rho) & \bm{B}_{d,V}(\bm{\rho}_\Rho) & \bm{B}_{d,u}(\bm{\rho}_\Rho) \\
+                \bm{0}_{1\times2} & \bm{0}_{1\times5} & 0 & \bm{0}_{1\times2} \\
+                \bm{0}_{2\times2} & \bm{0}_{2\times5} & \bm{0}_{2\times1} & \bm{0}_{2\times2}
+        \end{bmatrix}}_{\bm{A}_{\text{MPC}^\prime}}
+        \underbrace{\begin{bmatrix}
+                \bm{y}_{\text{MPC}}(k) \\
+                \Delta \bm{x}_{\text{MPC}}(k) \\
+                \Delta V_{\infty}(k) \\
+                \Delta \bm{u}_{\text{Mdl}^\prime}(k-1)
+        \end{bmatrix}}_{\bm{x}_{\text{MPC}^\prime}(k)} \\
+        &\quad +
+        \underbrace{\begin{bmatrix}
+                \bm{0}_{2\times2} \\
+                \bm{0}_{5\times2} \\
+                \bm{0}_{1\times2} \\
+                \bm{I}_{2\times2}
+        \end{bmatrix}}_{\bm{B}_{\text{MPC}^\prime}}
+        \Delta \bm{u}_{\text{Mdl}^\prime}(k),
+    \end{aligned}
+\end{equation}
+with the system matrix $\bm{A}_{\text{MPC}^\prime} \in \mathbb{R}^{10 \times 10}$, the input matrix $\bm{B}_{\text{MPC}^\prime} \in \mathbb{R}^{10 \times 2}$ and the state vector $\bm{x}_{\text{MPC}^\prime}$ given in Equation~\eqref{eq:stateMPC}.
+The control increment $\Delta\bm{u}_{\text{Mdl}^\prime}$ acts on the plant one sample later, reflecting the one-sample delay of the actuator commands. As before, $\Delta V_{\infty}(k+1) = 0$, so that the wind speed is constant over the prediction horizon. The new state vector is hence
+\begin{align} \label{eq:stateMPC}
+    \bm{x}_{\text{MPC}^\prime}(k) = \begin{bmatrix} \bm{y}_{\text{MPC}}^T(k) & \Delta\bm{x}_{\text{MPC}}^T(k) & \Delta V_{\infty}(k) & \Delta\bm{u}_{\text{Mdl}^\prime}^T(k-1) \end{bmatrix}^T \in \mathbb{R}^{10 \times 1},
+\end{align}
+or, explicitly,
+\begin{align*}
+    \bm{x}_{\text{MPC}^\prime,k} = \begin{bmatrix} T_{g,k} & \beta_{0,k} & \Delta \theta_{s,k} & \Delta \omega_{r,k} & \Delta \omega_{gr,k} & \Delta T_{g,k} & \Delta \beta_{0,k} & \Delta V_{\infty,k} & \Delta T_{g,\text{ref},k-1} & \Delta\beta_{0,\text{ref},k-1} \end{bmatrix}^T.
+\end{align*}
+This model is used to predict the state trajectory over the prediction horizon, which is compared to the steady-state references derived in the following.
+
+Generally, the steady-state vector $\bm{x}_{s} \in \mathbb{R}^{n_x \times 1}$ and the corresponding steady-state control input $\bm{u}_{s} \in \mathbb{R}^{n_u \times 1}$ are determined based on the equilibrium of the system, which is defined as:
+\begin{align*}
+    \bm{x}_{s}(t + T_s) = \bm{x}_{s}(t),  \quad \bm{u}_{s}(t + T_s) = \bm{u}_{s}(t), \quad
+    \bm{e}_s(t) = \bm{r} - \bm{C} \bm{x}_{s}(t) = \bm{0}_{n_y \times 1},
+\end{align*}
+%
+where $\bm{e}_s(t) \in \mathbb{R}^{n_y \times 1}$ is the steady-state error, $\bm{r} \in \mathbb{R}^{n_y \times 1}$ is the reference signal, $\bm{C} \in \mathbb{R}^{n_y \times n_x}$ is the output matrix, and $T_s$ is the sampling time. This leads to the steady-state solution:
+\begin{align} \label{eq:steadystatevec}
+    \bm{r}_{\text{MPC}^\prime} = \begin{bmatrix} r_{T_g} & r_{\beta} & \bm{0}_{1 \times 8} \end{bmatrix}^T, \quad
+    \Delta\bm{u}_{\text{Mdl}^\prime\!,s} = \begin{bmatrix} 0 & 0 \end{bmatrix}^T,
+\end{align}
+where \(r_{T_g}\) and \(r_{\beta}\) denote the reference generator torque and pitch, respectively, and $\Delta\bm{u}_{\text{Mdl}^\prime,s} \in \mathbb{R}^{2 \times 1}$ is the change of the control input $\bm{u}_{\text{Mdl}^\prime} = [T_{g,\text{ref}} \;\; \beta_{0,\text{ref}}]^T$, which is zero in steady state. All elements of the vector in Equation~\eqref{eq:steadystatevec} that represent state changes, i.e., the third to tenth elements corresponding to the state vector in Equation~\eqref{eq:stateMPC}, are therefore set to zero.
+The notable exceptions are the first two elements, which do not represent changes but rather the outputs \( T_g \) and \( \beta_0 \). These should converge to their respective steady-state values \( r_{T_g} \) and \( r_{\beta} \), which are determined based on the current wind speed and the lookup table for the torque coefficient $c_Q$. A lookup table for the thrust coefficient is not required, as the model contains no tower or blade states on which the thrust acts.
+
+\subsection{qLMPC Optimization Algorithm}\label{sec:qLMPCOptimizationAlgo}
+This section describes the optimization formulation as it was applied to the qLPV model Mdl2 and presented in \cite{dittmer2021velocity}. It also describes the adaptations that were necessary to improve the performance of the algorithm when applied to the FAST implementation of the NREL 5MW reference turbine.
+
+\subsubsection{Optimization Problem}
+The predictive control law is formulated as an optimization problem. The error between the state \( \bm{x}_{\text{MPC}^\prime} \) from Equation~\eqref{eq:stateMPC} and the reference vector $\bm{r}_{\text{MPC}^\prime}$ at sample time \( k \) is
+\begin{align*}
+    \bm{e}(k) = \bm{x}_{\text{MPC}^\prime}(k) - \bm{r}_{\text{MPC}^\prime}(k) \in \mathbb{R}^{n_x \times 1},
+\end{align*}
+and $\Delta \bm{u}_{\text{Mdl}^\prime}(k)$ denotes the change in the input $\bm{u}_{\text{Mdl}^\prime}$ compared to the previous time step:
+\begin{align*}
+    \Delta \bm{u}_{\text{Mdl}^\prime}(k) = \bm{u}_{\text{Mdl}^\prime}(k) - \bm{u}_{\text{Mdl}^\prime}(k-1).
+\end{align*}
+%
+With these two criteria to be minimized, the finite horizon objective function \( J_k \) at time step \( k \) over a predefined number of \( n_h \) time steps is
+\begin{align*}
+    J_k(\bm{x}_{\text{MPC}^\prime}, \bm{r}_{\text{MPC}^\prime}, \Delta \bm{u}_{\text{Mdl}^\prime}) = & \underbrace{ \sum_{i=k+1}^{k+n_h-1} \bm{e}^T(i) \bm{Q}_{\text{WT}} \bm{e}(i)}_{J_Q(\Delta \bm{u}_{\text{Mdl}^\prime})} + \underbrace{\sum_{i=k}^{k+n_h-1} \Delta \bm{u}^T_{\text{Mdl}^\prime}(i) \bm{R}_{\text{WT}} \Delta \bm{u}_{\text{Mdl}^\prime}(i)}_{J_R(\Delta \bm{u}_{\text{Mdl}^\prime})} \\
+    &+ \underbrace{\bm{e}^T(k+n_h) \bm{P}_{\text{WT}} \bm{e}(k+n_h)}_{J_P(\Delta \bm{u}_{\text{Mdl}^\prime})},
+\end{align*}
+where the matrices \( \bm{Q}_{\text{WT}} \in \mathbb{R}^{n_x \times n_x} \) and \( \bm{R}_{\text{WT}} \in \mathbb{R}^{n_u \times n_u} \) are weighting matrices for the state errors and the input changes over the prediction horizon. The matrix \( \bm{P}_{\text{WT}} \in \mathbb{R}^{n_x \times n_x} \) penalizes the state error at the end of the trajectory. In this section, the dimensions are explicitly specified for the qLMPC design with \( n_x = 10 \) and \( n_u = 2 \).
+
+The cost \( J_k \) consists of two parts: the stage cost $J_Q + J_R$, which represents the weighted sum of squares of the errors and input changes over the trajectory length, and the terminal cost $J_P$, which is the weighted sum of squares of the terminal state errors at sample $k+n_h$.
+The constrained optimization problem to be solved in each sample can be formulated based on this objective function as
+\begin{align} \label{eq:ObjFunWT}
+    \begin{array}{ll}
+        \underset{\Delta \bm{U}(k)}{\text{minimize }} & J_k(\bm{x}_{\text{MPC}^\prime}, \bm{r}_{\text{MPC}^\prime}, \Delta \bm{u}_{\text{Mdl}^\prime}) \\[10pt]
+        \text{subject to} & \bm{x}_{\text{MPC}^\prime}(i+1) = \bm{A}_{\text{MPC}^\prime}(\bm{\rho}_{\Rho}(i)) \bm{x}_{\text{MPC}^\prime}(i) + \bm{B}_{\text{MPC}^\prime} \Delta \bm{u}_{\text{Mdl}^\prime}(i), \\[10pt]
+        & \Delta\bm{u}_{\text{min}} \leq \Delta \bm{u}_{\text{Mdl}^\prime}(i) \leq \Delta\bm{u}_{\text{max}}, \quad i = k, \dots, k+n_h-1,
+    \end{array}
+\end{align}
+where the optimization is carried out over the future input trajectory $\Delta\bm{U}(k)$ defined below, and $\Delta\bm{u}_{\text{min}}$ and $\Delta\bm{u}_{\text{max}}$ denote the rate limits of the control inputs, specified below. The reference vector $\bm{r}_{\text{MPC}^\prime}$ is given in Equation~\eqref{eq:steadystatevec}, where the first two elements correspond to the desired generator torque and blade pitch and the other eight elements are set to zero.
+
+The weighting matrices \( \bm{Q}_{\text{WT}} \), \( \bm{R}_{\text{WT}} \), and \( \bm{P}_{\text{WT}} \) are diagonal matrices with the following values on their diagonals to penalize the state vector in Equation~\eqref{eq:stateMPC}:
+\begin{align}
+    \bm{q}_{\text{WT,diag}} &= [1 \quad 10000 \quad 0 \quad 1000 \quad 1000 \quad 0 \quad 0 \quad 0 \quad 0 \quad 0]^T \in \mathbb{R}^{10 \times 1}, \\
+    \bm{r}_{\text{WT,diag}} &= [1 \quad 10000]^T \in \mathbb{R}^{2 \times 1}, \\
+    \bm{p}_{\text{WT,diag}} &= 1000 \; \bm{q}_{\text{WT,diag}} \in \mathbb{R}^{10 \times 1}.
+\end{align}
+%
+These matrices are designed to accommodate the different orders of magnitude of the physical states as well as their relationship among each other. The first two elements of the vector $\bm{q}_{\text{WT,diag}}$ are selected according to the order of magnitude between the generator torque and the pitch angle. The zeros in the weighting vectors $\bm{q}_{\text{WT,diag}}$ and $\bm{p}_{\text{WT,diag}}$ correspond to the change in the drive-train torsion angle, the changes in generator torque, blade pitch, and wind speed, and the two previous control increments. Penalizing the change in the torsion angle, the third element in the state vector, is unnecessary, since the changes in rotor and generator speed are penalized with the fourth and fifth elements of the vector $\bm{q}_{\text{WT,diag}}$. These effectively capture the dynamics of the torsion angle itself. Additionally, the weights on the changes in the actuator states and on the previous control increments are set to zero, as changes in the control inputs are already penalized with the weighting vector $\bm{r}_{\text{WT,diag}}$. The weight on changes in the wind speed is set to zero because the wind is assumed to be constant over the prediction horizon. Moreover, it cannot be influenced by the control system, and therefore there is no need to penalize changes in this variable.
+
+At each time step, the scheduling trajectory
+\begin{align*}
+    \bm{\Rho}_{k} = [\bm{\rho}_{\Rho}^T(k) \quad \bm{\rho}_{\Rho}^T(k+1) \quad \cdots \quad \bm{\rho}_{\Rho}^T(k+n_h-1)]^T \in \mathbb{R}^{3n_h \times 1}
+\end{align*}
+is required, which consists of the current scheduling parameter vector, introduced in Equation~\ref{eq:rhoWT}
+\begin{align*}
+    \bm{\rho}_{\Rho}(k) = [V_\infty(k) \quad \beta_0(k) \quad \omega_r(k)]^T \in \mathbb{R}^{3 \times 1}
+\end{align*}
+and its future values over the prediction horizon. Since these future values are unknown, they are taken from the state trajectory $\bm{X}_{k-1} \in \mathbb{R}^{10 n_h \times 1}$ predicted at the previous time step. The operator $\tilde{\bm{H}}: \mathbb{R}^{3 \times 1} \times \mathbb{R}^{10 n_h \times 1} \to \mathbb{R}^{3 n_h \times 1}$ combines the current scheduling parameters with this stored prediction,
+\begin{align*}
+    \bm{\Rho}_k^0 = \tilde{\bm{H}}(\bm{\rho}_{\Rho}(k), \bm{X}_{k-1}),
+\end{align*}
+where the superscript $0$ denotes the initial scheduling trajectory of the current time step. The first element of $\bm{\Rho}_k^0$ is the current scheduling parameter vector $\bm{\rho}_{\Rho}(k)$, and the remaining elements are assembled as
+\begin{align*}
+    \bm{\rho}_{\Rho}(k+i) = \begin{bmatrix}
+        V_\infty(k+i) \\
+        \beta_{0}(k+i) \\
+        \omega_r(k+i)
+    \end{bmatrix} = \begin{bmatrix}
+        V_\infty(k) \\
+        \bm{X}_{k-1,\,10(i-1)+2} \\
+        \omega_r(k) + \sum_{j=1}^{i} \bm{X}_{k-1,\,10(j-1)+4}
+    \end{bmatrix}, \quad i = 1, \dots, n_h-1,
+\end{align*}
+with $\bm{X}_{k-1,\,10(j-1)+m}$ denoting the $m$-th element of the $j$-th state vector stacked in $\bm{X}_{k-1}$, i.e., the predicted pitch angle $\beta_0$ for $m = 2$ and the predicted rotor speed change $\Delta\omega_r$ for $m = 4$. The pitch angle is thus taken directly from the predicted actuator state, the rotor speed is obtained by accumulating the predicted increments, and the wind speed is held constant.
+
+For the controller initialization at $k = 0$, no previous prediction is available, so the current values of the scheduling parameters are kept constant over the whole trajectory, resulting in $\bm{\Rho}_0^0 = \bm{1}_{n_h} \otimes \bm{\rho}_{\Rho}(0)$. Based on this `frozen' scheduling parameter trajectory, an optimal control input trajectory can be calculated for Equation~\eqref{eq:ObjFunWT}. From the resulting predicted state trajectory, a new scheduling parameter trajectory $\bm{\Rho}_k^{1}$ is calculated with $\tilde{\bm{H}}$. This could be repeated until convergence is achieved, i.e., $\bm{\Rho}_k^{l-1} = \bm{\Rho}_k^l$ at the $l^\text{th}$ iteration of the optimization. In practice, the number of iterations is limited to guarantee the availability of a control signal within the controller sampling time. In \cite{hespe2021convergence}, the convergence to an optimal trajectory is discussed: it is shown that guaranteeing convergence comes at the price of a high number of iterations and hence longer computation times. However, the suboptimal solutions that are reached after a few iterations are shown to be satisfactory for practical implementations. In this study, only one iteration is performed per controller sample, and the scheduling trajectory is refined from sample to sample instead.
+
+The matrices \( \bm{\Lambda} \in \mathbb{R}^{10n_h \times 10}\) and \( \bm{S} \in \mathbb{R}^{10n_h \times 2n_h} \) needed to calculate the optimal future control inputs are constructed by multiplication and concatenation of the system and input matrices from Equation~\eqref{eq:FinalStateSpace} as follows:
+\begin{equation} \label{eq:nearlyToeplitzMat}
+    \begin{aligned}
+        \bm{\Lambda}(\bm{\Rho}_k) &= \begin{bmatrix}
+            \bm{A}_{\text{MPC}^\prime}(\bm{\rho}_{\Rho}(k)) \\
+            \bm{A}_{\text{MPC}^\prime}(\bm{\rho}_{\Rho}(k+1)) \bm{A}_{\text{MPC}^\prime}(\bm{\rho}_{\Rho}(k)) \\
+            \vdots\\
+            \bm{A}_{\text{MPC}^\prime}(\bm{\rho}_{\Rho}(k+n_h-1)) \cdots \bm{A}_{\text{MPC}^\prime}(\bm{\rho}_{\Rho}(k))
+        \end{bmatrix}, \\[10pt]
+        \bm{S}(\bm{\Rho}_k) &=
+        \begin{bmatrix}
+            \bm{B}_{\text{MPC}^\prime} & \cdots & \bm{0} \\
+            \bm{A}_{\text{MPC}^\prime}(\bm{\rho}_{\Rho}(k+1)) \bm{B}_{\text{MPC}^\prime} & \cdots & \bm{0} \\
+            \vdots & \ddots & \vdots \\
+            \bm{A}_{\text{MPC}^\prime}(\bm{\rho}_{\Rho}(k+n_h-1)) \cdots \bm{A}_{\text{MPC}^\prime}(\bm{\rho}_{\Rho}(k+1)) \bm{B}_{\text{MPC}^\prime} & \cdots & \bm{B}_{\text{MPC}^\prime}
+        \end{bmatrix}.
+    \end{aligned}
+\end{equation}
+
+The components of the cost function that take into account all $n_h$ samples of the predicted trajectories for the time steps $k+1$ to $k + n_h$ can be reformulated in vector form and calculated with the matrices from Equation~\eqref{eq:nearlyToeplitzMat}. For this, the future control trajectory
+\begin{align*}
+    \Delta \bm{U}(k) = \left[\Delta \bm{u}_{\text{Mdl}^\prime}^T(k) \quad \Delta \bm{u}_{\text{Mdl}^\prime}^T(k+1) \quad \cdots \quad \Delta \bm{u}_{\text{Mdl}^\prime}^T(k+ n_h -1) \right]^T \in \mathbb{R}^{2n_h \times 1}
+\end{align*}
+and the stacked reference $\bm{R}_{\text{MPC}^\prime} = \bm{1}_{n_h \times 1}\otimes \bm{r}_{\text{MPC}^\prime}$, which is constant over the whole trajectory, are introduced. With the stacked error
+\begin{align*}
+    \bm{E}(k) = \bm{\Lambda}(\bm{\Rho}_k)\bm{x}_{\text{MPC}^\prime}(k) + \bm{S}(\bm{\Rho}_k) \Delta \bm{U}(k) - \bm{R}_{\text{MPC}^\prime} \in \mathbb{R}^{10 n_h \times 1},
+\end{align*}
+which contains the errors $\bm{e}(k+1), \dots, \bm{e}(k+n_h)$, the cost terms are
+\begin{align*}
+    J_{QP}(\Delta \bm{U}) = \bm{E}^T(k) \bm{\mathcal{Q}}_{\text{WT}} \bm{E}(k),\quad \text{and} \quad
+    J_R(\Delta \bm{U}) = \Delta \bm{U}^T(k) \bm{\mathcal{R}}_{\text{WT}} \Delta \bm{U}(k),
+\end{align*}
+where $J_{QP} = J_Q + J_P$ is the penalty on the states, with the matrices
+\begin{align*}
+    \bm{\mathcal{Q}}_{\text{WT}} = \begin{bmatrix} \bm{I}_{n_h -1} \otimes \bm{Q}_{\text{WT}} & \bm{0}_{10(n_h-1)\times10} \\ \bm{0}_{10\times10(n_h-1)} & \bm{P}_{\text{WT}}\end{bmatrix} \in \mathbb{R}^{10n_h \times 10n_h}\quad\text{and}\quad \bm{\mathcal{R}}_{\text{WT}} = \bm{I}_{n_h} \otimes \bm{R}_{\text{WT}}.
+\end{align*}
+%
+The initial state of the cost function, the state $\bm{x}_{\text{MPC}^\prime}$ from Equation~\eqref{eq:stateMPC} at sample $k$, can be calculated from the known state and control input at the previous sample $k-1$. 
+
+The following property is used to derive the optimal control trajectory $\Delta \bm{U}^*$ by solving a QP: for the constrained optimization problem with an objective function $J: \mathbb{R}^{n_v \times 1} \to \mathbb{R}$ and a parameter vector $u \in \mathbb{R}^{n_v \times 1}$,
+\begin{align*}
+    \underset{u}{\text{minimize}} & \quad J(u) \\
+    \text{subject to} & \quad h(u) = \bm{0}_{n_{\text{eq}} \times 1}, \\
+    & \quad g(u) \leq \bm{0}_{n_{\text{ineq}} \times 1},
+\end{align*}
+a quadratic subproblem can be formulated as:
+\begin{align}
+    \underset{\tilde{u}}{\text{minimize}} & \quad \frac{1}{2} \tilde{u}^T \nabla^2 J(u^l) \tilde{u} + \nabla J(u^l)^T \tilde{u} \\
+    \text{subject to} & \quad \nabla h(u^l)\tilde{u} + h(u^l) = \bm{0}_{n_{\text{eq}} \times 1}, \\
+    & \quad \nabla g(u^l)\tilde{u} + g(u^l) \leq \bm{0}_{n_{\text{ineq}} \times 1} \label{eq:linsubproblemIneqConst},
+\end{align}
+where \( \nabla J(u^l) \) and $\nabla^2 J(u^l)$ denote the gradient and Hessian of the function \( J \) at \( u^l \), respectively, with \( u^l \) as the solution estimate at the current iteration \( l \) and \( \tilde{u} = u - u^l \). The functions $h: \mathbb{R}^{n_v \times 1} \to \mathbb{R}^{n_{\text{eq}} \times 1}$ and $g: \mathbb{R}^{n_v \times 1} \to \mathbb{R}^{n_{\text{ineq}} \times 1}$ denote the equality and inequality constraints, respectively.
+
+As in \cite{gonzalez2020nonlinear}, the gradients of the summands of the cost function can be calculated with the matrices $\bm{\Lambda}$ and $\bm{S}$ from Equation~\eqref{eq:nearlyToeplitzMat},
+\begin{align*}
+    \nabla J_{QP}(\Delta \bm{U}) &= 2\bm{S}^T(\bm{\Rho}_k) \bm{\mathcal{Q}}_{\text{WT}} \bm{E}(k),\\
+    \nabla J_R(\Delta \bm{U}) &= 2 \bm{\mathcal{R}}_{\text{WT}} \Delta \bm{U}(k),
+\end{align*}
+and the Hessians as
+\begin{align*}
+    \nabla^2 J_{QP}(\Delta \bm{U}) &= 2\bm{S}^T(\bm{\Rho}_k) \bm{\mathcal{Q}}_{\text{WT}} \bm{S}(\bm{\Rho}_k),\\
+    \nabla^2 J_R(\Delta \bm{U}) &= 2 \bm{\mathcal{R}}_{\text{WT}}.
+\end{align*}
+The inequality constraint from Equation~\eqref{eq:linsubproblemIneqConst} is used to express the limits of the control inputs. For this velocity-based controller, the control input limits
+\begin{align*}
+    \Delta \bm{u}_{\text{max}} = \begin{bmatrix} \Delta u_{T_g, \text{max}} \quad \Delta u_{\beta_0, \text{max}} \end{bmatrix}^T \in \mathbb{R}^{2 \times 1} \; \text{and}\;
+    \Delta \bm{u}_{\text{min}} = \begin{bmatrix} \Delta u_{T_g, \text{min}} \quad \Delta u_{\beta_0, \text{min}} \end{bmatrix}^T \in \mathbb{R}^{2 \times 1}
+\end{align*}
+are vectors that contain the respective torque rate and pitch rate limits. All elements of the trajectory $\Delta \bm{U}$ are limited with
+\begin{align*}
+    \Delta \bm{U} \leq \Delta \bm{U}_{\text{max}} \quad \text{and} \quad \Delta \bm{U} \geq \Delta \bm{U}_{\text{min}},
+\end{align*}
+where $\Delta \bm{U}_{\text{max}} = \bm{1}_{n_h \times 1}\otimes \Delta \bm{u}_{\text{max}}$ and $\Delta \bm{U}_{\text{min}} = \bm{1}_{n_h \times 1}\otimes \Delta \bm{u}_{\text{min}}$.
+This can be written in matrix form as follows:
+\begin{align*}
+    \begin{bmatrix}
+        \bm{I}_{2n_h} \\
+        -\bm{I}_{2n_h}
+    \end{bmatrix} \Delta \bm{U} \leq
+    \begin{bmatrix}
+        \Delta \bm{U}_{\text{max}} \\
+        -\Delta \bm{U}_{\text{min}}\end{bmatrix},
+\end{align*}
+with the same rate limits applicable to $\Delta \tilde{\bm{U}}$. This allows reformulating the optimization problem from Equation~\eqref{eq:ObjFunWT} as
+\begin{equation} \label{eq:ObjFunWTQP}
+    \begin{aligned}
+        \underset{\Delta \tilde{\bm{U}}}{\text{minimize }} & \quad
+        \frac{1}{2} \Delta \tilde{\bm{U}}^T
+        \left(\nabla^2 J_{QP} (\Delta \bm{U}^l) + \nabla^2 J_R(\Delta \bm{U}^l) \right) \Delta \tilde{\bm{U}} \\
+        & + \left(\nabla J_{QP} (\Delta \bm{U}^l) + \nabla J_R(\Delta \bm{U}^l)\right)^T \Delta \tilde{\bm{U}} \\
+        \text{subject to } & \begin{bmatrix} \bm{I}_{2n_h} \\ -\bm{I}_{2n_h} \end{bmatrix} \Delta \tilde{\bm{U}} +
+        \begin{bmatrix} - \Delta \bm{U}_{\text{max}} \\ \Delta \bm{U}_{\text{min}} \end{bmatrix} \leq \bm{0}.
+    \end{aligned}
+\end{equation}
+%
+The updates of the estimated scheduling, state, and input trajectories are computed using Algorithm~\ref{algo:qLPVMPC}, where \(T_{k,\text{end}}\) denotes the simulation end time.
+
+\begin{algorithm}
+    \caption{qLMPC}\label{algo:qLPVMPC}
+    \begin{algorithmic}[1]
+        \Procedure{qLMPC}{$\bm{r}_{\text{MPC}^\prime,k}, \bm{x}_{\text{MPC}^\prime,k}, \bm{\rho}_{\Rho,k}$}
+        \State Initialize plant model, \(\bm{Q}_{\text{WT}}, \bm{R}_{\text{WT}}, \bm{P}_{\text{WT}}\), \(n_h\)
+        \State \(k \gets 0\)
+        \State \(\bm{\Rho}^0_{0} \gets \bm{1}_{n_h} \otimes \bm{\rho}_{\Rho,0}\) \Comment{frozen initial trajectory}
+        \While{$k < T_{k,\text{end}}$}
+        \State \(\bm{R}_{\text{MPC}^\prime,k} \gets \bm{1}_{n_h} \otimes \bm{r}_{\text{MPC}^\prime,k}\)
+        \If{$k > 0$}
+        \State \(\bm{\Rho}^0_{k} \gets \tilde{\bm{H}}(\bm{\rho}_{\Rho,k}, \bm{X}_{k-1})\) \Comment{from stored trajectory}
+        \EndIf
+        \State \(l \gets 0\)
+        \While{stop criterion not met}
+        \State Compute \(\bm{\Lambda}(\bm{\Rho}_k^l)\) and \(\bm{S}(\bm{\Rho}_k^l)\)
+        \State Solve \eqref{eq:ObjFunWTQP} with \(\bm{\Rho}_k^l\) to obtain \(\Delta\bm{U}_k^l\)
+        \State Predict \(\bm{X}_k^l = \bm{\Lambda}(\bm{\Rho}_k^l)\bm{x}_{\text{MPC}^\prime,k} + \bm{S}(\bm{\Rho}_k^l) \Delta\bm{U}_k^l\)
+        \State \(\bm{\Rho}^{l+1}_{k} \gets \tilde{\bm{H}}(\bm{\rho}_{\Rho,k}, \bm{X}_k^l)\)
+        \State \(l \gets l + 1\)
+        \EndWhile
+        \State \(\bm{X}_k \gets \bm{X}_k^{l}\) \Comment{store for next sample}
+        \State Apply \(\bm{u}_{\text{Mdl}^\prime,k} = \bm{u}_{\text{Mdl}^\prime,k-1} + \Delta\bm{u}_{\text{Mdl}^\prime,k}\) to the system
+        \State \(k \gets k + 1\)
+        \EndWhile
+        \State \textbf{return}
+        \EndProcedure
+    \end{algorithmic}
+\end{algorithm}
+%
+The matrices \(\bm{\Lambda}\), \(\bm{S}\), and the operator \(\tilde{\bm{H}}\) are defined as described above. The stop criterion can be a maximum number of iterations or a threshold on the change of the scheduling trajectory between two iterations, e.g., $\|\bm{\Rho}_k^{l+1} - \bm{\Rho}_k^{l}\| < \epsilon$.
+%
+The controller algorithm requires the following inputs:
+\begin{enumerate}
+    \item Reference vector \(\bm{r}_{\text{MPC}^\prime,k}\), including the steady-state generator torque $r_{T_g}$ and blade pitch $r_\beta$, calculated from the measured or estimated wind speed.
+    \item Current state \(\bm{x}_{\text{MPC}^\prime,k}\).
+    \item Current scheduling parameter vector $\bm{\rho}_{\Rho,k}$.
+\end{enumerate}
+%
+Note that the plant model requires turbine parameters used to construct the system matrices \(\bm{A}_d\) and \(\bm{B}_d\), as well as the lookup table for the torque coefficient \(c_Q\). These parameters must be supplied to the controller, which is implemented as a MATLAB function integrated into the Simulink controller model. All required data is stored in a MATLAB data dictionary. In this thesis, the same data is used in both the Simulink controller and plant models. The results for two wind test cases, a stepped wind speed profile and a turbulent wind signal at above-rated conditions, are presented and discussed in the Subsection~\ref{quasiLPVMPCResults}.
+
+\subsubsection{Adaptations for the Application to FAST}\label{sec:qLMPCFAST}
+
+The qLMPC design described above is applied in closed loop in Simulink with the qLPV model Mdl2, which also serves as its prediction model. Without model mismatch, it improves both metrics used to evaluate it, i.e., the standard deviations of the tower fore-aft acceleration and of the power tracking error. It also improves these metrics in closed loop with FAST when a stepped wind sweep is used as the test signal. Applied to the FAST model of the NREL 5MW reference turbine in turbulent wind, however, this design deteriorates all evaluation criteria, especially the tower acceleration: its fast pitch action excites structural modes of FAST that are not contained in the prediction model, i.e., the tower fore-aft mode at about 0.32\,Hz, the blade passing frequency 3P, and the drivetrain mode at 1.64\,Hz. For FAST, two designs are therefore derived, the notch filter design and the smooth design. Their results are presented in the following, and they are compared with the other controllers in Section~\ref{subsec:ComparisonWindTurbineControlDesigns}. They differ from the design above as described below; the optimization algorithm given in Algorithm~\ref{algo:qLPVMPC} remains unchanged.
+%\textbf{Prediction model and weights.} 
+The prediction model is extended by the tower fore-aft and the blade flap dynamics of Mdl2. The tower states are estimated from the measured tower top fore-aft acceleration by integration with a corner frequency of 0.02\,Hz. The blade flap state is not measured; it is obtained by integrating the blade equation of Mdl2, driven by the measured tower motion and the deviations of rotor speed, pitch angle, and wind speed from their slow means, which is stable due to the aerodynamic damping of the blades. Instead of the pitch reference $r_\beta$, the rotor speed is tracked: the weight on the pitch angle is zero, the rotor speed is weighted with 1000, the rotor and generator speed increments remain weighted with 1000, the pitch increments are weighted with $10^5$ instead of $10^4$, and the terminal weight is $10\,\bm{Q}_{\text{WT}}$ instead of $1000\,\bm{Q}_{\text{WT}}$.
+%The weighting matrices from Equation~\eqref{eq:stateMPC}: ToDo write out the new state
+%\begin{align*}
+%    \bm{q}_{\text{WT,diag,FAST}} &= [1 \quad 0 \quad 0 \quad 1000 \quad 1000 \quad 0 \quad 0 \quad 0 \quad 0 \quad 0]^T \in \mathbb{R}^{10 \times 1}, \\
+%    \bm{r}_{\text{WT,diag}} &= [1 \quad 10000]^T \in \mathbb{R}^{2 \times 1}, \\
+%    \bm{p}_{\text{WT,diag}} &= 1000 \; \bm{q}_{\text{WT,diag}} \in \mathbb{R}^{10 \times 1}.
+%\end{align*}
+%
+%
+The controller sample time is 0.04\,s, which extends the prediction horizon from 0.32\,s to 1.6\,s with the same number of prediction steps. The controller is scheduled with the hub height wind speed filtered with the rotor-effective wind filter $V_{\text{filt},\tau}$ introduced at the end of Chapter~\ref{sec:WindTurbineqLPVModels}.
+
+%\textbf{Notch filters.} 
+
+The measured rotor and generator speeds are filtered through two notch filters in series, attenuating selected frequencies. Notch filter prevent the controller from reacting to the rotor and generator speed oscillations at these frequencies, with the formulation in continuous time as
+\begin{align*}
+    G_\text{NF}(s) = (s^2 + 2kDfs + f^2)/(s^2 + 2Dfs + f^2), \quad k = 0.1, \quad D = 0.1
+\end{align*}
+with the frequency $f$  set to $2\pi \cdot 0.605$\,rad/s, i.e., 3P at the rated rotor speed of 12.1\,rpm, and to $2\pi \cdot 1.64$\,rad/s, i.e., the drivetrain mode of FAST, and $s$ being the Laplace variable.
+
+
+%\textbf{Smooth design.}
+
+With a sample time of 0.04\,s, the step-wise changes of the pitch reference still cause pitch activity between 2.4\,Hz and 6\,Hz. For the smooth design, the controller sample time of the notch filter design is increased to 0.12\,s, which extends the horizon to 4.8\,s, and the pitch reference is ramped linearly from the current value to the new reference at the plant sample time of 8\,ms instead of changing step-wise.
+
+For the comparison in Section~\ref{subsec:ComparisonWindTurbineControlDesigns}, both designs are also combined with individual pitch control. The IPC of Section~\ref{section:Individal Pitch PI Control} is added to the collective pitch command of the qLMPC, and the qLMPC receives the mean blade pitch angle as feedback. The IPC gains are not optimized for the combination. On FAST, the unscaled gains increase the blade root moments and the tower acceleration instead of reducing them. They were therefore scaled by hand on the notch filter design with the factors 0.1, 0.3, and 0.5, and the factor 0.3, which gave the lowest blade root moments, is used without the tower damping term for both designs and all pitch rate limits, i.e.\ without retuning for the smooth design.
+%; only the projection factor $\cos(5^\circ)$ remains in the plant of the PI controller.
+
+\subsection{Results} \label{quasiLPVMPCResults}
+The qLMPC is first evaluated on the qLPV model Mdl2, the test setup discussed in \cite{dittmer2021velocity}, with wind generated with the FASTTool, which is based on FAST~v8.16. To obtain a more complete picture of the performance improvements that can be expected from this qLMPC algorithm, it is then applied to FAST~v8.16, with the FAST implementation of the NREL 5-MW reference turbine included in Simulink as an S-function and the changes to the qLMPC described above.
+
+\subsubsection{Results on the qLPV Model}\label{subsubsec:qLMPCMdl2results}
+
+The velocity-based qLMPC is evaluated in two scenarios, similar to those used for model verification in Section~\ref{subsec:ResultsqLPVModel}. As in \cite{dittmer2021velocity}, the qLPV model Mdl2 is used as the plant. The controller model consists of a subset of its states with identical parameters, chosen to remain close to the model in \cite{Bianchi2007}. There is therefore no parametric mismatch; only the tower and blade dynamics of the plant are not included in the controller model. This unrealistic best-case scenario was selected for its fast run times, which allowed a quick tuning of the weights, but, more importantly, to investigate the upper limits of possible improvements. In the first scenario, the wind speed is increased stepwise from 4\,m/s to 23\,m/s in steps with a duration of 20\,s, resulting in a simulation time of 400\,s, with the first 15\,s discarded as a transient. In the second scenario, 660\,s of turbulent wind with a mean speed of 18\,m/s and IEC turbulence class B is used to assess controller performance under realistic wind conditions, and the first 60\,s are left out of the analysis.
+%
+In all comparisons in this section, the two controllers act on the same plant. Unless stated otherwise, this is the qLPV model driven by the freestream wind speed $V_\infty$, without the rotor-effective wind filters introduced at the end of Chapter~\ref{sec:WindTurbineqLPVModels}, with the qLMPC scheduled using the same wind speed, i.e., it knows the wind speed acting on its plant exactly. As a single-point wind speed acting on the whole rotor overestimates the high-frequency excitation of the turbine, the turbulent wind case is additionally evaluated with both controllers on the plant with the wind filters. There, the plant is driven by the rotor-effective wind speeds $V_{\text{filt},\tau}$ and $V_{\text{filt},T}$, and the qLMPC is scheduled with $V_{\text{filt},\tau}$, which drives the aerodynamic torque. The only comparison across different plants is that of the PI controller with and without the filters, which shows the effect of the filters themselves.
+
+Figure~\ref{fig:CtrlCmpMdlSweep}(a) shows the controller comparison for the stepped wind sweep covering nearly the entire operating range. In below-rated wind conditions, the two controllers achieve comparable performance. In above-rated wind conditions, however, predictive pitch control considerably reduces tower fore-aft acceleration and power variance. Overall, the standard deviation ratios for the tower fore-aft acceleration and power tracking error are 1.74 and 1.14 (corresponding to variance reduction factors of 3.04 and 1.29), as shown in Table~\ref{tab:ControllerComparisonMerged}.
+%
+Figure~\ref{fig:CtrlCmpMdlSweep}(b) shows results for the turbulent wind. The improvements over the baseline PI are even more pronounced than in the stepped sweep case. For the tower fore-aft acceleration and power tracking error, the qLMPC yields standard deviation ratios of 4.14 and 11.35 (equivalent to variance reduction factors of 17.14 and 128.88), see Table~\ref{tab:ControllerComparisonMerged}.
+
+
+\begin{figure} [ht]
+    \subfloat[Stepped wind sweep]{\includegraphics[width=0.49\textwidth]{figures/Figures_ADi/cmpCtrlTimeDomain_All_RefSimulinkClosedLoop_beta.eps}}\hfill
+    \subfloat[Turbulent wind, IEC class B, 18~m/s mean speed]{\includegraphics[width=0.48\textwidth]{figures/Figures_ADi/cmpCtrlTimeDomain_All_RefSimulinkClosedLoopNTW18_beta.eps}}\hfill
+    %\subfloat[blc blc]{\includegraphics[width=0.31\textwidth]{figures/twoTurbinesGreedyOpt_2d.eps}}
+    \caption[Controller comparison with qLPV model Mdl2: Baseline PI vs.\ qLMPC for stepped wind sweep and turbulent wind.]{Controller comparison with qLPV model Mdl2: Baseline PI vs.\ qLMPC for stepped wind sweep and turbulent wind (18\,m/s mean, IEC turbulence
+        class B (14\%)).  PI control (blue line), qLMPC (red line) and power reference (black dashed line). Displayed signals: wind speed, control inputs, tower fore-aft
+        accelerations, and power output.}
+    \label{fig:CtrlCmpMdlSweep}
+\end{figure}
+
+The QP is solved using a linear complementarity problem formulation with Lemke's algorithm \cite{cisneros2020velocity}, which enables fast computation, as real-time capability is a critical requirement for online optimization-based control. Of the 50001 controller cycles at a sampling time of 8\,ms needed for the 400\,s simulation time of the stepped wind sweep, only one cycle exceeded the sampling time and only 13 exceeded 2\,ms. The mean CPU time was approximately 1\,ms, as shown in the subplot titles of Figure~\ref{fig:CtrlCmpMdlSweep}. These measurements were obtained in MATLAB R2021b on an Intel Core i7-11850H (2.5\,GHz, 8 cores) running Windows 10. Note that for deployment on a physical turbine, a fallback strategy would be required to handle the rare cases where the solver exceeds the sampling time. This was not implemented in this proof-of-concept, but several options exist, such as blending the last available qLMPC solution with the output of the PI feedback controller.
+
+The improvements regarding the reduction of tower acceleration and power variance come at the price of higher pitch activity. As summarized in Table~\ref{tab:ControllerComparisonMerged}, the standard deviation of the blade pitch rate increases by a factor of approximately 3.6 in the stepped wind sweep and 3.7 in the turbulent wind case, and that of the generator torque rate by a factor of approximately 2.6 in the stepped wind sweep. In the turbulent wind case, both controllers operate at rated generator torque throughout, resulting in zero torque rate standard deviation.
+
+\begin{table}[t]
+    \centering
+    \caption[Standard deviation comparison with qLPV model Mdl2: Baseline PI vs.\ qLMPC for stepped wind sweep and turbulent wind.]%
+    {Standard deviation comparison with qLPV model Mdl2: Baseline PI vs.\ qLMPC for stepped wind sweep and turbulent wind (18\,m/s mean, IEC class B).
+        The standard deviations obtained with the PI controller are divided by those obtained with the qLMPC;
+        quotients above~1 indicate improvement. Ratios are computed from unrounded values.}
+    \label{tab:ControllerComparisonMerged}
+    \begin{tabular}{l rr}
+        \toprule
+        {Standard Deviation of} & {Stepped wind sweep} & {Turbulent wind} \\
+        {Signal (unit)} & \multicolumn{2}{c}{std PI / std qLMPC = ratio} \\
+        \midrule
+        Tower fore-aft acc. (m/s$^2$)  & $0.0597 / 0.0342 \approx 1.74$ & $0.3110 / 0.0751 \approx 4.14$  \\
+        Power tracking error (kW)& $176.01 / 154.95 \approx 1.14$ & $201.12 / 17.72 \approx 11.35$  \\
+        Generator torque rate (kNm/s)  & $0.56 / 1.47 \approx 0.38$     & $0.00 / 0.00 = {-}$     \\
+        Blade pitch rate (\textdegree/s)  & $0.21 / 0.76 \approx 0.28$     & $1.21 / 4.44 \approx 0.27$   \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+As more improvement in power variance was observed for the above-rated turbulent wind, the following discussion focuses on this case. In the results above, the pitch command increments are penalized, but the pitch rate state is not, and the pitch rate limit of 13\textdegree/s is relatively high compared to the 8\textdegree/s of the NREL 5MW reference turbine \cite{jonkman2009definition}. Figure~\ref{fig:CtrlCmpRates} shows the results of six test runs with different pitch rate limits on the plant without the wind filters: three with the baseline PI controller and three with the qLMPC algorithm.
+\begin{figure}[h]
+    \subfloat[Baseline PI controller]{\includegraphics[height=0.4658\textheight]{figures/figDirConstr1/cmpTimeDomain_All5PINewLim_NoFilt.eps}}\hfill
+    \subfloat[qLMPC algorithm]{\includegraphics[width=0.485\textwidth]{figures/figDirConstr1/cmpTimeDomain_All5MPCNewLim.eps}}\hfill
+    \caption[Controller comparison: Baseline PI and qLMPC with different pitch rate limits.]{Controller comparison: Baseline PI and qLMPC with different pitch rate limits for turbulent wind (18\,m/s mean, IEC turbulence  class B (14\%)), both controllers on the plant without the wind filters. Rate limits: Standard 8\textdegree/s~(black line), high 13\textdegree/s~(blue line), and low 4\textdegree/s~(red line). Displayed signals: wind speed, pitch, states, and power.}
+    \label{fig:CtrlCmpRates}
+\end{figure}
+The effect of different pitch rate limits on the PI controller is depicted in Figure~\ref{fig:CtrlCmpRates}(a), and on the qLMPC design in Figure~\ref{fig:CtrlCmpRates}(b). The selected pitch rate limits of 4\textdegree/s, 8\textdegree/s, and 13\textdegree/s represent a range from conservative to highly responsive actuator capabilities. They were chosen to explore both realistic hardware limitations and the potential performance gains of faster actuation. The signals shown for both control algorithms are the wind speed, collective blade pitch angle, rotor speed, fore-aft tower acceleration, and generator power. The generator torque does not change in this above-rated test case and is hence not shown. Under baseline PI control, the pitch rate limit has almost no effect: the standard deviations of the tower fore-aft acceleration, the rotor speed and the power tracking error change by at most about 1\,\% between 4\textdegree/s and 13\textdegree/s. The PI controller reaches the respective rate limit only occasionally and exceeds 4\textdegree/s during less than 1\,\% of the time, as the rotor acts as a filter in this pure feedback design. In contrast, the qLMPC exceeds 4\textdegree/s during more than a third of the time if allowed, and shows a considerable difference between the 4\textdegree/s rate limit and the two higher rates. Allowing a pitch rate of 8\textdegree/s or faster improves rotor speed regulation and reduces the standard deviations of rotor speed and power by a factor of about 1.6 compared to the 4\textdegree/s limit. However, it also leads to higher pitch activity. The qLMPC reduces the variance of rotor speed, tower fore-aft movement, and power output compared to the PI controller for all rate limits, even at a 4\textdegree/s rate limit, where the standard deviations of the tower fore-aft acceleration and of the power tracking error are still reduced by factors of 2.58 and 6.42. The qLMPC benefits from higher pitch rates, as a faster pitch response enables better disturbance rejection, e.g.\ of gusts. The trade-off between actuator activity on the one hand and load reduction and smoother power output on the other is a design decision, which may also vary over the turbine's lifetime as the pitch bearings age. 
+%
+Figure~\ref{fig:CtrlCmpFilt2} shows both controllers on the plant with the wind filters introduced in Section~\ref{sec:qLPVModelVerificationwithFAST0}, which imitate the averaging effect of a wind field acting on the whole rotor instead of a single-point wind speed. 
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.485\textwidth]{figures/figDirConstr1/cmpTimeDomain_All5PIvsMPC_Filt.eps}
+    \caption[Controller comparison with qLPV model Mdl2 with filtered wind: Baseline PI vs.\ qLMPC .]{Controller comparison with qLPV model Mdl2 with filtered wind: Baseline PI (blue line) vs.\ qLMPC (red line) on the plant with the rotor-effective wind filters for turbulent wind (18\,m/s mean, IEC turbulence class B (14\%)), pitch rate limit 13\textdegree/s. Displayed signals: freestream wind speed, pitch, states, and power.}
+    \label{fig:CtrlCmpFilt2}
+\end{figure}
+The standard deviations of the pitch derivative, the rotor speed, the tower fore-aft acceleration and the power tracking error for Figures~\ref{fig:CtrlCmpRates} and~\ref{fig:CtrlCmpFilt2} are summarized in Table~\ref{tab:stddev_unified}.
+
+\begin{table}[htbp]
+    \centering
+    \setlength{\tabcolsep}{4.5pt}
+    \caption[Standard deviations: Baseline PI vs.\ qLMPC for turbulent wind and different pitch rate limits.]%
+    {Standard deviations: Baseline PI vs.\ qLMPC for turbulent wind and different pitch rate limits
+        (\textdegree/s). Columns 4, 8, 13: plant without rotor-effective wind filters. Last column: plant
+        with filters, qLMPC scheduled with the filtered wind. Brackets: PI value at 8\textdegree/s without
+        filters divided by the entry; for the filtered qLMPC, the filtered PI value is used instead.}
+    \label{tab:stddev_unified}
+    \begin{tabular}{ll rrrr}
+        \toprule
+        & & \multicolumn{4}{c}{Rate limit (\textdegree/s)} \\
+        \cmidrule(lr){3-6}
+        %Ctrl. & Signal & 4 & 8 & 13 & 13, filt. \\
+        Ctrl. & Signal & low: 4 & standard: 8 & high: 13 & filt. wind: 13 \\
+        \midrule
+        \multirow{4}{*}{PI}
+        & Tower acc.\ (m/s$^2$)      & 0.3076 (1.01) & 0.3108 (1.00) & 0.3110 (1.00) & 0.1300 (2.39) \\
+        & Power error (kW)           & 202.04 (1.00) & 201.22 (1.00) & 201.12 (1.00) & 159.33 (1.26) \\
+        & Rotor speed (rpm)          & 0.4830 (1.00) & 0.4810 (1.00) & 0.4808 (1.00) & 0.3812 (1.26) \\
+        & Pitch rate (\textdegree/s) & 1.13 (1.04)   & 1.18 (1.00)   & 1.21 (0.98)   & 0.71 (1.66) \\
+        \midrule
+        \multirow{4}{*}{qLMPC}
+        & Tower acc.\ (m/s$^2$)      & 0.1204 (2.58) & 0.0813 (3.82)  & 0.0751 (4.14)  & 0.0723 (1.80) \\
+        & Power error (kW)           & 31.35 (6.42)  & 19.56 (10.29)  & 17.72 (11.36)  & 27.40 (5.82) \\
+        & Rotor speed (rpm)          & 0.0743 (6.47) & 0.0464 (10.37) & 0.0422 (11.40) & 0.0655 (5.82) \\
+        & Pitch rate (\textdegree/s) & 2.91 (0.41)   & 4.07 (0.29)    & 4.44 (0.27)    & 0.54 (1.31) \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+The same axis limits as in Figure~\ref{fig:CtrlCmpRates}(a) are used in Figure~~\ref{fig:CtrlCmpRates}(b) to highlight the improvements possible with the qLMPC and in in Figure~\ref{fig:CtrlCmpFilt2} to visualize the smoothing effect of the filters on both PI and qLMPC. While the pitch rate limit is 13\textdegree/s, the largest pitch rate is 2.5\textdegree/s for the PI controller and 2.6\textdegree/s for the qLMPC, so all rate limits from 3\textdegree/s upwards are inactive and give identical results. The filters alone reduce the standard deviations of the PI controller by a factor of 2.39 for the tower fore-aft acceleration and 1.26 for the rotor speed and the power tracking error. On the filtered plant, the qLMPC still reduces the standard deviations of the tower fore-aft acceleration, the rotor speed and the power tracking error by factors of 1.80, 5.82 and 5.82 compared with the PI controller, but considerably less than without the filters. At the same time, the pitch activity changes fundamentally: with the filtered wind, the standard deviation of the qLMPC pitch rate is 0.54\textdegree/s, which is even below the 0.71\textdegree/s of the PI controller, whereas without the filters the qLMPC requires 4.44\textdegree/s, more than three times as much as the PI controller. A large part of both the pitch activity and the improvement of the qLMPC without the filters is therefore caused by the high-frequency fluctuations of the single-point wind speed. These fluctuations excite the plant strongly, so that the PI controller, which only reacts to the resulting rotor speed changes, leads to large oscillations, while the qLMPC, which knows the wind speed exactly, compensates them with fast pitch action. A real rotor averages these fluctuations out. The unfiltered case nevertheless shows the benefit of high pitch rates for fast disturbances and represents a worst case regarding the demanded pitch activity.
+%
+All ratios in this table relate the two controllers on the same plant, with one exception: the last column of the PI block relates the PI on the plant with the wind filters to the PI on the plant without the filters and thus shows the effect of the filters themselves.
+
+\subsubsection{Results on FAST}\label{subsubsec:qLMPCFASTresults}
+
+Figure~\ref{fig:CtrlCmpFAST} shows the baseline PI controller, the original qLMPC, and the notch filter and smooth designs of Section~\ref{sec:qLMPCFAST} on FAST for the stepped wind sweep and the turbulent 18\,m/s wind field of Section~\ref{quasiLPVMPCResults}, with a pitch rate limit of 13\textdegree/s. The standard deviations are summarized in Table~\ref{tab:CtrlComparisonFAST}, with the ratio of the baseline PI value to the value of the respective controller in parentheses.
+%
+\begin{figure}[htbp]
+    \subfloat[Stepped wind sweep]{\includegraphics[height=0.52\textheight]{figures/figDirFASTthesis/cmpCtrlFASTthesis_Sweep_PI_beta_flapNotch_flapNotchSmooth12.eps}}\hfill
+    \subfloat[Turbulent wind, IEC class B, 18~m/s mean speed]{\includegraphics[height=0.55\textheight,trim=0 42 0 0, clip]{figures/figDirFASTthesis/cmpCtrlFASTthesis_NTM18B_PI_beta_flapNotch_flapNotchSmooth12.eps}}
+    \caption[Controller comparison on FAST: baseline PI, original qLMPC, and the qLMPC designs for FAST]{Controller comparison on FAST: baseline PI controller (blue), original qLMPC (red), notch filter design (yellow), and smooth design (purple) for the stepped wind sweep and turbulent wind (18\,m/s mean, IEC turbulence class B), pitch rate limit 13\textdegree/s. Displayed signals: wind speed, generator torque, blade 1 pitch angle, rotor speed, tower fore-aft acceleration, generator power with its reference (black dashed line), and blade 1 root out-of-plane moment.}
+    \label{fig:CtrlCmpFAST}
+\end{figure}
+In the stepped wind sweep, shown in Figure~\ref{fig:CtrlCmpFAST}(a), the differences between the controllers are small. The original qLMPC, depicted in red, slightly outperforms the baseline PI controller, shown in blue, with a decrease of 8\% in the standard deviation of the tower fore-aft acceleration and of 4\% in those of the power tracking error and the rotor speed. This is achieved with smoother pitching, so that all four values show an improvement. The two other qLMPC designs, which were developed to address the issues in turbulent wind, show no overall improvement for the stepped wind sweep. Only the standard deviation of the rotor speed of the notch filter design decreases slightly, but due to the much more aggressive pitching, this does not translate into a lower standard deviation of the power tracking error. Presumably, these performance decreases result from the rotor-effective wind filter, which delays the scheduling wind speed although the wind steps act on the whole rotor area at once. This is particularly noticeable for the pitch angle deviating from zero below rated wind speed for the smooth design, 
+
+In the turbulent wind, the original qLMPC, which performs very well on Mdl2 for both test cases and reasonably well on FAST for the stepped wind sweep test case, fails on FAST: the rotor speed varies between 10\,rpm and 14.3\,rpm, and the standard deviations of the rotor speed and of the power tracking error are 3.7 and 3.6 times those of the baseline PI controller. The notch filter design reduces these standard deviations by factors of 3.8 and 3.3 compared with the baseline PI controller, and the smooth design by factors of 2.1 and 2.0. This is less than the factor of 11.4 on Mdl2 (Table~\ref{tab:stddev_unified}), but still a considerable smoothing of the power output. In contrast to Mdl2, however, the tower fore-aft acceleration is not reduced but increased, by 35\% for the notch filter design and 16\% for the smooth design, and the tower base DEL increases by 27\% and 12\%, see the discussion and visualization in Section~\ref{subsec:ComparisonWindTurbineControlDesigns}. The pitch rate standard deviation is 5.9 times that of the baseline PI controller for the notch filter design and 2.4 times for the smooth design. The adaptations thus make the qLMPC applicable to FAST and retain a large part of the power smoothing in turbulent wind, but not the reduction of the tower loads achieved on Mdl2. The smooth design trades part of the power smoothing for considerably less pitch activity and a smaller increase of the tower loads.
+
+\begin{table}[h]
+    \centering
+    \caption[Controller comparison on FAST for stepped wind sweep and turbulent wind.]{Controller comparison on FAST v8.16 for the stepped wind sweep and turbulent wind (18\,m/s mean, IEC turbulence class B), pitch rate limit 13\textdegree/s: standard deviations of the tower fore-aft acceleration, the power tracking error, the rotor speed, and the (collective) pitch rate. In parentheses the ratio baseline PI/controller; values above 1 indicate an improvement.}
+    \label{tab:CtrlComparisonFAST}
+    \begin{tabular}{ll rrrr}
+        \toprule
+        & & & \multicolumn{3}{c}{qLMPC} \\
+        \cmidrule(lr){4-6}
+        Wind & Signal & Baseline PI & original & notch filter & smooth \\
+        \midrule
+        \multirow{4}{*}{Sweep}
+        & Tower acc.\ (m/s$^2$)      & 0.0558 & 0.0516 (1.08) & 0.0826 (0.67) & 0.0684 (0.82) \\
+        & Power error (kW)           & 141.85 & 136.15 (1.04) & 144.65 (0.98) & 156.66 (0.91) \\
+        & Rotor speed (rpm)          & 1.6977 & 1.6264 (1.04) & 1.4993 (1.13) & 1.7719 (0.96) \\
+        & Pitch rate (\textdegree/s) & 0.22   & 0.12 (1.76)   & 0.50 (0.44)   & 0.39 (0.55) \\
+        \midrule
+        \multirow{4}{*}{Turbulent}
+        & Tower acc.\ (m/s$^2$)      & 0.1712 & 0.1689 (1.01) & 0.2310 (0.74) & 0.1990 (0.86) \\
+        & Power error (kW)           & 59.60  & 214.42 (0.28) & 17.90 (3.33)  & 29.18 (2.04) \\
+        & Rotor speed (rpm)          & 0.2460 & 0.9035 (0.27) & 0.0653 (3.77) & 0.1145 (2.15) \\
+        & Pitch rate (\textdegree/s) & 0.49   & 0.68 (0.72)   & 2.87 (0.17)   & 1.18 (0.41) \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+%\input{figures/figDirFASTthesis/resultsFASTthesis_NTM18B_PI_beta_flapNotch_flapNotchSmooth12}
+
+The application of the proposed velocity-based qLMPC concept to the qLPV model significantly reduces tower movements and minimizes power output fluctuations. As noted at the start of this section, DEL reduction is not directly a qLMPC objective. On FAST, with the adaptations of Section~\ref{sec:qLMPCFAST}, the qLMPC still reduces the power fluctuations, but the tower loads increase, as shown above and in the comparison with the other controllers in Section~\ref{subsec:ComparisonWindTurbineControlDesigns}.
+
+This study shows that considerable performance improvements are possible without model mismatch, and this best-case scenario underlines the potential of the algorithm. However, even the model mismatch between the carefully tuned qLPV model and FAST deteriorates the performance of the original qLMPC. With the adaptations for FAST, a large part of the power smoothing is retained, but the tower loads increase, which shows the sensitivity of the qLMPC to model mismatch. Moreover, the performance improvement comes at the cost of requiring accurate wind information, obtained either through expensive sensors such as lidars or through wind speed estimation. A purely feedback-based improvement over standard collective pitch control is individual pitch control, which uses blade root moments and the rotor azimuth position as additional feedback signals and is already widely deployed in commercial turbines. This approach has been extensively investigated in both theoretical studies and field tests and has proven to be an effective strategy to further reduce mechanical loads, either as an alternative or in addition to MPC. While its primary focus is on reducing blade loads, a slight reduction in tower loads is also possible, as will be discussed in the next section.
+
+\section{Individual Pitch Control Design and Application}\label{section:Individal Pitch PI Control}
+Individual Pitch Control (IPC) is a control technique designed to mitigate cyclic loads on wind turbine blades by independently adjusting the pitch angle of each blade. These cyclic loads primarily result from wind shear, i.e., the increase in wind speed with altitude due to reduced surface friction farther from the ground. Additional causes of load imbalances include yaw misalignment, rotor tilt, turbulence, gusts and tower shadow effects. These effects lead to asymmetric aerodynamic loading, which induces bending moments perpendicular to the rotor plane at the blade roots, referred to as out-of-plane bending moments. They occur at specific multiples of the rotor's rotational frequency, commonly referred to as $n\text{P}$ frequencies, e.g., $1\text{P}$ and $2\text{P}$ correspond to once and twice per revolution, respectively. These periodic loads accumulate fatigue damage in the blades and, via the resulting tilt and yaw moments, in the hub, shaft and nacelle. In addition, they can excite the turbine's natural structural modes if an $n\text{P}$ frequency coincides with a natural frequency, which further accelerates fatigue and reduces component lifespan.
+
+The turbine blade deformation can be decomposed into three primary directions relative to the blade itself: flapwise, which is perpendicular to the rotor plane if the blade is not pitched, edgewise within the rotor plane, and torsional twisting along the blade's axis. The flapwise and edgewise blade root bending moments are measured directly, for example via strain gauges, and transformed into moments within and perpendicular to the rotor plane using the current pitch angle. The out-of-plane moments serve as feedback for IPC. IPC suppresses these loads by transforming the blade root moments from the rotating into the non-rotating coordinate system, computing tilt and yaw pitch demands with a controller, and transforming these back into the rotating frame before adding them to the blade pitch signals.
+
+The block diagram in Figure~\ref{fig:BlockIPC} illustrates the IPC architecture. It shows the main components of the system, including the controller, which is divided into the power controller and the IPC controller, highlighted in red. The figure also displays the NREL 5MW wind turbine, the pitch actuator, and the torque actuator.
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.9\textwidth,trim={0 0cm 0cm 0.005cm},clip]{figures/Figures_ADi/turbineCtrlBetaIPCcl.pdf}
+    \caption[Block diagram of the closed-loop wind turbine control structure with IPC PI added to the baseline PI controller.]{Block diagram of the closed-loop wind turbine control structure with IPC PI (highlighted in red) added to the baseline PI controller.}
+    \label{fig:BlockIPC}
+\end{figure}
+
+In this work, PI controllers are utilized rather than full PID architectures. This choice is consistent with the NREL 5MW baseline controller provided in FAST. Furthermore, numerical optimization of the controller gains using MATLAB's \textit{fminsearch} yielded derivative gains near zero. This suggests that for the investigated load cases, the derivative action provides negligible performance improvement while potentially increasing actuator wear due to high-frequency turbulence content.
+
+The three blade pitch angles $\beta_1$, $\beta_2$, and $\beta_3$ are the outputs of the pitch actuators corresponding to the references $\beta_{1,\text{ref}}$, $\beta_{2,\text{ref}}$, and $\beta_{3,\text{ref}}$. These references are the sum of the collective reference signal $\beta_{0,\text{ref}}$ from the power controller and the respective IPC adjustments $\beta_{1,\text{IPC}}$, $\beta_{2,\text{IPC}}$, and $\beta_{3,\text{IPC}}$.
+%
+As before, the power control loop sets the collective pitch reference $\beta_{0,\text{ref}}$ as well as the generator torque reference $T_{g,\text{ref}}$, based on feedback from the generator speed $\omega_g$.
+%
+The IPC adjustments are derived from the out-of-plane blade root bending moments $M_{yc1}$, $M_{yc2}$, and $M_{yc3}$ and the position of the first blade $\theta_{r}$, also called the rotor position or rotor azimuth. The blade root moments are transformed from the rotating into the non-rotating coordinate system by a multiplication with the matrix $\frac{2}{3}V_{\theta_{r}}^{T}$. The back-transformation before applying the control signals to the rotating blades is done by a multiplication with the matrix $V_{\theta_{r}}$. The underlying method for these coordinate transformations, known as multiblade coordinate transformation, and the design of $V_{\theta_{r}}$ are explained in detail below.
+
+% (\texttt{RootMyb1} and \texttt{RootMyc1} for the first blade)
+
+\subsection{Multiblade Coordinate Transformation} \label{sec:MBC}
+Multiblade coordinate transformation (MBC) enables the conversion of dynamic loads from the rotating coordinate system, defined by the azimuth angle $\theta_{r}$, to a fixed tower coordinate system. Specifically, load components at the rotation frequency are transformed via the MBC to quasi-static loads. Hence, MBC allows for a more accurate assessment of the loads acting on the turbine tower and other non-rotating components. 
+
+Note that the blade root moments measured by strain gauges are expressed in the blade coordinate system, which rotates with the pitch angle: the flapwise moment $M_{ybi}$ acts perpendicular to the chord line and the edgewise moment $M_{xbi}$ along it. For IPC, the moments perpendicular to the rotor plane are required. These out-of-plane moments $M_{yci}$ are obtained by rotating the flapwise and edgewise moments by the pitch angle $\beta_i$ of the respective blade into the coned coordinate system, which does not rotate with the pitch \cite{jonkman2005fast}:
+\begin{equation} \label{eq:MoopFAST}
+    M_{yci} = M_{ybi} \cos(\beta_i) - M_{xbi} \sin(\beta_i), \quad i = 1, 2, 3.
+\end{equation}
+For zero pitch, the out-of-plane moment thus equals the flapwise moment, while with increasing pitch angle, an increasing part of the edgewise moment contributes to the out-of-plane moment. FAST provides both the moments in the blade coordinate system and the out-of-plane moments in the coned coordinate system as outputs. For convenience, the out-of-plane moments $M_{yci}$ provided by FAST are used directly as feedback signals for IPC in this work.
+
+Applying MBC to convert the rotating blade root out-of-plane moments into a fixed coordinate system for a three-bladed wind turbine results in the matrix notation 
+
+\begin{equation} \label{eq:MBC}
+    \left[ \begin{array}{c}
+        M_0\\
+        M_c\\
+        M_s
+    \end{array} \right] = \frac{2}{3}
+    \left[ \begin{array}{ccc}
+        1/2 & 1/2 & 1/2\\
+        \cos(\theta_{r}) & \cos(\theta_{r} + \frac{2\pi}{3}) & \cos(\theta_{r} + \frac{4\pi}{3})\\
+        \sin(\theta_{r}) & \sin(\theta_{r} + \frac{2\pi}{3}) & \sin(\theta_{r} + \frac{4\pi}{3})
+    \end{array} \right]
+    \left[ \begin{array}{c}
+        M_{yc1}\\
+        M_{yc2}\\
+        M_{yc3}
+    \end{array} \right], 
+\end{equation}
+with  $M_{yci}$ as the out-of-plane root moment of the $i^{\text{th}}$ blade as inputs and the moments in the non-rotating system as outputs, with these moments being the symmetric load moment $M_0$, pitch moment $M_c$ and yaw moment $M_s$, as visualized in Figure~\ref{fig:BlockIPC}. The pitch and yaw moments are used to calculate two cyclic control signals $q_c$ and $q_s$, i.e., $\beta_c$ and $\beta_s$ for IPC. 
+The control signal $q_i$ of the $i^{\text{th}}$ blade is calculated via the second and third columns of the inverse MBC transformation i.e. the inverse of the matrix from Equation~(\ref{eq:MBC}) %, is then used to calculate 
+\begin{equation} \label{eq:inverseMBC}
+    \left[ \begin{array}{c}
+        q_1\\
+        q_2\\
+        q_3
+    \end{array} \right] = 
+    \underbrace{\left[ \begin{array}{ccc}
+            \cos(\theta_{r}) &  \sin(\theta_{r})\\
+            \cos(\theta_{r} + \frac{2\pi}{3}) &  \sin(\theta_{r} + \frac{2\pi}{3})\\
+            \cos(\theta_{r} + \frac{4\pi}{3}) &  \sin(\theta_{r} + \frac{4\pi}{3})
+        \end{array} \right]}_{V_{\theta_{r}}}
+    \left[ \begin{array}{c}
+        q_c\\
+        q_s
+    \end{array} \right],
+\end{equation}
+where the signal $q_i$ denotes $\beta_{i,\text{IPC}}$ in IPC for the $i$-th blade. %In Section~\ref{sec:CombinedIPC-TrailingEdgeFlapControl} the same matrix multiplication is once again applied to the $i^{\text{th}}$ flap.
+Note that the transpose of the matrix $V_{\theta_{r}}$ from equation~(\ref{eq:inverseMBC}), multiplied by $2/3$, is equal to the last two rows of the MBC matrix, see also \cite{ossmann2017load}. In the context of this work, and as is common in related literature, see e.g.~\cite{he2018combined}, the pitch and yaw moments $M_c$ and $M_s$ are controlled via $q_c$ and $q_s$ independently, i.e., any remaining coupling following the MBC transformation between $q_c$ and $M_s$ as well as $q_s$ and $M_c$ is neglected. As the wind turbine dynamics can be modeled as a LTI system after transforming rotor blade dynamics into a fixed coordinate system, using MBC from equation~(\ref{eq:MBC}), a simple, intuitive control approach is adopted. Two separate SISO controllers, one for the pitch and one for the yaw moment, respectively, are designed to reduce the transformed moments $M_c$ and $M_s$. In this work, the same controller parameters are used, resulting in two parameters to be tuned for this PI controller. As already stated above, only PI controllers were investigated as the inclusion of a derivative component did not yield gains significantly different from zero during the tuning process. Note that the moment $M_0$, the collective out-of-plane moment caused by the rotor thrust, is determined by the collective pitch angle set by the baseline power controller and is not used in the IPC controls.
+
+\subsection{IPC Parameter Optimization} \label{subsection: IPCOptCriteria}
+The primary objective of wind turbine control is to minimize the Levelized Cost of Energy (LCoE) by balancing the conflicting goals of maximizing power output while minimizing mechanical loads, particularly damage equivalent loads (DELs) on the tower and blades. This work leverages controller optimization criteria originally used by \cite{hoffmann2018load}, where a standard baseline wind turbine controller, comprising generator torque control and a gain-scheduled PI pitch controller, is augmented with an IPC PI controller and tower damping. The optimization criteria in a multi-objective optimization were the minimization of blade and tower DELs, actuator activity, power tracking error, and the standard deviation of the generated power. However, as in \cite{dittmer2024combined}, only the minimization of the blade DEL is implemented in this work, and the other criteria are used as evaluation criteria. In the following study, the optimization and simulation environment presented in \cite{dittmer2024combined} was used, which leverage OpenFAST 3.1.2. As before, this software is referred to as FAST.
+
+% CLAUDE (original line 774): replaced: the gains were not initialized with one, and fmincon uses SQP (as stated in the Results), not the interior point method; start values, first round without fade-in and fade-in added. PLEASE CHECK: K_P = 0.354, K_I = 1.194 are the IPC gains of UserInputs_and_ProgrammStart.m of the AALC repository
+% OLD: The PI controller design presented in this thesis consists of a two-step approach. In the first step, the integral and proportional gains of the IPC are initialized with one and optimized with the Nelder-Mead simplex algorithm implemented in MATLAB's \textit{fminsearch.m} to reduce the blade DEL. In the second step, for cases where the tower DEL increased above the value obtained without the IPC active, another optimization using the interior point method as implemented in \textit{fmincon.m} is performed.
+\claude{The PI controller design presented in this thesis consists of two optimization steps. In the first step, the proportional and integral gains of the IPC are optimized with the Nelder-Mead simplex algorithm implemented in MATLAB's \textit{fminsearch.m} to reduce the blade DEL. In the second step, the sequential quadratic programming algorithm of MATLAB's \textit{fmincon.m} is started from this result and minimizes the same cost function subject to the constraint that the tower base DEL must not exceed the value obtained without IPC. As the cost function of a single turbulent wind field is noisy, i.e., small changes of the gains change the DELs by about one percentage point, the gradient-free \textit{fminsearch.m} is used first, and \textit{fmincon.m} only refines its result and enforces the tower constraint.}
+
+\claude{The start values result from a first round of optimizations, in which the IPC was active from the start of the simulation. In this round, \textit{fminsearch.m} was started for all three pitch rate limits from the IPC gains of the simulation environment of \cite{dittmer2024combined}, $K_{P,\text{IPC}} = 0.354$ and $K_{I,\text{IPC}} = 1.194$. At 8 and 13\textdegree/s, it converged to $K_{P,\text{IPC}} = 0.62$ and 0.63 with $K_{I,\text{IPC}} = 0.32$ and 0.34, respectively. At 4\textdegree/s, the run failed: with the high integral gain, the IPC used up the available pitch rate, and the speed control lost track. Restarts at 4\textdegree/s from five other start values, with $K_{P,\text{IPC}}$ between 0 and 0.62 and $K_{I,\text{IPC}}$ between 0.05 and 0.33, all ended at $K_{I,\text{IPC}} = 0.22$ to 0.28. The subsequent optimization with \textit{fmincon.m} and the tower constraint gave $K_{P,\text{IPC}} = 1.10$ and $K_{I,\text{IPC}} = 0.25$ at 8\textdegree/s; at 4\textdegree/s, no point satisfying the constraint was found, and at 13\textdegree/s, the start point was kept. Without a fade-in, however, the IPC caused large pitch excursions during the first seconds of the simulation, which led to tower strikes for some gains, in particular in combination with the TEF of Section~\ref{sec:CombinedIPC-TrailingEdgeFlapControl}, so that the optima of the first round are partly start-up artefacts. The IPC and TEF inputs are therefore faded in linearly between 20\,s and 30\,s, and the gains are optimized again. As all optima of the first round lie at $K_{I,\text{IPC}}$ between 0.2 and 0.35, the second round is started close to them: at 4\textdegree/s from $K_{P,\text{IPC}} = 0.75$ and $K_{I,\text{IPC}} = 0.22$, the rounded optimum of the first round, and at 8 and 13\textdegree/s from $K_{P,\text{IPC}} = 0.8$ and $K_{I,\text{IPC}} = 0.3$, between the two optima found there before. Initial simplex steps of 0.2 and 0.1 ensure that \textit{fminsearch.m} is not restricted to the vicinity of the start values.}
+For all steps of the controller tuning, the quality of an IPC controller is quantified via the decrease in blade root DEL. The cost function $J$ to be minimized in the optimization is the maximum of the DELs of the three blades:
+\begin{equation} \label{eq:costFunIPC}
+    J = \text{min}(\text{max}\left(\text{DEL}_{bi,\text{IPC}}/\text{DEL}_{\text{bi,\text{baseline}}}\right)), \quad \text{i} \in {1,2,3} 
+\end{equation} %\underset{\Delta u}{\text{minimize }}
+% CLAUDE (original line 779): new sentences: Woehler exponents of the optimization (8/3) and of the evaluation (10/4)
+% OLD: with $\text{DEL}_{bi,\text{IPC}}$ derived from the blade flapwise root DEL accumulated over a simulation run with IPC normalized by $\text{DEL}_{\text{bi,\text{baseline}}}$ with only the baseline controller active.
+with $\text{DEL}_{bi,\text{IPC}}$ derived from the blade flapwise root DEL accumulated over a simulation run with IPC normalized by $\text{DEL}_{\text{bi,\text{baseline}}}$ \claude{with only the baseline controller active. The blade DELs in $J$ are calculated with a W\"ohler exponent of 8, and the tower base DEL of the constraint with a W\"ohler exponent of 3, as in the simulation environment of \cite{dittmer2024combined}. All evaluation criteria below, including $C_{\text{DEL},b}$, are calculated with the W\"ohler exponents of 10 for the blades and 4 for the tower used throughout this thesis, and $C_{\text{DEL},b}$ therefore differs slightly from $J$.}
+%\subsection{Optimization and evaluation criteria}
+To evaluate and quantify the impact of an IPC controller's performance, four additional criteria are calculated, previously used in \cite{hoffmann2018load} as optimization criteria in a multi-objective optimization approach: The tower DELs derived from the bending moments at the base of the tower, the mean and standard deviation of the generated power and the additional power requirements of the actuator due to individual pitch control. The evaluation criteria can be summarized as below.
+
+% CLAUDE (original line 783): C_DEL,b (exponent 10, sum of the blades) is no longer identical to J (exponent 8, worst blade)
+% OLD: \subsubsection*{Load Criteria: Blade $C_{\text{DEL},b} = J$ and tower DEL $C_{\text{DEL},t}$}
+\subsubsection*{Load Criteria: \claude{Blade DEL $C_{\text{DEL},b}$} and tower DEL $C_{\text{DEL},t}$}
+Reducing the blade DEL is the main incentive for using IPC to decrease the Power Spectral Density (PSD) at 1P. A reduction at the 1P frequency does not influence the tower DEL, however, finding a controller that decreases the peak at 1P tends to also result in a lower PSD for a wider frequency range including the peak at 2P. Thus, a small decrease in the tower DEL is also achieved although this criterion is not included in the objective function. In Section~\ref{sec:CombinedIPC-TrailingEdgeFlapControl} it will be discussed that decreasing the PSD at the 2P frequency via the flaps does decrease the tower DELs further. In addition to the tower base DEL $C_{\text{DEL},t,\text{Base}}$, the DEL of the tower top fore-aft bending moment $C_{\text{DEL},t,\text{Top}}$ is evaluated, which is affected directly by the rotor tilt moment. Both tower DELs are calculated with the Wöhler exponent of steel. 
+
+The blade DEL is calculated as
+\begin{align*}
+    \Tilde{D}_{b} &=   \frac{1}{3}  \sum_{n_b=1}^3\sum_{i=1}^{k}\left(l_{bn_b,i}  M_{yb,i}^{m_{\text{GFRP}}}\right)
+\end{align*}
+with $l_{b}$ as the recorded stress level and $M_{yb,i}$ as the out-of-plane root bending moment measured at the $k$ samples of a simulation run for all blades.  The Wöhler coefficient of carbon is $m_{\text{GFRP}} =10$. Note that because of this even exponent, both negative and positive moments with large amplitudes increase the damage value.
+The equation for the damage criterion of the three blades is:
+\begin{align*}
+    C_{\text{DEL},b} &=  \Tilde{D}_{b,\text{IPC}}/\Tilde{D}_{b,\text{baseline}}  %\frac{1}{\Tilde{D}_{b,\text{baseline}}} 
+\end{align*}
+%
+with  $\Tilde{D}_{b,\text{IPC}}$ and $\Tilde{D}_{b,\text{baseline}}$ as the recorded blade damage for the two controllers for the same test case. 
+
+The equation for the tower damage criterion is
+\begin{align*}
+    C_{\text{DEL},t} &= \frac{1}{\Tilde{D}_{t,\text{baseline}}} \cdot
+    \left[ \sum_{i=1}^{k_{t}} \left( l_{t,i} \cdot M_{xt,i}^{m_{\text{Steel}}} \right) + 
+    \sum_{i=1}^{k_{t}} \left( l_{t,i} \cdot M_{yt,i}^{m_{\text{Steel}}} \right) \right]
+\end{align*}
+with $\Tilde{D}_{t,\text{baseline}}$ as the recorded tower damage for the CPC-PI controller for the same test case, $m_{\text{Steel}} =4$ the Wöhler coefficient of steel, $M_{xt,i}$ and $M_{yt,i}$ the tower moments at the top around the longitudinal and lateral axis, respectively,  $l_{t,i}$ the recorded stress level, and $k_t$ the number of data samples.
+
+\subsubsection*{Power Criteria: Mean $C_{\bar{P}}$ and Standard Deviation $C_{\delta_P}$}
+As the annual energy production should not suffer from IPC, the generated power is compared as well. It was found that the power production loss and variance increase is at 0.1\% and hence negligible. The power variance is important for the network stability, especially in small networks. The effect of the IPC controller is found to be nearly negligible. Similarly to the DEL criteria, the power criteria are normalized by the results obtained with the CPC-PI controller
+\begin{align*} %\label{eq:CP}
+    C_{\bar{P}} =  \bar{P}_{\text{g,\text{IPC}}}/ \bar{P}_{\text{g,\text{baseline}}}  \quad\text{and}\quad C_{\delta P} =  \delta P_{g,\text{IPC}}/ \delta P_{g,\text{baseline}}.
+\end{align*} 
+
+\subsubsection*{Actuator Power Criterion $C_{\text{Act}}$}
+This is the only criterion for which an increase is unavoidable, due to the additional movement of the blades required by the IPC controller. The actuator power criterion is normalized as:
+\begin{equation} \label{eq:CAct}
+    C_{\text{Act}} = \frac{P_{\text{Act}, \text{IPC}}}{P_{\text{Act}, \text{baseline}}}.
+\end{equation}
+where \( P_{\text{Act}, \text{baseline}} \) is the reference actuator power of the baseline controller. The actuator power is defined as the mean product of the blade pitch rate $\dot{\beta}$ and the actuator pitch moments $M_{bz}$:
+\begin{equation} \label{eq:CAct_calc}
+    P_{\text{Act}, \text{IPC}} = \frac{1}{3} \sum_{b=1}^3 \overline{|\dot{\beta} \cdot M_{bz}|}.
+\end{equation}
+The controller parameters are optimized for different pitch rate limits, as the optimization objectives described above converge to different optima depending on the actuator constraints. As in the analysis of the qLMPC controller behavior, the rates are set to 4\textdegree/s, 8\textdegree/s, and 13\textdegree/s to investigate settings ranging from very conservative to highly agile. In the following results section, a comparative analysis in both the time and frequency domains is presented to illustrate how these trade-offs affect structural loads, power output, and actuator behavior, i.e., the quantitative controller objectives described in this section.
+
+\subsection{Results} \label{subsection: IPCResults}
+% CLAUDE (original line 824): optimization procedure (fminsearch, then fmincon), evaluation windows: optimization and the std table of the IPC from 66 s (not rerun), tables and comparison from 60 s; effect of the constraint and of the fade-in at 4 deg/s
+% OLD: The IPC gains are tuned separately for each pitch rate limit with a single wind field, which is taken from the optimization dataset that is also used for training the combined IPC-TEFC controller in Section~\ref{sec:CombinedIPC-TrailingEdgeFlapControl}: the turbulent wind field with a mean wind speed of 18\,m/s and turbulence class~A (16\%). The simulations run for 660\,s. The IPC is faded in between 20\,s and 30\,s, and all criteria are evaluated from 66\,s onward, so that the start-up of the simulation does not influence the results. The proportional and integral gains are optimized with the sequential quadratic programming algorithm of MATLAB's \textit{fmincon.m}, minimizing the cost function in Equation~\eqref{eq:costFunIPC} subject to the constraint that the tower base DEL must not exceed that of the baseline controller. The resulting gains are $K_P = 0.2533$, $K_I = 0.1033$ for 4\textdegree/s, $K_P = 1.2219$, $K_I = 0.3702$ for 8\textdegree/s, and $K_P = 1.2227$, $K_I = 0.3653$ for 13\textdegree/s. The gains for 8\textdegree/s and 13\textdegree/s are nearly identical, since the controller optimized for 8\textdegree/s already reaches the rate limit only rarely, as discussed below.
+The IPC gains are tuned separately for each pitch rate limit with a single wind field, which is taken from the optimization dataset that is also used for training the combined IPC-TEFC controller in Section~\ref{sec:CombinedIPC-TrailingEdgeFlapControl}: the turbulent wind field with a mean wind speed of 18\,m/s and turbulence class~A (16\%). The simulations run for 660\,s. The IPC is faded in between 20\,s and 30\,s, \claude{and the cost function and the tower constraint, as well as the standard deviations in Table~\ref{tab:stddev_unified_IPC}, are evaluated from 66\,s onward, i.e., 36\,s after the end of the fade-in, so that the start-up of the simulation does not influence the results; the criteria of Tables~\ref{tab:IPC_summary} and~\ref{tabone} and of Section~\ref{subsec:ComparisonWindTurbineControlDesigns} are evaluated from 60\,s onward. The proportional and integral gains are optimized with \textit{fminsearch.m} followed by \textit{fmincon.m}, as described in Section~\ref{subsection: IPCOptCriteria}, minimizing the cost function in Equation~\eqref{eq:costFunIPC} subject to the constraint that the tower base DEL must not exceed that of the baseline controller.} The resulting gains are $K_P = 0.2533$, $K_I = 0.1033$ for 4\textdegree/s, $K_P = 1.2219$, $K_I = 0.3702$ for 8\textdegree/s, and $K_P = 1.2227$, $K_I = 0.3653$ \claude{for 13\textdegree/s. At 4\textdegree/s, the result of \textit{fminsearch.m}, $K_P = 0.591$ and $K_I = 0.236$, increases the tower base DEL by 1.4\%, so that \textit{fmincon.m} moves to considerably lower gains, which satisfy the constraint at the cost of a smaller blade DEL reduction, 15\% instead of 18\%; at 8 and 13\textdegree/s, the result of \textit{fminsearch.m} already satisfies the constraint and is kept by \textit{fmincon.m}. The fade-in thus changed the final gains most at 4\textdegree/s, where the tower constraint can only be met with considerably lower gains. The gains for 8\textdegree/s} and 13\textdegree/s are nearly identical, since the controller optimized for 8\textdegree/s already reaches the rate limit only rarely, as discussed below.
+%
+Figure~\ref{fig:timeseriesIPC} visualizes the results of the baseline CPC and two IPC controllers, with parameters optimized for the 4\textdegree/s and 13\textdegree/s pitch rate limits. In all test cases, the turbine is excited with the same wind signal, i.e., the wind field used for the controller tuning. The first subplot shows the wind speed signal. The subsequent plots display pitch angles, pitch rates, rotor speed, tower fore-aft acceleration, generator power, and blade root out-of-plane moments. The generator torque is not shown, as it is constant at its rated value in this Region~III test case for all controllers. Rotor speed and generator power remain nearly unchanged between the two IPC configurations and the baseline PI CPC. This is expected, as the power control logic, which sets the generator torque and collective pitch demand, is identical across all controllers. Differences in tower fore-aft motion are also nearly imperceptible in this time series. The most notable differences appear in the pitch signals, which oscillate at the 1P frequency in both IPC cases, and in the resulting blade root out-of-plane moments. At the lower pitch rate limit of 4\textdegree/s, shown in the left column, the pitch rates of the IPC frequently reach the limit, i.e., during 2.2\% of the time, which limits the amplitude of the 1P pitch oscillations and thus also the effect of the IPC on the blade root out-of-plane moments. In contrast, the right column, corresponding to the very high pitch rate limit of 13\textdegree/s, shows larger pitch rates that exceed 8\textdegree/s only in short episodes, while the limit of 13\textdegree/s itself is never reached. Here the individual pitch actuators significantly reduce the variance of the out-of-plane moments, thereby improving load reduction on the blades.
+As expected, increasing the allowable pitch rate enhances the effectiveness of the IPC controller in alleviating structural loads. Above 8\textdegree/s, however, a further increase of the rate limit brings hardly any additional benefit for this test case.
+\begin{figure} [H]
+    \subfloat[Pitch rate limit 4\textdegree/s]{\includegraphics[width=0.49\textwidth]{figures/figures_WESC25/fig00a_Timeseries1.eps}}\hfill
+    \subfloat[Pitch rate limit 13\textdegree/s]{\includegraphics[width=0.49\textwidth]{figures/figures_WESC25/fig00a_Timeseries3.eps}}\hfill
+    \caption[Controller comparison: Baseline and IPC PI with different pitch rate limits.]{Controller comparison: Baseline CPC (purple) and IPC PI (blue, red and yellow lines pitch signals of blades 1 to 3, blue all other signals) with different pitch rate limits for turbulent wind (18\,m/s mean, IEC turbulence class A (16\%), wind field of the optimization dataset). Rate limits: Low (4\textdegree/s) and high (13\textdegree/s) for IPC, standard  (8\textdegree/s) for baseline PI. Dashed lines in the pitch rate plots: $\pm 4$\textdegree/s and $\pm 8$\textdegree/s. Displayed signals: wind speed, pitch, pitch rate, states, power, and out-of-plane blade root moments.}
+    \label{fig:timeseriesIPC}
+\end{figure}
+%
+
+%
+Figure~\ref{fig:PSDIPC} shows the Power Spectral Density (PSD) of the blade root out-of-plane moment to visualize and explain the gradual improvement with increasing pitch rate for all three test cases. The black line represents the baseline CPC. The blue line, representing IPC with a 4\textdegree/s rate limit, reduces the 1P peak by 91\%, while the red line, representing IPC with an 8\textdegree/s rate limit, further lowers it, achieving a 96\% reduction. At the 2P frequency, the blue line shows only a small decrease of 11\% compared to the baseline, while the red line lowers the 2P peak by 44\%. As expected, the 8\textdegree/s rate limit offers better load reduction across both 1P and 2P frequencies. The controller tuned with the rate limit set to 13\textdegree/s, depicted as a yellow line, lies almost on top of the red line, with 1P and 2P peak reductions of 96\% and 45\%, respectively.
+\begin{figure}[h]
+    \begin{center}
+        \includegraphics[width=0.6\textwidth]{figures/figures_WESC25/fig02_PSDroot_breaky_ratecomp.png}
+        \caption[Controller comparison: Power Spectral Density of blade root out-of-plane moment of baseline PI with 8\textdegree/s rate limit, IPC with 4\textdegree/s,  8\textdegree/s, and 13\textdegree/s rate limit]{Controller comparison: Power Spectral Density of blade root out-of-plane moment of baseline PI (black) with 8\textdegree/s rate limit, IPC with 4\textdegree/s rate limit (blue, dash-dotted),  8\textdegree/s rate limit (red, solid), and 13\textdegree/s rate limit (yellow, dotted). Split y axis; peak values at 1P and 2P in the line colors.}
+        \label{fig:PSDIPC}
+    \end{center}
+\end{figure}
+%
+Table~\ref{tab:stddev_unified_IPC} summarizes the standard deviation of the signals shown in Figure~\ref{fig:timeseriesIPC} for IPC rate limits of 4\textdegree/s, 8\textdegree/s, and 13\textdegree/s. For all three cases, the baseline is the PI CPC with the standard rate limit of 8\textdegree/s. For the rotor speed and the power output, the introduction of IPC does not produce any observable effect, with ratios between 0.99 and 1.00. The tower fore-aft acceleration, whose differences are hardly visible in the time series, decreases slightly by 2\% to 3\%. The pitch rate standard deviation increases unavoidably for the IPC test cases: by a factor of 2.81 at the most restrictive limit of 4\textdegree/s, and by factors of 4.58 and 4.61 at 8\textdegree/s and 13\textdegree/s, respectively. In contrast, the blade root out-of-plane moment is reduced by 18\%, 25\%, and 25\% across the three limits, consistent with the spectral load reductions at 1P and 2P visible in Figure~\ref{fig:PSDIPC}.
+\begin{table}[htbp]
+    \centering
+    \caption[Standard deviation comparison: Baseline PI vs. IPC for turbulent wind with
+    different pitch rate limits.]{Standard deviation of tower fore-aft acceleration, generated power, rotor speed, IPC blade pitch rate and blade root
+        out-of-plane moment for turbulent wind (18\,m/s mean, turbulence class A) with different pitch rate limits, evaluated from 66\,s. Values in brackets show
+        the ratio to the PI baseline with the standard rate limit of 8\textdegree/s, whose standard deviations are 0.21\,m/s$^2$, 123.82\,kW, 0.30\,rpm, 0.65\textdegree/s, and 1986.63\,kNm, respectively.}
+    \label{tab:stddev_unified_IPC}
+    \begin{tabular}{l rrr}
+        \toprule
+        & \multicolumn{3}{c}{ IPC rate limit (\textdegree/s) (ratio to CPC rate limit (\textdegree/s))} \\
+        \cmidrule(lr){2-4}
+        Signal & low: 4\textdegree/s & standard: 8\textdegree/s & high: 13\textdegree/s \\
+        \midrule
+        Tower fore-aft acc.\ (m/s$^2$)  & 0.20 (0.98) & 0.20 (0.97) & 0.20 (0.98) \\
+        Generated power (kW)             & 124.19 (1.00) & 123.30 (1.00) & 123.12 (0.99) \\
+        Rotor speed (rpm)                & 0.30 (1.00) & 0.30 (1.00) & 0.30 (0.99) \\
+        Blade pitch rate (\textdegree/s) & 1.83 (2.81) & 2.98 (4.58) & 3.00 (4.61) \\
+        Blade root OoP moment (kNm)      & 1624.02 (0.82) & 1483.35 (0.75) & 1481.16 (0.75) \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+%
+% CLAUDE (original line 869): new sentence: exponents and evaluation window of the table
+% OLD: The IPC gains are optimized with a single wind field at 18\,m/s. To check whether they carry over to the whole of Region~III and to other wind fields, the IPC with the gains for 8\textdegree/s is simulated for all above rated wind speeds of the optimization dataset and of the two verification datasets, which are also used for the AALC in Section~\ref{subsec:ResultsTEF}. Table~\ref{tab:IPC_summary} contains the five evaluation criteria, normalized by simulations without IPC for the same wind test cases and averaged over three wind speed ranges: all wind speeds above rated, the wind speeds from 18\,m/s, and the optimization wind speed of 18\,m/s.
+The IPC gains are optimized with a single wind field at 18\,m/s. To check whether they carry over to the whole of Region~III and to other wind fields, the IPC with the gains for 8\textdegree/s is simulated for all above rated wind speeds of the optimization dataset and of the two verification datasets, which are also used for the AALC in Section~\ref{subsec:ResultsTEF}. Table~\ref{tab:IPC_summary} contains the five evaluation criteria, normalized by simulations without IPC for the same wind test cases and averaged over three wind speed ranges: all wind speeds above rated, the wind speeds from 18\,m/s, and \claude{the optimization wind speed of 18\,m/s. As defined in Section~\ref{subsection: IPCOptCriteria}, the DELs are calculated with the W\"ohler exponents of 10 for the blades, summed over the three blades, and 4 for the tower, and all criteria are evaluated from 60\,s onward.}
+%
+% Created by makeIPC_SummaryTable on 2026-10-26
+\begin{table}[h]
+    \centering
+% CLAUDE (original line 874): caption: exponents and evaluation window
+% OLD:     \caption[Wind turbine evaluation criteria for IPC: Mean values of the optimization and verification datasets over the above rated wind speeds]{\label{tab:IPC_summary} Wind turbine evaluation criteria for IPC: Mean values of the optimization and verification datasets over the above rated wind speed ranges, normalized by the baseline without IPC. IPC gains optimized at 18\,m/s with the pitch rate limit 8\textdegree/s for all wind speeds: $K_{P,\text{IPC}} = 1.222$ and $K_{I,\text{IPC}} = 0.370$. Criteria are blade, tower base and tower top DELs, power mean and standard deviation (mean of the ratios of the single wind speeds), and actuator power (ratio of the mean actuator powers). The first verification set has no wind field for 13\,m/s.}
+    \caption[Wind turbine evaluation criteria for IPC: Mean values of the optimization and verification datasets over the above rated wind speeds]{\label{tab:IPC_summary} Wind turbine evaluation criteria for IPC: Mean values of the optimization and verification datasets over the above rated wind speed ranges, normalized by the baseline without IPC. IPC gains optimized at 18\,m/s with the pitch rate limit 8\textdegree/s for all wind speeds: $K_{P,\text{IPC}} = 1.222$ and $K_{I,\text{IPC}} = 0.370$. \claude{Criteria are blade (sum of the three blades, W\"ohler exponent 10), tower base and tower top DELs (W\"ohler exponent 4, all evaluated from 60\,s),} power mean and standard deviation (mean of the ratios of the single wind speeds), and actuator power (ratio of the mean actuator powers). The first verification set has no wind field for 13\,m/s.}
+    \begin{tabular}{@{}l*{8}{c}@{}}
+        \toprule
+        Wind speeds & Dataset & Turb. class & $C_{\text{DEL},b}$ & $C_{\text{DEL},t,\text{Base}}$ & $C_{\text{DEL},t,\text{Top}}$ & $C_{\bar{P}}$ & $C_{\delta P}$ & $C_{\text{Act}}$ \\
+        \midrule
+% CLAUDE (original line 879): values of IPC_SummaryTable.csv (exponents 10/4, from 60 s)
+% OLD:         \multirow{3}{*}{\begin{tabular}[c]{@{}l@{}}Above rated\\(12--25\,m/s)\end{tabular}} & Optim. & A & 0.78 & 1.00 & 0.97 & 1.00 & 1.02 & 5.36 \\
+        \multirow{3}{*}{\begin{tabular}[c]{@{}l@{}}Above rated\\(12--25\,m/s)\end{tabular}} & Optim. & A & \claude{0.77} & 1.00 & \claude{0.93} & 1.00 & 1.02 & \claude{5.37} \\
+% CLAUDE (original line 880): values of IPC_SummaryTable.csv (exponents 10/4, from 60 s)
+% OLD:         & Verif. 1 & A & 0.81 & 1.00 & 0.98 & 1.00 & 1.02 & 5.65 \\
+        & Verif. 1 & A & \claude{0.78} & 1.00 & \claude{0.93} & 1.00 & 1.02 & \claude{5.66} \\
+% CLAUDE (original line 881): values of IPC_SummaryTable.csv (exponents 10/4, from 60 s)
+% OLD:         & Verif. 2 & B & 0.80 & 1.01 & 0.96 & 1.00 & 1.01 & 5.42 \\
+        & Verif. 2 & B & \claude{0.79} & 1.01 & \claude{0.93} & 1.00 & 1.01 & \claude{5.44} \\
+        \midrule
+% CLAUDE (original line 883): values of IPC_SummaryTable.csv (exponents 10/4, from 60 s)
+% OLD:         \multirow{3}{*}{18--25\,m/s} & Optim. & A & 0.76 & 1.00 & 0.98 & 1.00 & 1.01 & 5.82 \\
+        \multirow{3}{*}{18--25\,m/s} & Optim. & A & \claude{0.75} & \claude{1.01} & \claude{0.94} & 1.00 & 1.01 & \claude{5.84} \\
+% CLAUDE (original line 884): values of IPC_SummaryTable.csv (exponents 10/4, from 60 s)
+% OLD:         & Verif. 1 & A & 0.77 & 1.00 & 1.00 & 1.00 & 1.01 & 5.96 \\
+        & Verif. 1 & A & \claude{0.76} & \claude{1.01} & \claude{0.95} & 1.00 & 1.01 & \claude{5.97} \\
+% CLAUDE (original line 885): values of IPC_SummaryTable.csv (exponents 10/4, from 60 s)
+% OLD:         & Verif. 2 & B & 0.76 & 1.01 & 0.96 & 1.00 & 1.01 & 5.88 \\
+        & Verif. 2 & B & \claude{0.75} & \claude{1.02} & \claude{0.93} & 1.00 & 1.01 & \claude{5.89} \\
+        \midrule
+% CLAUDE (original line 887): values of IPC_SummaryTable.csv (exponents 10/4, from 60 s)
+% OLD:         \multirow{3}{*}{18\,m/s} & Optim. & A & 0.79 & 0.99 & 0.95 & 1.00 & 1.00 & 5.04 \\
+        \multirow{3}{*}{18\,m/s} & Optim. & A & \claude{0.80} & \claude{1.00} & \claude{0.90} & 1.00 & 1.00 & 5.04 \\
+% CLAUDE (original line 888): values of IPC_SummaryTable.csv (exponents 10/4, from 60 s)
+% OLD:         & Verif. 1 & A & 0.81 & 0.99 & 0.97 & 1.00 & 1.00 & 5.00 \\
+        & Verif. 1 & A & \claude{0.79} & \claude{1.00} & \claude{0.92} & 1.00 & 1.00 & \claude{5.01} \\
+% CLAUDE (original line 889): values of IPC_SummaryTable.csv (exponents 10/4, from 60 s)
+% OLD:         & Verif. 2 & B & 0.80 & 1.03 & 0.94 & 1.00 & 1.00 & 4.99 \\
+        & Verif. 2 & B & 0.80 & \claude{1.06} & \claude{0.91} & 1.00 & 1.00 & \claude{5.01} \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+
+% CLAUDE (original line 895): numbers of the IPC table with the exponents 10/4 and the evaluation from 60 s
+% OLD: Above rated, the blade DEL decreases by 19\% to 22\%, and from 18\,m/s on by 23\% to 24\%, for all three datasets. The reduction grows with the wind speed: for the second verification set of turbulence class~B, it increases from 12\% to 15\% between 12 and 16\,m/s to 24\% to 27\% from 20\,m/s on. The gains optimized at a single wind speed hence carry over to the whole of Region~III and to both verification sets, so that no gain scheduling is required above rated. The tower base DEL is not changed considerably, with criteria between 0.99 and 1.01; the largest increase of a single wind speed is 3\% at 18\,m/s for turbulence class~B. The tower top DEL is reduced slightly, by 2\% to 4\% above rated and by 3\% to 6\% at 18\,m/s. Close to rated wind speed, the mean power decreases by up to 0.6\% and its standard deviation increases slightly, so that the power criteria above rated are 1.00 and 1.01 to 1.02. The pitch rate reaches the limit of 8\textdegree/s at all wind speeds, and the actuator power is increased by a factor of 5.4 to 5.7 above rated and of 5.8 to 6.0 from 18\,m/s on. Compared with the AALC (Table~\ref{tabone}), the IPC achieves about the same blade DEL reduction above rated (AALC: 19\% to 23\%), but at a clearly higher actuator power (AALC: factor 3.9 to 4.0); from 18\,m/s on, the AALC reduces the blade DEL slightly more (22\% to 26\%).
+Above rated, the blade DEL decreases by \claude{21\% to 23\%, and from 18\,m/s on by 24\% to 25\%,} for all three datasets. The reduction grows with the wind speed: for the second verification set of turbulence class~B, it increases \claude{from 11\% to 16\% between 12 and 16\,m/s to 25\% to 27\%} from 20\,m/s on. The gains optimized at a single wind speed hence carry over to the whole of Region~III and to both verification sets, so that no gain scheduling is required above rated. The tower base DEL is not changed considerably, \claude{with criteria between 1.00 and 1.01; the largest increase of a single wind speed is 6\%} at 18\,m/s for turbulence class~B. \claude{The tower top DEL is reduced by about 7\% above rated and by 8\% to 10\% at 18\,m/s.} Close to rated wind speed, the mean power decreases by up to 0.6\% and its standard deviation increases slightly, so that the power criteria above rated are 1.00 and 1.01 to 1.02. The pitch rate reaches the limit of 8\textdegree/s at all wind speeds, and the actuator power is increased by a factor of 5.4 to 5.7 above rated and of 5.8 to 6.0 from 18\,m/s on. Compared with the AALC (Table~\ref{tabone}), the IPC achieves about the same blade DEL reduction above rated \claude{(AALC: 22\% to 24\%)}, but at a clearly higher actuator power (AALC: factor 3.9 to 4.0); from 18\,m/s on, the AALC reduces the blade DEL slightly more \claude{(26\% to 27\%)}.
+
+
+% CLAUDE (original line 898): IPC table above rated: C_DEL_b 0.771, 0.785, 0.794
+% OLD: IPC was shown in this section to reduce blade loads, with the amount of reduction progressively increasing with higher pitch rate limits, at the cost of increased actuator energy. It was also shown to decrease tower loads to a certain degree. The IPC gains optimized at a single wind speed of 18\,m/s carry over to the whole of Region~III and to both verification datasets, with blade DEL reductions of 19\% to 22\% above rated at unchanged tower base DEL and power, but with an actuator power increased by a factor of 5.4 to 5.7. 
+IPC was shown in this section to reduce blade loads, with the amount of reduction progressively increasing with higher pitch rate limits, at the cost of increased actuator energy. It was also shown to decrease tower loads to a certain degree. The IPC gains optimized at a single wind speed of 18\,m/s carry over to the whole of Region~III and to both verification datasets, with blade DEL reductions of \claude{21\% to 23\% above rated} at unchanged tower base DEL and power, but with an actuator power increased by a factor of 5.4 to 5.7. 
+However, the qLMPC, discussed in the previous section, reduces tower loads more effectively, as it directly controls the collective pitch to lower thrust fluctuations. Notably, the qLMPC also achieves comparable or 
+better blade load reductions than IPC, even though it does not explicitly target 
+individual blade loads and based on this single time series analysis, the qLMPC appears to 
+be the more effective single controller overall. However, it should be taken into account that the performance of the MPC strongly depends on the model quality as well as the agreement between estimated wind and true wind. Obviously, the performance of IPC also depends on the quality of the blade root out-of-plane measurements. Nevertheless, IPC Pi controllers are at the moment more widely accepted as a relatively simple method for larger turbines to decrease blade loads. An MPC IPC approach could reduce blade and tower loads even further, but the combined actuator demand may become 
+unacceptably high.
+
+While this section focused on load mitigation through individual pitch control, further 
+improvements can be achieved by including additional actuators. As blade sizes continue to 
+increase, additional actuation devices integrated into the blade structure might become 
+necessary. The following section introduces a turbine model enhanced 
+with trailing edge flaps on the rotor blades, enabling combined IPC and flap control for 
+more effective high-frequency load reduction.
+
+\let\oldsectionmark\sectionmark
+\renewcommand{\sectionmark}[1]{\oldsectionmark{Combined IPC-TEFC Design and Application}}
+\section{Combined IPC Trailing Edge Flap Control Design and Application}
+\label{sec:CombinedIPC-TrailingEdgeFlapControl}
+\let\sectionmark\oldsectionmark
+
+Building on the previous investigations into IPC and qLMPC strategies, this section focuses on a combined control approach that incorporates both IPC and Trailing Edge Flaps (TEF). By including TEFs in the rotor blades as supplementary actuation surfaces, additional degrees of freedom become available for targeted load mitigation, particularly at higher frequencies. This combination of individual pitch and trailing edge flap control is referred to as IPC-TEFC or Active Aerodynamic Load Control (AALC). AALC is defined as the integrated use of multiple aerodynamic control surfaces to actively reduce structural loads and improve turbine performance. By coordinating both individual blade pitch adjustments and trailing edge flap deflections, AALC provides enhanced load mitigation compared to each method alone. This section presents the model formulation for incorporating TEFs into the wind turbine dynamics and evaluates a combined IPC–TEFC strategy across Region~III operation. The controller design is based on an optimization framework that considers multiple wind conditions and turbulence intensities to ensure good performance over the whole operating range. Following the methodology outlined in the report \cite{osterwinter2019load1}, the approach is validated using a comprehensive set of verification wind fields to assess load reduction, power preservation, and actuator demand. This work has been published in \cite{dittmer2024combined}.
+
+
+\subsection{TEF Simulation Model} %bonnie_jonkman_openfastopenfast_2022 OpenFAST2023
+As before, the OpenFAST simulation software is used to investigate the benefits of combining individual pitch and trailing-edge flap control. The NREL 5MW wind turbine model is modified to implement controllable trailing-edge flaps on the rotor blades. The original NREL 5MW model without TEF serves as a reference for analyzing the aerodynamic effects of these modifications on the simulated operation of the turbine. 
+\subsubsection*{Rotor Blade Geometry and Aerodynamics}
+The rotor blades of the NREL 5MW turbine are defined by eight distinct cross-sectional profiles distributed along the blade length, as illustrated in Figure~\ref{subfig:TEF1}, and comprise 19 nodes, each with specific geometric profile shapes. At the root, cylindrical profiles connect to the rotor hub, accommodating high bending moments and pitch adjustments. The profiles transition from the DU series, developed at Delft University of Technology, near the root to the NACA64 profile in the outer 29\% of the blade, characterized by decreasing thickness towards the tip. The blade's aerodynamic efficiency is further refined by varying the profile depth and orientation at each node.
+
+The blade section with trailing-edge flaps, which covers the whole NACA64 blade section, is marked in red. The flap-to-blade chord ratio amounts to 20\%. The aerodynamic model of the blade enhanced with TEF requires input data on lift, drag, and pitching moment coefficients for all profiles across various blade angles of attack and a variety of flap deflection angles. The three main factors influencing these aerodynamic properties are surface roughness, Mach number, and Reynolds numbers. The OpenFAST simulation neglects surface roughness variations due to contaminants. The airflow is assumed to be incompressible with a Mach number of 0.25 at the blade tip. Interpolating between different polars is implemented in OpenFAST based on a user-defined parameter, by default the Reynolds number. In this work the interpolation between polars is performed based on the flap positions. As only one interpolation parameter can be defined, the Reynolds number distribution depicted in Figure~\ref{subfig:TEF1} is used for all wind speeds. Care was taken to model the distribution of Reynolds numbers along the rotor blade at this wind speed as realistically as possible. Realistic Reynolds numbers for rotor blades range from one to eight million are obtained from an OpenFAST simulation with turbulence class A at a mean wind speed of 12\,m/s. The OpenFAST aerodynamic models of the rotor blades are extended with additional airfoil polars based on this distribution.  % with the numbers obtained via an OpenFAST simulation run with a wind file from the optimization dataset, with turbulence class A and the meand wind speed at 12\,m/s.
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\textwidth]{Images_Torque24/fig01_RE.eps}\hspace{0pc}%
+    \begin{minipage}[b]{0.95\textwidth}\caption[ Span-wise distribution of Reynolds numbers Re at wind speed $V_{\infty} = 12$\,m/s]{\label{subfig:TEF1} Span-wise distribution of Reynolds numbers Re at wind speed $V_{\infty} = 12$\,m/s (from OpenFAST simulation) and blade geometry with cylinder, DU40, DU35, DU30, DU25, DU21 and NACA64 profiles with TEF location covering the NACA64 section marked in red.}
+    \end{minipage}
+\end{figure}
+
+\subsubsection{Polar Calculation with xflr5 and XFOIL}
+The aerodynamic coefficients of rotor blade profiles for the TEF enhanced blades are calculated using the programs xflr5 and XFOIL, see \cite{drela1989xfoil}. XFOIL uses a higher-order panel method to analyze and design airfoil profiles, incorporating variables like Reynolds number, Mach number, and a transition criterion for calculating the shift from laminar to turbulent flow. The turbulence degree of the incoming flow determines the appropriate transition criterion value, with the default value set at 9, approximating a median turbulence level as per XFOIL's documentation. For fluid properties, standard sea-level values from the International Standard Atmosphere (ISA) are used. The aerodynamic coefficients for the respective profiles are calculated based on the Reynolds numbers selected from Figure \ref{subfig:TEF1}. The coefficients generated by xflr5 and XFOIL are not directly suitable for wind turbine simulation as AeroDyn15 requires coefficients over an angle of attack range from -180\textdegree{} to +180\textdegree. Since XFOIL's panel methods yield accurate results only up to the point of flow separation, the polars are extrapolated to cover the entire required angle range. This extrapolation is performed using the AirfoilPrep preprocessor developed by NREL, applying the Viterna method for extrapolating polars, see for details e.g.~\cite{gasch2011wind}. %on Viterna's calculation process 
+Additionally, corrections are made to account for three-dimensional flow effects caused by the rotor blade's rotation. Factors like Coriolis and centrifugal forces increase the maximum lift coefficients in the inner rotor areas. These 3D effects are corrected using functions integrated into AirfoilPrep. Figure \ref{subfig:TEF2} illustrates the extrapolated and corrected lift and drag coefficients over the angle of attack for rotor blade profiles with different flap angles. 
+
+Figure \ref{subfig:TEF2}\,(a) shows that a positive flap deflection leads to an increase in lift coefficients $c_l$ and hence in lift. A positive flap deflection is defined as the flap moving backwards with respect to the chord line of the local blade profile with an undeflected flap. The point of maximum lift coefficient shifts to a smaller angle of attack than with a neutral flap position. A negative flap deflection has the opposite effect. The lift coefficients are reduced and the point of maximum lift coefficient shifts to higher angles of attack. This corresponds to the expected effects of different trailing-edge flap deflections on the lift. 
+
+Figure~\ref{subfig:TEF2}\,(b) visualizes the drag coefficient. The curves of the drag coefficient $c_d$ appear smooth and physically meaningful for angles of attacks above -27\textdegree. Note that there is a sudden reversal of the vertical staggering of the polars below this value. There is neither a physical explanation for this effect, nor is any discontinuity observed for the rotor profile without trailing-edge flap. It can be assumed that the extrapolation method does not work optimally for profiles with flaps at these high TEF angles that would lead to flow separation and stall.  However, this can be disregarded as the range of TEF angles of attack in the simulations in the outer area of the rotor blades do not exceed -27\textdegree\ during normal operation. As this study uses OpenFAST v3.2.1, no additional code needs to be added for the TEF inclusion, unlike earlier studies that leveraged previous versions of FAST. The obtained coefficients are summarized in a text file, which is included as a parameter in the Airfoil Information section of the AeroDyn15.dat file of the NREL 5MW model available in the Git repo \cite{GitRepoCodeAALC}. %NACA64_A17_Flap.dat
+%
+\begin{figure} [h]
+    \subfloat[Lift coefficient $c_{l}$]{\includegraphics[width=0.485\textwidth]{figures/Images_Torque24/fig01_Cl1out.eps}}\hfill 
+    \subfloat[Drag coefficient $c_{d}$]{\includegraphics[width=0.485\textwidth]{figures/Images_Torque24/fig01_Cd1out.eps}}\hfill
+    %\subfloat[blc blc]{\includegraphics[width=0.31\textwidth]{figures/twoTurbinesGreedyOpt_2d.eps}}
+    \caption{Lift and drag coefficients at different TEF angles $\eta_{\text{TEF}}$ and different blade angles of attack $\alpha$.}
+    \label{subfig:TEF2}
+\end{figure}
+%
+
+\subsection*{Baseline Power Controller} %speed-controlled-pitch-controlled
+In order to realistically simulate a modern turbine, a control system controlling rotor speed and generator torque is required, and the same baseline controller described and applied in the previous sections is utilized for that purpose. The aim of the IPC-TEFC is to further decrease the mechanical loads. Note that this load reduction controller using IPC together with TEF-control is an add-on controller to the baseline control system. This is possible as cyclic pitch motions are induced, which are effectively decoupled from the collective pitch motion ensuring the maximum power output above rated wind speed. As before, the implementation of the baseline controller is the power controller available within TU Delft's FASTTool, see \cite{mulders2020wind}. 
+%
+\subsubsection*{Open-Loop TEF Model Verification with FAST} % with TEF open loop control
+The modified NREL 5MW turbine model presented in the previous section is tested in open-loop simulations with regard to the plausibility of the influence of the TEF position on the simulation results. The aerodynamic model of the trailing-edge flap is included. Open-loop control inputs of the TEF deflection angle $\eta$ are analyzed in order to investigate its suitability with regard to the desired DEL reduction. The effects of flap deflections on different parameters relevant to the operational quality of the wind turbine, such as forces and moments as well as power yield, are investigated. Figure \ref{fig:OLdiag} shows a block diagram to illustrate the control structure used for these verification tests, with the eight inputs, i.e., the seven control inputs and the wind of the selected test case $V_{\text{TC}}$ as a disturbance. The actuators for the pitch angle adjustment of the rotor blades are modeled as first order transfer function with position and rate limitations. The influences of different TEF positions for steady-state operating conditions are discussed in Section~\ref{subsec:ResultsTEF}. 
+% For a sensitivity study of the flaps with regard to their influence on the blade root flapping moments, we refer to \cite{osterwinter2019load1}.
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.95\textwidth, trim=0 0 0 13, clip]{figures/Images_Torque24/blockdiagram_OL_latex_tau2.pdf}\hspace{2pc}%
+    \begin{minipage}[b]{0.95\textwidth}\caption{\label{fig:OLdiag} Block diagram for open-loop TEF verification tests with baseline power control in closed loop and open-loop collective TEF control inputs.}
+    \end{minipage} %BlockschaltbildopenLoop1.jpg
+\end{figure}
+
+\subsection{IPC-TEFC Implementation}
+The main design objective of the presented AALC is the reduction of structural moments, focusing on flapwise blade root bending moments. The overall controller layout is shown in Figure~\ref{fig:CLdiag}. The baseline controller, depicted in Figure~\ref{fig:OLdiag}, is enhanced with IPC, with the individual pitch demand added to the collective pitch reference, as well as TEFC which changes the TEF position. All six AALC control output signals are calculated via MBC, see Section \ref{sec:MBC}, based on the three out-of-plane blade root moments, $M_{yc1}$, $M_{yc2}$, and  $M_{yc3}$, as well as the rotor azimuth $\theta_r$. This section reviews the allocation of IPC and TEFC signals and then discusses the design of these controllers. 
+\begin{figure}[h]
+    \includegraphics[width=0.95\textwidth]{figures/Images_Torque24/blockdiagram_CL_latex2.pdf}\hspace{2pc}%
+    \begin{minipage}[b]{0.95\textwidth}\caption[Block diagram for closed-loop TEF verification tests with baseline power control, individual pitch and TEF closed loop control.]{\label{fig:CLdiag} Block diagram for closed-loop verification tests with baseline power control, individual pitch (highlighted in red) and TEF (highlighted in green) closed loop control.}
+    \end{minipage}
+\end{figure}
+\subsubsection*{IPC and TEFC Control Allocation}
+MBC enables the conversion of dynamic loads from the rotating blade coordinate system, defined by the azimuth angle $\theta$, to a fixed tower coordinate system. Specifically, load components in the 1P frequency range are transformed via the MBC to quasi-static loads. Hence, MBC allows for a more accurate assessment of the loads acting on the turbine tower and other non-rotating components. Applying MBC to convert the rotating blade root flap moments into a fixed coordinate system for a three-bladed wind turbine results in the matrix calculation in Equation~\eqref{eq:MBC} Therefore, MBC facilitates an optimal calculation of the reference control signal.
+
+Figure~\ref{fig:CLdiag} denotes $M_{yci}$ as the out-of-plane blade root moment of the $i^{\text{th}}$ blade as inputs, and the blade tilt moment $M_c$ and yaw moment $M_s$ in the non-rotating system as outputs. The moments $M_c$ and $M_s$ are used to calculate two cyclic control signals $q_c$ and $q_s$, i.e., $\beta_c$ and $\beta_s$ for IPC, and $\eta_c$ and $\eta_s$ for TEFC. The control signal $q_i$ of the $i^{\text{th}}$ blade is calculated via the inverse MBC transformation in Equation~\eqref{eq:inverseMBC} 
+where the signal $q_i$ denotes $\beta_{i,\text{IPC}}$ and $\eta_{i,\text{ref}}$ in IPC and TEFC, for the $i^{\text{th}}$ blade or flap, respectively. The subscript IFC denotes individual flap control, i.e., the individual actuation of the trailing edge flaps, chosen here in analogy to $K_\mathrm{IPC}$; it refers to the same controller called TEFC throughout this chapter. As for the IPC scheme, the tilt and yaw moments $M_c$ and $M_s$ are controlled via $q_c$ and $q_s$ independently, i.e., any remaining coupling following the MBC transformation between $q_c$ and $M_s$ as well as $q_s$ and $M_c$ is neglected. As the wind turbine dynamics can be modeled as a LTI system after transforming rotor blade dynamics into a fixed coordinate system, using MBC from Equation~(\ref{eq:MBC}), a simple, intuitive control approach is adopted. Four separate SISO controllers, two for IPC and TEFC, respectively, are designed to reduce the transformed moments $M_c$ and $M_s$. The system is now over-actuated, i.e., two moments, $M_c$ and $M_s$, need to be mitigated, but four control inputs, $\eta_c$, $\eta_s$, $\beta_c$, and $\beta_s$, are available. This offers the possibility of a frequency separation as a form of control allocation. To achieve this frequency separation of IPC and individual flap control inverse notch filters are implemented in the AALC controller. The 1P loads in the frequency spectrum of the blade root bending moments are addressed with the IPC control loop. The 2P loads are addressed with the trailing-edge flap controller making use of the fast flap dynamics. While modern MIMO controllers, e.g.,  AALC extension of the $H_\infty$ control \cite{ossmann2021field,ossmann2017load} or MPC \cite{dittmer2021velocity}, have the potential to optimize the available control inputs regarding the criteria listed in section \ref{sec:ControllerParameterOptimization} more efficiently, this simple, intuitive CA is selected as the resulting controller does not employ an observer based structure and hence does not require the design of an explicit mathematical plant model.%via strategies such as MPC, LQG or $H_\infty$ control. %Details are elaborated below.
+
+\subsubsection*{Individual Pitch Control for 1P Load Reduction}
+The IPC controller $K_{\text{IPC}}$, illustrated in the red part of Figure \ref{fig:CLdiag}, receives the blade root out of plane moments $M_{yc1}$, $M_{yc2}$, and  $M_{yc3}$ from the rotating coordinate systems, transforming them into fixed coordinate system moments $M_c$ and $M_s$ via MBC without additional filtering. This approach obviates the need for low-pass filtering within the IPC loops, as the actuator models already provide inherent low-pass filtering characteristics. The transformed moments are scaled with $k_M = 10^{-5}$, a value chosen due to the order-of-magnitude difference between the moments and the control angles in units of radians. The scaled moments $\hat{M}_s$ and $\hat{M}_c$ are passed to two identical SISO controllers. These controllers are based on the assumption that the transformed moments become largely independent after the transformation. The LTI nature of the transformed system allows for the potential use of PI controllers. Moreover, for IPC, which focuses on mitigating low-frequency load changes, particularly the 1P loads caused by tower wake effects and wind speed variations, a controller with an integral gain is first tuned manually. The integral component adequately addresses the control requirements by minimizing the steady-state error of the transformed moments and thus effectively targets the minimization of the 1P loads in the rotating coordinate system. This aids in decoupling of the IPC from the TEFC controller, with the TEFC used for controlling higher frequencies. The calculated control signals $\beta_c$ and $\beta_s$ are converted back to the rotating blade coordinate systems via the inverse MBC given in equation~(\ref{eq:inverseMBC}), resulting in the three signals $\beta_{i,\text{IPC}}$. The IPC exclusively calculates individual pitch angle components, avoiding interference with collective pitch angles calculated by the baseline power controller. The pitch angle commands, passed to the pitch actuators, $\beta_{i,\text{ref}}$ are calculated by adding the collective pitch angle command $\beta_{0,\text{ref}}$ to these individual pitch reference signals. The actuator model is implemented as a first order transfer function with time constant $\tau_{\beta}=0.1$ with the angle limited from -2\textdegree{} to 90\textdegree{} and the rate limited from -8\textdegree{}/s to 8\textdegree{}/s. The pitch actuator angles $\beta_i$ are then applied to the OpenFAST NREL 5MW wind turbine model.
+
+\subsubsection*{Trailing-edge Flap Control and Inverse Notch Filter for 2P Load Reduction}
+The PI controller for the individual trailing-edge flap control $K_{\text{IFC}}$ is constructed similarly to the IPC. The MBC and inverse MBC forming central elements, encompassing the two identical SISO controllers for controlling the transformed moments.
+
+A key difference is that the blade root flap moment signals are filtered through an inverse notch filter before MBC processing, amplifying selected frequencies
+\begin{equation*} \label{eq:Ginf}
+    G_{\text{iNF}}(s) = (s^2 +2kDfs +f^2)/ (s^2 +2Dfs +f^2),\quad k=10,\quad D = 0.1
+\end{equation*}
+with frequency $f$ set as twice the value of the current rotor frequency $f_r$ and s being the Laplace variable. This enhances 2P load amplitudes in the signals, enabling the TEFC to predominantly respond to these loads, thus minimizing mutual influence with the IPC. Post-filtering, the three blade root flap moments $\tilde{M}_{ybi}$ are transformed into the fixed coordinate system via a multiplication with $2/3 V^T_{\theta}$, with the resulting moments $\tilde{M}_{c}$ and $\tilde{M}_{s}$. These are both scaled with $k_m$ to $\hat{\tilde{M}}_c$ and $\hat{\tilde{M}}_s$ . Initially, two proportional controllers are used, with the manually tuned proportional parameter used as a starting point for the optimization of PI controller parameters. The transformed control outputs are then converted back for flap angle adjustments, with flap actuators modeled for a more rapid response than the pitch actuators, aiding in 2P load reduction. The TEF actuator is modeled as a first order transfer function with time constant $\tau_{\eta}=0.05$, with the angle limited from -10\textdegree{} to 10\textdegree{}, and the rate limited from -20\textdegree{}/s to 20\textdegree{}/s.
+
+\subsection*{TEF-IPC Controller Parameter Optimization} \label{sec:ControllerParameterOptimization}
+% CLAUDE (original line 990): replaced: the AALC gains of this chapter were not obtained with a grid search and six parameters, but with the joint optimization of three gains (reproduceIPC_FadeInOpt, runAALC_BelowRated)
+% OLD: Like the IPC design, the presented AALC design is a two step approach: In a first step, initial values for the integral gain of the IPC and the proportional gain of the TEFC are found via a grid search. Following this, the six AALC PI parameters are optimized with the Nelder-Mead simplex algorithm implemented in MATLAB’s \textit{fminsearch.m} to reduce the blade DEL. Both for the manual controller tuning as well as for the optimization the quality of an AALC controller is quantified via the decrease in blade root DEL. The cost function $J$ to be minimized by the AALC is the maximum of the DEL of the three blades, i.e., the same cost function as provided in Equation~\eqref{eq:costFunIPC}.
+\claude{Like the IPC design, the AALC design consists of \textit{fminsearch.m} followed by \textit{fmincon.m} with the tower constraint, with the pitch rate limit of 8\textdegree/s and the fade-in of the IPC and TEF inputs. The proportional and integral gains of the IPC and the proportional gain of the TEFC are optimized jointly at 18\,m/s. The integral and derivative gains of the TEFC are set to zero, as a derivative gain did not improve the cost in a preliminary optimization of the TEFC gains with fixed IPC gains. The joint optimization is started from the IPC gains optimized for 8\textdegree/s and $K_{P,\text{TEFC}} = 0.24$, the result of this preliminary optimization. Below rated, the three gains are optimized separately at 4, 6 and 8\,m/s with \textit{fminsearch.m} only, started from the initial gains of \cite{dittmer2024combined}, i.e., a purely integral IPC and a purely proportional TEFC with gains of one, since the tower DEL decreases below rated anyway. As for the IPC, the quality of an AALC controller is quantified via the decrease in blade root DEL.} The cost function $J$ to be minimized by the AALC is the maximum of the DEL of the three blades, i.e., the same cost function as provided in Equation~\eqref{eq:costFunIPC}.
+To evaluate and quantify the impact of an AALC controller's performance, the same criteria as before are used, which can be summarized as follows:
+
+\begin{itemize}
+% CLAUDE (original line 994): C_DEL,b is no longer identical to J
+% OLD:     \item \textbf{Blade $C_{\text{DEL},b} = J$ and tower DEL $C_{\text{DEL,t}}$:} Reducing the blade DEL is the main incentive for using
+    \item \textbf{\claude{Blade DEL $C_{\text{DEL},b}$} and tower DEL $C_{\text{DEL,t}}$:} Reducing the blade DEL is the main incentive for using
+    IPC to decrease the PSD at 1P. Load reductions at the 1P frequency does
+    not influence the tower DEL, while decreasing the PSD at the 2P frequency via the
+    flaps does also decrease the tower DEL. Therefore, a decrease in tower DEL is observed although this criterion is not included in the objective function.  
+    \item \textbf{Power mean $C_{\bar{P}}$ and standard deviation $C_{\delta P}$:} The power criteria were also not included in the
+    optimization. As the annual energy production is typically not allowed to decrease from AALC,
+    the generated power was compared for all test cases above 16\,m/s and it was found
+    that the power production loss and variance increase are negligible. % The power
+    %variance is important for the stability in small networks. The effect of the AALC controller was found to be nearly negligible.
+    \item \textbf{Actuator power $C_{\text{Act}}$:} This is the only criterion for which an increase is
+    unavoidable, due to the additional, unavoidable movement of the blade that
+    the IPC controller requires. %With the activation of individual pitch control, the pitch actuator power tripled to approximately 4.5 kW for all pitch actuators.
+\end{itemize}
+Unlike the previously discussed proof-of-concept on IPC and its comparison with qLMPC, not just one wind test signal but an optimization dataset with wind of turbulence class~A is created to optimize the PI parameters for each wind speed separately. Another difference from the previous study is that the actuator rate is fixed at 8\textdegree/s. The AALC's effect is analyzed by incorporating five wind speeds in Region~II, from 4\,m/s to 11\,m/s, and nine wind speeds in Region~III, ranging from 12\,m/s to 25\,m/s. Two verification sets are created for the 14 different wind speeds: one with turbulence class~A using a different seed, and one with turbulence class~B. The vertical wind speed distribution is modeled with a power law wind profile to represent wind shear, using an exponent of 0.2. All wind fields are available in the Git repository \cite{GitRepoCodeAALC}, which also includes the code to reproduce all results presented here. 
+
+% Suggested update of the AALC results section (Section "Combined IPC Trailing Edge Flap Control
+% Design and Application", \subsection{Results}, label subsec:ResultsTEF) in
+% 04_WindTurbineControl_02_notBold.tex. Replaces that subsection up to the start of
+% \subsection{Comparison of Wind Turbine Control Designs}; it uses the same labels, so it is meant
+% to be \input instead of the existing subsection, not in addition to it.
+% Changes to the existing text:
+% - open-loop part unchanged
+% - PSD figure: 18 m/s (optimization wind speed, optimization set, NTM class A, IPC/TEF fade-in,
+%   8 deg/s) instead of 16 m/s, figures/figIPCThesis/fig02_PSDroot_breaky*_AALC*.eps
+% - AALC gains of the current optimization (K_P,IPC = 0.082, K_I,IPC = 0.669, K_P,TEFC = 0.641)
+% - table tabone replaced by figures/figIPCThesis/tab_AALC_summary.tex (makeAALC_SummaryTable in
+%   the Combined-IPC-TEFC repository): wind speed ranges, no tower top DEL, C_Act = actuator power (Eq. CAct_calc)
+\subsection{Results} \label{subsec:ResultsTEF}
+This section discusses both open loop results, obtained with the simulation set-up depicted in Figure~\ref{fig:OLdiag}, as well as closed loop results, simulated with the control loop from Figure~\ref{fig:CLdiag}. Figure~\ref{fig:OLval} shows the steady state values, at three different TEF angles, of power $P_g$, rotor speed $\omega_r$, rotor thrust $T_r$, and blade pitch angle $\beta_{0}$ for all 14 wind speeds. Simulations at constant wind speeds are run for 660\,s to confirm the validity of the TEF model. Data from the initial 60\,s are excluded to avoid non-physical initialization artifacts and the mean values are calculated for each wind speed.
+\begin{figure} [h]
+    \subfloat[Power and rotor speed]{\includegraphics[width=0.485\textwidth]{figures/Images_Torque24/fig06_TEFOL_1.eps}}\hfill
+    \subfloat[Rotor thrust and blade pitch]{\includegraphics[width=0.485\textwidth]{figures/Images_Torque24/fig06_TEFOL_2.eps}}\hfill
+    \caption{TEF open-loop verification, TEF deflection at -10\textdegree{}\,(blue), 0\textdegree{}\,(red), and 10\textdegree{}\,(green).}
+    \label{fig:OLval}
+\end{figure}
+
+%
+The simulated power with and without TEF deflections shows the expected power characteristic curve of a wind turbine: In Region~II, both positive and negative flap deflections reduce power \(P_g\) due to decreased aerodynamic efficiency, unlike in Region~III, where the same power output is observed, as the power controller controls the pitch angle once rated wind speed is reached. Adjusting the pitch changes the aerodynamic forces. The control system can therefore maintain nominal power. This also reflects on the rotor speed \(\omega_r\), depicted in the second plot, which is slightly lower in Region~II but unchanged in Region~III. The thrust \(T_r\) in Region~II is decreased by a negative flap angle, while the influence of a positive flap angle on the thrust is negligible: The thrust cannot be increased beyond the neutral flap position due to the limited wind power, which necessarily limits the amount of energy converted into rotational energy. This leads to a dynamic equilibrium where, despite positive flap deflection, the thrust forces remain at levels equivalent to those at the neutral flap position. The second plot in Figure~\ref{fig:OLval}\,(b) shows the blade pitch \(\beta_{0}\), which is lower for a negative and higher for a positive TEF angle, corresponding to the lower and higher thrust force.
+
+Figure~\ref{fig:PSDTEF} shows the power spectral density (PSD) of the blade root bending moment in closed loop for the optimization dataset with a mean wind speed of 18\,m/s, the wind speed at which the AALC parameters are optimized.
+\begin{figure} [h]
+    \subfloat[Baseline (black), IPC (blue), and TEFC (green)]{\includegraphics[width=0.485\textwidth]{figures/figIPCThesis/fig02_PSDroot_breaky_AALCinit.eps}}\hfill
+    \subfloat[AALC (red), and AALC optimized (pink)]{\includegraphics[width=0.485\textwidth]{figures/figIPCThesis/fig02_PSDroot_breaky1c_AALC.eps}}\hfill
+    \caption{Power Spectral Density of the blade root out-of-plane moment for the optimization set, turbulence class A, with mean wind speed 18~m/s.}
+    \label{fig:PSDTEF}
+\end{figure}
+%
+IPC (blue line) and TEFC (green line) reduce the PSD of the 1P and 2P loads, respectively, compared to the baseline (black line): IPC alone reduces the 1P peak by 97.4\%, but increases the 2P peak by 29.8\%, while TEFC alone reduces the 2P peak by 76.8\% and the 1P peak by 38.3\%. These PSDs are obtained with the initially used AALC parameters with the original setting of a purely integral IPC and a purely proportional TEFC feedback, both set to values of one. In a second step, the three parameters \(K_{P,\text{IPC}}\), \(K_{I,\text{IPC}}\), and \(K_{P,\text{TEFC}}\) are optimized at 18\,m/s, subject to the constraint that the tower base DEL does not exceed the one of the baseline, resulting in an IPC PI controller with $K_{P,\text{IPC}} = 0.082$ and $K_{I,\text{IPC}} = 0.669$ and a TEFC P controller with $K_{P,\text{TEFC}} = 0.641$. An optimization started from the initial parameters instead of the optimized IPC parameters converges to the same cost.
+
+Figure~\ref{fig:PSDTEF}\,(b) demonstrates that considerable improvement with respect to the baseline controller is possible using the suggested AALC design: The combined IPC-TEFC with the original setting of a purely integral IPC and proportional TEFC feedback reduces the PSD at 1P by 97.0\%, and at 2P by 75.3\%. With the optimized parameters, the reduction with respect to the baseline is 94.9\% at 1P and 67.3\% at 2P, i.e., the residual peaks are larger than with the initial setting. The cost function, the largest of the three blade DELs, is nevertheless decreased from $J = 0.778$ for the initial controller to $J = 0.773$ for the optimized one, as the optimized controller reduces the DELs of the three blades more evenly (by 22.7\% to 23.3\%, compared to 22.2\% to 25.1\% with the initial setting). At the same time, the optimized AALC requires less pitch activity than the optimized IPC without TEF: the standard deviation of the pitch rate is 2.14\textdegree/s compared to 2.98\textdegree/s.
+From this study, it seems unlikely that a parameter optimization of the suggested, carefully designed controller can decrease the blade damage equivalent loads considerably. Further investigations might be made with respect to how much improvement is achievable with a more sophisticated MIMO controller.
+
+Apart from the blade root flapwise moment, the influence of the obtained controller parameters is compared with respect to the evaluation criteria provided in Section~\ref{sec:ControllerParameterOptimization}.
+%
+% CLAUDE (original line 1048): new sentence: difference to the AALC paper. PLEASE CHECK that the paper used 8 and 3 (MCrunch file Analyse.mcru)
+% OLD: Table~\ref{tabone} contains the evaluation criteria to quantify the effect of the AALC: blade, tower base, and tower top DEL, mean of generated power $\bar{P}_{g}$, its standard deviation $\sigma P$, and actuator power $C_{\text{Act}}$, Equation~\eqref{eq:CAct}, normalized by simulations without AALC for the same wind test cases. From 10\,m/s on, the parameters optimized at 18\,m/s are used. Below, the AALC parameters are scheduled with the parameters optimized separately at 4, 6, and 8\,m/s. The criteria are averaged over five wind speed ranges: all wind speeds, the wind speeds below and above rated, the wind speeds from 18\,m/s, and the optimization wind speed of 18\,m/s.
+Table~\ref{tabone} contains the evaluation criteria to quantify the effect of the AALC: blade, tower base, and tower top DEL, mean of generated power $\bar{P}_{g}$, its standard deviation $\sigma P$, and actuator power $C_{\text{Act}}$, Equation~\eqref{eq:CAct}, normalized by simulations without AALC for the same wind test cases. From 10\,m/s on, the parameters optimized at 18\,m/s are used. Below, the AALC parameters are scheduled with the parameters optimized separately at 4, 6, and 8\,m/s. The criteria are averaged over five wind speed ranges: all wind speeds, the wind speeds below and above rated, the wind speeds from 18\,m/s, \claude{and the optimization wind speed of 18\,m/s. Unlike in \cite{dittmer2024combined}, where W\"ohler exponents of 8 and 3 were used, the DELs are calculated with the exponents of 10 and 4 used throughout this thesis and evaluated from 60\,s onward, so that the values differ from those published there.}
+
+
+% Created by makeAALC_SummaryTable on 2026-10-26
+\begin{table}[h]
+    \centering
+% CLAUDE (original line 1054): caption: exponents and evaluation window
+% OLD:     \caption[Wind turbine evaluation criteria for AALC: Mean values of the optimization and verification datasets over wind speed ranges]{\label{tabone} Wind turbine evaluation criteria for AALC: Mean values of the optimization and verification datasets over different wind speed ranges, normalized by the baseline without AALC. From 10\,m/s on, the AALC gains optimized at 18\,m/s are used: $K_{P,\text{IPC}} = 0.082$, $K_{I,\text{IPC}} = 0.669$ and $K_{P,\text{TEFC}} = 0.641$; below, the gains are scheduled with the gains optimized at 4, 6 and 8\,m/s. Criteria are blade, tower base and tower top DELs, power mean and standard deviation (mean of the ratios of the single wind speeds), and actuator power (ratio of the mean actuator powers, since the baseline pitch is constant at low wind speeds; not given below rated, where the baseline actuator power is close to zero). The first verification set has no wind fields for 11 and 13\,m/s.}
+    \caption[Wind turbine evaluation criteria for AALC: Mean values of the optimization and verification datasets over wind speed ranges]{\label{tabone} Wind turbine evaluation criteria for AALC: Mean values of the optimization and verification datasets over different wind speed ranges, normalized by the baseline without AALC. From 10\,m/s on, the AALC gains optimized at 18\,m/s are used: $K_{P,\text{IPC}} = 0.082$, $K_{I,\text{IPC}} = 0.669$ and $K_{P,\text{TEFC}} = 0.641$; below, the gains are scheduled with the gains optimized at 4, 6 and 8\,m/s. \claude{Criteria are blade (sum of the three blades, W\"ohler exponent 10), tower base and tower top DELs (W\"ohler exponent 4, all evaluated from 60\,s),} power mean and standard deviation (mean of the ratios of the single wind speeds), and actuator power (ratio of the mean actuator powers, since the baseline pitch is constant at low wind speeds; not given below rated, where the baseline actuator power is close to zero). The first verification set has no wind fields for 11 and 13\,m/s.}
+    \begin{tabular}{@{}l*{8}{c}@{}}
+        \toprule
+        Wind speeds & Dataset & Turb. class & $C_{\text{DEL},b}$ & $C_{\text{DEL},t,\text{Base}}$ & $C_{\text{DEL},t,\text{Top}}$ & $C_{\bar{P}}$ & $C_{\delta P}$ & $C_{\text{Act}}$ \\
+        \midrule
+% CLAUDE (original line 1059): values of AALC_SummaryTable.csv (exponents 10/4, from 60 s)
+% OLD:         \multirow{3}{*}{All (4--25\,m/s)} & Optim. & A & 0.78 & 0.97 & 0.93 & 0.99 & 1.01 & 4.55 \\
+        \multirow{3}{*}{All (4--25\,m/s)} & Optim. & A & \claude{0.77} & \claude{0.98} & \claude{0.89} & 0.99 & \claude{1.02} & \claude{4.54} \\
+% CLAUDE (original line 1060): values of AALC_SummaryTable.csv (exponents 10/4, from 60 s)
+% OLD:         & Verif. 1 & A & 0.86 & 0.98 & 0.96 & 0.99 & 1.00 & 4.60 \\
+        & Verif. 1 & A & \claude{0.84} & 0.98 & \claude{0.91} & 0.99 & 1.00 & 4.60 \\
+% CLAUDE (original line 1061): values of AALC_SummaryTable.csv (exponents 10/4, from 60 s)
+% OLD:         & Verif. 2 & B & 0.81 & 0.99 & 0.92 & 0.99 & 1.00 & 4.72 \\
+        & Verif. 2 & B & \claude{0.80} & 0.99 & \claude{0.89} & 0.99 & 1.00 & \claude{4.73} \\
+        \midrule
+% CLAUDE (original line 1063): values of AALC_SummaryTable.csv (exponents 10/4, from 60 s)
+% OLD:         \multirow{3}{*}{\begin{tabular}[c]{@{}l@{}}Below rated\\(4--11\,m/s)\end{tabular}}& Optim. & A & 0.81 & 0.94 & 0.93 & 0.98 & 1.00 & -- \\
+        \multirow{3}{*}{\begin{tabular}[c]{@{}l@{}}Below rated\\(4--11\,m/s)\end{tabular}}& Optim. & A & \claude{0.80} & 0.94 & \claude{0.89} & 0.98 & 1.00 & -- \\
+% CLAUDE (original line 1064): values of AALC_SummaryTable.csv (exponents 10/4, from 60 s)
+% OLD:         & Verif. 1 & A & 0.97 & 0.93 & 0.97 & 0.97 & 0.98 & -- \\
+        & Verif. 1 & A & \claude{0.98} & 0.93 & \claude{0.93} & 0.97 & 0.98 & -- \\
+% CLAUDE (original line 1065): values of AALC_SummaryTable.csv (exponents 10/4, from 60 s)
+% OLD:         & Verif. 2 & B & 0.85 & 0.96 & 0.92 & 0.98 & 0.98 & -- \\
+        & Verif. 2 & B & \claude{0.84} & 0.96 & \claude{0.89} & 0.98 & 0.98 & -- \\
+        \midrule
+% CLAUDE (original line 1067): values of AALC_SummaryTable.csv (exponents 10/4, from 60 s)
+% OLD:         \multirow{3}{*}{\begin{tabular}[c]{@{}l@{}}Above rated\\(12--25\,m/s)\end{tabular}} & Optim. & A & 0.77 & 0.99 & 0.93 & 1.00 & 1.02 & 3.86 \\
+        \multirow{3}{*}{\begin{tabular}[c]{@{}l@{}}Above rated\\(12--25\,m/s)\end{tabular}} & Optim. & A & \claude{0.76} & \claude{1.00} & \claude{0.89} & 1.00 & 1.02 & 3.86 \\
+% CLAUDE (original line 1068): values of AALC_SummaryTable.csv (exponents 10/4, from 60 s)
+% OLD:         & Verif. 1 & A & 0.81 & 1.00 & 0.95 & 1.00 & 1.01 & 3.85 \\
+        & Verif. 1 & A & \claude{0.77} & 1.00 & \claude{0.90} & 1.00 & 1.01 & 3.85 \\
+% CLAUDE (original line 1069): values of AALC_SummaryTable.csv (exponents 10/4, from 60 s)
+% OLD:         & Verif. 2 & B & 0.79 & 1.00 & 0.92 & 1.00 & 1.02 & 4.01 \\
+        & Verif. 2 & B & \claude{0.78} & \claude{1.01} & \claude{0.89} & 1.00 & 1.02 & \claude{4.02} \\
+        \midrule
+% CLAUDE (original line 1071): values of AALC_SummaryTable.csv (exponents 10/4, from 60 s)
+% OLD:         \multirow{3}{*}{18--25\,m/s} & Optim. & A & 0.75 & 1.00 & 0.94 & 1.00 & 1.00 & 3.99 \\
+        \multirow{3}{*}{18--25\,m/s} & Optim. & A & \claude{0.74} & 1.00 & \claude{0.90} & 1.00 & 1.00 & 3.99 \\
+% CLAUDE (original line 1072): values of AALC_SummaryTable.csv (exponents 10/4, from 60 s)
+% OLD:         & Verif. 1 & A & 0.78 & 1.00 & 0.97 & 1.00 & 1.00 & 3.89 \\
+        & Verif. 1 & A & \claude{0.74} & 1.00 & \claude{0.92} & 1.00 & 1.00 & 3.89 \\
+% CLAUDE (original line 1073): values of AALC_SummaryTable.csv (exponents 10/4, from 60 s)
+% OLD:         & Verif. 2 & B & 0.74 & 1.01 & 0.93 & 1.00 & 1.00 & 4.18 \\
+        & Verif. 2 & B & \claude{0.73} & \claude{1.02} & \claude{0.91} & 1.00 & 1.00 & \claude{4.19} \\
+        \midrule
+% CLAUDE (original line 1075): values of AALC_SummaryTable.csv (exponents 10/4, from 60 s)
+% OLD:         \multirow{3}{*}{18\,m/s} & Optim. & A & 0.77 & 0.99 & 0.90 & 1.00 & 0.99 & 3.64 \\
+        \multirow{3}{*}{18\,m/s} & Optim. & A & \claude{0.79} & \claude{1.00} & \claude{0.86} & 1.00 & 0.99 & 3.64 \\
+% CLAUDE (original line 1076): values of AALC_SummaryTable.csv (exponents 10/4, from 60 s)
+% OLD:         & Verif. 1 & A & 0.82 & 1.00 & 0.95 & 1.00 & 1.00 & 3.49 \\
+        & Verif. 1 & A & \claude{0.79} & 1.00 & \claude{0.90} & 1.00 & 1.00 & 3.49 \\
+% CLAUDE (original line 1077): values of AALC_SummaryTable.csv (exponents 10/4, from 60 s)
+% OLD:         & Verif. 2 & B & 0.78 & 1.03 & 0.90 & 1.00 & 1.00 & 3.76 \\
+        & Verif. 2 & B & 0.78 & \claude{1.06} & \claude{0.87} & 1.00 & 1.00 & \claude{3.77} \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+
+% CLAUDE (original line 1083): numbers of the AALC table with the exponents 10/4 and the evaluation from 60 s
+% OLD: Above rated, the blade DEL decreases by 19\% to 23\%, and from 18\,m/s on by 22\% to 26\%, with the largest reduction for the second verification set of turbulence class~B. The parameters optimized at a single wind speed hence carry over to the whole of Region~III and to both verification sets, so that no gain scheduling is required above rated. The tower base DEL is not changed considerably above rated, with criteria between 0.99 and 1.00; the largest increase of a single wind speed is 3\% at 18\,m/s for turbulence class~B. The tower top DEL, in contrast, is reduced by 5\% to 8\% above rated and by 5\% to 10\% at 18\,m/s, i.e., more than by the IPC alone (Table~\ref{tab:IPC_summary}: 2\% to 4\% above rated). Below rated, the blade DEL is reduced by 19\% for the optimization set and by 15\% for the second verification set, but only by 3\% for the first verification set, i.e., the parameters optimized below rated do not carry over reliably to other wind fields. Here, the tower base DEL is reduced by 4\% to 7\% and the tower top DEL by 3\% to 8\%. Including all wind speeds, the blade DEL is reduced by 14\% to 22\%.
+Above rated, the blade DEL decreases by \claude{22\% to 24\%, and from 18\,m/s on by 26\% to 27\%,} with the largest reduction for the second verification set of turbulence class~B. The parameters optimized at a single wind speed hence carry over to the whole of Region~III and to both verification sets, so that no gain scheduling is required above rated. The tower base DEL is not changed considerably above rated, \claude{with criteria between 1.00 and 1.01; the largest increase of a single wind speed is 6\%} at 18\,m/s for turbulence class~B. The tower top DEL, in contrast, is \claude{reduced by 10\% to 11\% above rated and by 10\% to 14\% at 18\,m/s}, i.e., more than by the IPC alone (Table~\ref{tab:IPC_summary}: \claude{about 7\% above rated)}. Below rated, the blade DEL is \claude{reduced by 20\% for the optimization set and by 16\% for the second verification set, but only by 2\%} for the first verification set, i.e., the parameters optimized below rated do not carry over reliably to other wind fields. Here, the tower base DEL is reduced by 4\% to 7\% \claude{and the tower top DEL by 7\% to 11\%.} Including all wind speeds, the blade DEL is \claude{reduced by 16\% to 23\%.}
+
+% CLAUDE (original line 1085): AALC table above rated: C_Act 3.86, 3.85, 4.02
+% OLD: The evaluation of the power criteria confirms that the AALC leads only to negligible changes in both power mean and variance above rated. Below rated, the mean power is decreased by 2\% to 3\%, as the flap and pitch deflections reduce the aerodynamic efficiency, cf.\ Figure~\ref{fig:OLval}. The additional rotational movement of the blade demanded by IPC is the only criterion leading to an unavoidable increase, similar to the two controller schemes discussed in previous sections: above rated, the actuator power is increased by a factor of 3.8 to 4.0, and from 18\,m/s on by a factor of 3.9 to 4.2. Below rated, the baseline pitch angle is almost constant, so that the baseline actuator power is close to zero and no meaningful ratio is obtained. To assess the overall performance of AALC relative to the other discussed control strategies, the following section presents a comparison of all three investigated algorithms on load reduction and  power standard deviation at different pitch rate limits.
+The evaluation of the power criteria confirms that the AALC leads only to negligible changes in both power mean and variance above rated. Below rated, the mean power is decreased by 2\% to 3\%, as the flap and pitch deflections reduce the aerodynamic efficiency, cf.\ Figure~\ref{fig:OLval}. The additional rotational movement of the blade demanded by IPC is the only criterion leading to an unavoidable increase, similar to the two controller schemes discussed in previous sections: above rated, the actuator power is increased by a factor of \claude{3.9 to 4.0,} and from 18\,m/s on by a factor of 3.9 to 4.2. Below rated, the baseline pitch angle is almost constant, so that the baseline actuator power is close to zero and no meaningful ratio is obtained. To assess the overall performance of AALC relative to the other discussed control strategies, the following section presents a comparison of all three investigated algorithms on load reduction and  power standard deviation at different pitch rate limits.
+
+\section{Comparison of Wind Turbine Control Designs}
+\label{subsec:ComparisonWindTurbineControlDesigns}
+
+In a first comparison, the qLMPC was evaluated on the simplified turbine model that is also
+used as its prediction model, for turbulent wind with a mean of 18\,m/s. Without any model
+mismatch, it achieved large improvements over the PI baseline across all evaluated pitch rate limits.
+As presented in Table~\ref{tab:stddev_unified}, the standard deviation of the tower fore-aft acceleration was reduced
+by factors of 2.58, 3.82, and 4.14 for the pitch rate limits of 4\textdegree/s, 8\textdegree/s, and
+13\textdegree/s, respectively (corresponding to reductions of 61\%, 74\%, and 76\% relative to the
+PI baseline at 8\textdegree/s). Similarly, the power error standard deviation dropped dramatically
+by factors of 6.42, 10.29, and 11.36 (reductions between 84\% and 91\%), while the rotor speed error
+standard deviation showed matching improvements with reductions up to a factor of 11.40 at the
+13\textdegree/s rate limit. These improvements did not hold up when the controller was applied to the FAST model of the NREL 5MW
+turbine. The original qLMPC design increased the power tracking error instead of reducing it,
+mainly due to the mismatch between the prediction model and the FAST turbine implementation which is caused by only a subset of the structural modes modeled in FAST included in the qLPV prediction model. When filters were used, the
+improvements were partly recovered. With rotor speed tracking, a prediction model extended by the tower fore-aft and
+blade flap dynamics, notch filters at the 3P frequency and the drivetrain mode in the measured
+speeds, and, for the smooth design, a longer controller sample time with a ramped pitch
+reference, the qLMPC reduces the power variance on FAST again. However, the increase in tower
+loads was only partially reduced, and the tower DELs remained higher than those obtained with the baseline PI controller. Note that on the simplified model implemented in Simulink, the
+rotor-effective wind filters shown in Table~\ref{tab:stddev_unified} have a similar effect: they
+remove a large part of the wind excitation. With this the pitch activity was reduced to be smaller than the one for the baseline PI, but there was a decrease in improvement of the
+qLMPC regarding tower DEL and power standard deviation reduction.
+
+Figure~\ref{fig:CtrlCmpFASTIPC} and Table~\ref{tab:CtrlComparisonFASTNTM18B_PI_flapNotch_flapNotchIPC} show the effect of the IPC on the notch filter design in the time domain, for the turbulent wind field of Section~\ref{quasiLPVMPCResults} and a pitch rate limit of 13\textdegree/s; note that the bar and Pareto plots above are based on the second verification set and a pitch rate limit of 8\textdegree/s. The IPC reduces the standard deviation of the blade root out-of-plane moment by 23\% and the blade DEL by 18\%, i.e.\ to 14\% below that of the baseline PI controller, while the rotor speed and the power tracking remain unchanged. In return, the blade pitch rate increases slightly, from 4.39\textdegree/s to 4.64\textdegree/s, and the tower base DEL by a further 4\%.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.62\textwidth]{figures/figDirFASTthesis/cmpCtrlFASTthesis_NTM18B_PI_flapNotch_flapNotchIPC.eps}
+    \caption[Notch filter design with and without IPC on FAST for turbulent wind]{Notch filter design without and with IPC compared with the baseline PI controller on FAST for turbulent wind (18\,m/s mean, IEC turbulence class B), pitch rate limit 13\textdegree/s. Displayed signals: wind speed, generator torque, blade 1 pitch angle, rotor speed, tower fore-aft acceleration, generator power with its reference (black dashed line), and blade 1 root out-of-plane moment.}
+    \label{fig:CtrlCmpFASTIPC}
+\end{figure}
+
+\begin{table}[h]
+    \centering
+    \caption[Controller comparison on FAST, 18 m/s turbulent (class B): notch filter design with and without IPC.]{Controller comparison on FAST v8.16, 18\,m/s turbulent wind (IEC turbulence class B), pitch rate limit 13\textdegree/s, notch filter design with and without IPC. Top: standard deviations of the tower fore-aft acceleration, the power tracking error, the rotor speed, the (collective) pitch rate, and the blade root out-of-plane moment (mean of the blades). Bottom: damage equivalent loads of the blade root (W\"ohler exponent 10, maximum of the blades) and the tower base (exponent 4). In parentheses the ratio baseline PI/controller; values above 1 indicate an improvement.}
+    \label{tab:CtrlComparisonFASTNTM18B_PI_flapNotch_flapNotchIPC}
+    \begin{tabular}{l rrr}
+        \toprule
+        & & \multicolumn{2}{c}{Notch filter design} \\
+        \cmidrule(lr){3-4}
+        Signal & Baseline PI & without IPC & with IPC \\
+        \midrule
+        Tower acc.\ (m/s$^2$)        & 0.1712 & 0.2310 (0.74) & 0.2393 (0.72) \\
+        Power error (kW)             & 59.60  & 17.90 (3.33)  & 18.08 (3.30) \\
+        Rotor speed (rpm)            & 0.2460 & 0.0653 (3.77) & 0.0660 (3.73) \\
+        Pitch rate (\textdegree/s)   & 0.49   & 2.87 (0.17)   & 2.88 (0.17) \\
+        Blade root OoP moment (kNm)  & 1574   & 1559 (1.01)   & 1207 (1.30) \\
+        \midrule
+        Blade root DEL (kNm)         & 6002   & 6249 (0.96)   & 5145 (1.17) \\
+        Tower base DEL (kNm)         & 15394  & 19493 (0.79)  & 20232 (0.76) \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+
+All designs are therefore compared for the same wind, the turbulent 18\,m/s wind of the
+second verification set (IEC turbulence class~B), with the pitch rate limits 4\textdegree/s,
+8\textdegree/s, and 13\textdegree/s. The qLMPC is evaluated on the simplified model Mdl2 as the
+ideal case without model mismatch, and on FAST with the filter designs, both on their own
+and combined with the individual pitch controller of Section~\ref{section:Individal Pitch PI Control}.
+IPC and AALC are evaluated on OpenFAST with the optimized gains for each rate limit and the
+AALC gains of Section~\ref{subsec:ResultsTEF} at 8\textdegree/s. All criteria are normalized by the
+PI baseline on the same plant and with the same pitch rate limit, so values below unity
+indicate an improvement. The blade DEL and the DELs of the tower base and the tower top fore-aft moments are computed by
+rainflow counting with W\"ohler exponents of 10 for the blades, summed over the three blades, and
+4 for the steel tower; all criteria are evaluated from 60\,s onwards to exclude the start-up. Mdl2 contains neither blade loads nor a pitch moment. For the qLMPC on Mdl2, the standard deviation of the
+% CLAUDE (original line 1154): actuator power estimate for Mdl2 (ch4_actuatorPower_Claude.tex); replaces original lines 1154-1156
+% OLD: tower top fore-aft acceleration replaces the tower base DEL, no blade and tower top DELs are given, and $C_\text{Act}$ is calculated with a pitch moment estimated from the pitch angle, its derivatives, and the wind
+% OLD: speed. This estimate is fitted to FAST runs and reproduces the actuator power of the qLMPC on
+% OLD: FAST within 2\%.
+tower top fore-aft acceleration replaces the tower base DEL, no blade and tower top DELs are given, \claude{and $C_\text{Act}$ is calculated with a pitch moment estimated from the pitch angle, its derivatives, and the wind speed, fitted by least squares to the pitch moment of blade~1 in the FAST runs of the PI and the notch filter design at 8\textdegree/s. The fit explains only a quarter of the variance of the pitch moment ($R^2 = 0.25$); most of the remaining variance lies around the rotational frequency 1P, which depends on the blade azimuth and cannot be represented by the collective signals of Mdl2. The actuator power is nevertheless reproduced within 0.3\% for the qLMPC designs on FAST, as the pitch moment is dominated by its nearly constant mean value of about $-86$\,kNm, which is the same for all controllers. $C_\text{Act}$ is therefore essentially the ratio of the mean absolute pitch rates: on FAST, the two differ by less than 2\%, and for the qLMPC on Mdl2 by less than 0.5\%.}
+
+Figure~\ref{fig:CtrlCompBarPareto}(a) shows the evaluation criteria of all controllers at the standard
+pitch rate limit of 8\textdegree/s, grouped by controller. It is important to note that no controller changes the mean power
+$C_{\bar{P}}$ depicted in grey as the fourth bar; all values are within 0.5\% of the baseline and hence this bar is always exactly at the value of one for all seven algorithms. Figure~\ref{fig:CtrlCompBarPareto}(b) disregards the power criterion and visualizes the three DEL criteria and the power standard deviation as functions of the actuator power for all three pitch rate limits. Each line connects the
+results of one controller for the rate limits of 4\textdegree/s, 8\textdegree/s, and 13\textdegree/s,
+indicated by white, grey, and black marker fill. The AALC was optimized for 8\textdegree/s only and
+is therefore represented by a single point per criterion. Results closer to the lower left corner
+are better, as they combine lower loads or power variance with less actuator activity. Each panel
+highlights one group of controllers and shows the others pale for reference.
+
+The two top panels show the qLMPC schemes. On Mdl2, i.e.\ without model mismatch, visualized here with a yellow background, the power
+standard deviation is reduced by 39\% and the standard deviation of the tower fore-aft acceleration by
+54\%. This is the test case presented in \cite{dittmer2021velocity} to investigate the potential of the velocity based qLMPC. The Verif.~2 wind is more turbulent than the test case of Section~\ref{quasiLPVMPCResults} and
+falls below rated wind speed several times, so the improvements are smaller than the factors
+reported there, which were 75\% and 91\%. The actuator power increases by a factor of 4.5, as the qLMPC compensates the
+wind fluctuations with fast pitch action, which is higher than the factor of 3.7. It should be noted that the improvements obtained with this wind set are still high. However, these improvements could not be replicated when the controller was applied to the FAST WECS model, shown here with an orange background: the qLMPC with notch filters still reduces the
+power standard deviation by 33\%, but it does not reduce the blade DEL, increases the tower DEL
+by 33\%, and requires the highest actuator power of all controllers without IPC, 6.5 times that
+% CLAUDE (original line 1175): smooth design, 8 deg/s: C_dP 0.762 (66 s: 0.767)
+% OLD: of the PI baseline. Filters were applied inside the qLMPC to make it less aggressive. The results are highlighted here in pink: the smooth design trades part of the power smoothing, a reduction by 23\%,
+of the PI baseline. Filters were applied inside the qLMPC to make it less aggressive. The results are highlighted here in pink: the smooth design trades part of the power smoothing, \claude{a reduction by 24\%,}
+for considerably less pitch activity. Its actuator power of 2.6 is the lowest of all controllers,
+and the tower DEL increase is halved to 16\%.
+
+\begin{figure}[htbp]
+    \centering
+    \subfloat[Bar plot at a pitch rate limit 8\textdegree/s\label{fig:EvalCrit1}]{\includegraphics[width=0.49\textwidth]{figures/figures_WESC25/afig01_IPCMPCbar.eps}}\hfill
+    \subfloat[Pareto plot\label{fig:CtrlCompAll}]{\includegraphics[width=0.49\textwidth]{figures/figures_WESC25/afig01_IPCMPCpareto.eps}}
+    \caption[Evaluation criteria of qLMPC, IPC, and AALC for turbulent wind]{Evaluation criteria of the controllers for turbulent wind (18\,m/s mean, IEC turbulence class~B, second verification set), normalized by the PI baseline with the same pitch rate limit. Panels: qLMPC (top), IPC and AALC (middle), qLMPC combined with IPC (bottom). (a)~Bar plots: blade DEL $C_{\mathrm{DEL},b}$, tower base and top DELs $C_{\mathrm{DEL},t,\mathrm{Base}}$ and $C_{\mathrm{DEL},t,\mathrm{Top}}$, mean power $C_{\bar{P}}$, power standard deviation $C_{\delta P}$, and actuator power $C_\text{Act}$. (b)~Pareto plot: $C_{\mathrm{DEL},b}$ (blue), $C_{\mathrm{DEL},t,\mathrm{Base}}$ (green), $C_{\mathrm{DEL},t,\mathrm{Top}}$ (dark green), and $C_{\delta P}$ (purple) over $C_\text{Act}$ for the pitch rate limits 4\textdegree/s (white markers), 8\textdegree/s (grey), and 13\textdegree/s (black); the controllers of the other panels are shown pale. The dashed ovals enclose all points of one controller; their colour matches the background of the same controller in the same panel of the bar plot. The qLMPC on Mdl2 (no model mismatch): tower top fore-aft acceleration instead of the tower base DEL, no blade and tower top DELs, $C_\text{Act}$ with the pitch moment estimated from a model fitted to FAST. The arrow points towards better results.}
+    \label{fig:CtrlCompBarPareto}
+\end{figure}
+
+The middle panels show the IPC and the AALC, which act on the blade loads. The IPC, highlighted with a yellowish, wider oval as it was optimized at different rate limits, reduces the blade DEL from 0.87 at
+% CLAUDE (original line 1188): IPC, 8 deg/s: C_DEL_b 0.798 (66 s: 0.790)
+% OLD: 4\textdegree/s to 0.79 at 8\textdegree/s. A greater rate limit of 13\textdegree/s brings no further benefit,
+4\textdegree/s \claude{to 0.80 at 8\textdegree/s.} A greater rate limit of 13\textdegree/s brings no further benefit,
+as the gains optimized for 13\textdegree/s are almost identical to those for 8\textdegree/s. The tower
+DEL increases slightly with the rate limit, from 1.03 to 1.06, and the power standard deviation
+remains at unity. The AALC blade DEL lies below the IPC curve, i.e.\ the AALC achieves the larger blade load reduction at a lower actuator power than the IPC, 3.8 compared with 5.0, as part of the load reduction is taken over by the trailing
+edge flaps. This is its main advantage: the further reduction of the blade DEL is only 2\% and of the tower only 4\%.
+
+The bottom panels depict the combination of qLMPC and IPC. Compared with the pale qLMPC curves, adding
+IPC mainly shifts the blade DEL downwards and the actuator power to the right; the tower DEL and
+the power standard deviation curves hardly change. The smooth design combined with IPC lies at
+% CLAUDE (original line 1197): IPC, 8 deg/s: C_DEL_b 0.798
+% OLD: about the actuator power of the IPC and the AALC. Its blade DEL of 0.85 comes close to the 0.79 of
+about the actuator power of the IPC and the AALC. Its blade DEL of 0.85 comes close to \claude{the 0.80 of}
+% CLAUDE (original line 1198): smooth design + IPC, 8 deg/s: C_dP 0.751 (66 s: 0.755)
+% OLD: the IPC alone, and in addition it reduces the power standard deviation by about 24\%, which
+the IPC alone, and in addition it reduces the power standard deviation \claude{by about 25\%,} which
+neither IPC nor AALC achieve. As the IPC gains of the combination were only scaled by hand on the
+notch filter design and not retuned for the smooth design (Section~\ref{sec:qLMPCFAST}), part of
+the remaining blade DEL difference may be due to the tuning rather than to the design. The tower
+DEL of this combination, however, is about 12 percentage points higher than with IPC.
+
+
+
+These summary plots show that IPC and AALC remain the two approaches among the investigated algorithms that are suitable for blade load reduction. AALC achieves the best blade DEL at a moderate actuator power by offloading part of the pitch action onto the trailing edge flaps. The qLMPC is the only approach that reduces the power variance, and it keeps this property in the presence of model mismatch, with a reduction of about a third on FAST compared with about 40\% on Mdl2. The tower load reduction that the qLMPC achieves without model mismatch, however, is not retained on FAST, where all qLMPC designs increase the tower DEL. The smooth qLMPC combined with IPC is the most balanced design among the qLMPC variants and the only controller that reduces both the blade DEL and the power standard deviation, at an actuator power comparable to IPC and AALC.
+
+These results show that the qLMPC depends on accurate modeling: despite careful tuning and additional filters, the tower DEL reduction could not be transferred to FAST. A relatively low-hanging fruit would be to stitch a qLPV model from linearized FAST models to investigate whether the additional modes reduce the model mismatch, so that the tower DEL reduction can be at least partly recovered. Furthermore, all qLMPC designs use the rotor-effective wind speed provided by FAST, i.e., the wind at the turbine is assumed to be known exactly. Replacing it with an estimated wind speed is a necessary next step, while a wind preview, e.g., from a lidar, combined with a better fitting model might further reduce the loads.
+
+IPC, in contrast, achieves its load reduction without wind measurements or additional actuation hardware. The IPC and AALC controllers were tuned to reduce the blade loads and achieved considerable reductions not only for the optimization dataset, but also for the verification datasets. The tower DEL, which so far only serves as a constraint and evaluation criterion, could additionally be included as an optimization objective. As the combined qLMPC-IPC achieves a blade load reduction similar to that of AALC, it is questionable whether the additional hardware required for TEFs is justified for current turbine sizes. With increasing turbine size, however, reducing the loads without further increasing the actuator power might become more attractive.
+
+The presented qLMPC exploits that individual wind turbine dynamics are well understood and can be described in closed form as low-dimensional nonlinear ODEs. The following chapter discusses data-driven MPC for wind farms, where wake dynamics are time- and location-dependent and cannot be described by closed-form ODEs, yet must be accounted for in any MPC formulation.
+
+
+
