@@ -1080,6 +1080,18 @@ rotor-effective wind filters shown in Table~\ref{tab:stddev_unified} have a simi
 remove a large part of the wind excitation. With this the pitch activity was reduced to be smaller than the one for the baseline PI, but there was a decrease in improvement of the
 qLMPC regarding tower DEL and power standard deviation reduction.
 
+Figure~\ref{fig:CtrlCmpFASTIPC} and Table~\ref{tab:CtrlComparisonFASTNTM18B_PI_flapNotch_flapNotchIPC} show the effect of the IPC on the notch filter design in the time domain, for the turbulent wind field of Section~\ref{quasiLPVMPCResults} and a pitch rate limit of 13\textdegree/s; note that the bar and Pareto plots above are based on the second verification set and a pitch rate limit of 8\textdegree/s. The IPC reduces the standard deviation of the blade root out-of-plane moment by 23\% and the blade DEL by 18\%, i.e.\ to 14\% below that of the baseline PI controller, while the rotor speed and the power tracking remain unchanged. In return, the blade pitch rate increases slightly, from 4.39\textdegree/s to 4.64\textdegree/s, and the tower base DEL by a further 4\%.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.49\textwidth]{figures/figDirFASTthesis/cmpCtrlFASTthesis_NTM18B_PI_flapNotch_flapNotchIPC.eps}
+    \caption[Notch filter design with and without IPC on FAST for turbulent wind]{Notch filter design without and with IPC compared with the baseline PI controller on FAST v8.16 for turbulent wind (18\,m/s mean, IEC turbulence class B), pitch rate limit 13\textdegree/s. Displayed signals: wind speed, generator torque, blade 1 pitch angle, rotor speed, tower fore-aft acceleration, generator power with its reference (black dashed line), and blade 1 root out-of-plane moment.}
+    \label{fig:CtrlCmpFASTIPC}
+\end{figure}
+
+\input{figures/figDirFASTthesis/resultsFASTthesis_NTM18B_PI_flapNotch_flapNotchIPC}
+
+
 All designs are therefore compared for the same wind, the turbulent 18\,m/s wind of the
 second verification set (IEC turbulence class~B), with the pitch rate limits 4\textdegree/s,
 8\textdegree/s, and 13\textdegree/s. The qLMPC is evaluated on the simplified model Mdl2 as the
@@ -1140,16 +1152,7 @@ neither IPC nor AALC achieve. As the IPC gains of the combination were only scal
 notch filter design and not retuned for the smooth design (Section~\ref{sec:qLMPCFAST}), part of
 the remaining blade DEL difference may be due to the tuning rather than to the design. The tower
 DEL of this combination, however, is about 12 percentage points higher than with IPC.
-Figure~\ref{fig:CtrlCmpFASTIPC} and Table~\ref{tab:CtrlComparisonFASTNTM18B_PI_flapNotch_flapNotchIPC} show the effect of the IPC on the notch filter design in the time domain, for the turbulent wind field of Section~\ref{quasiLPVMPCResults} and a pitch rate limit of 13\textdegree/s; note that the bar and Pareto plots above are based on the second verification set and a pitch rate limit of 8\textdegree/s. The IPC reduces the standard deviation of the blade root out-of-plane moment by 23\% and the blade DEL by 18\%, i.e.\ to 14\% below that of the baseline PI controller, while the rotor speed and the power tracking remain unchanged. In return, the blade pitch rate increases slightly, from 4.39\textdegree/s to 4.64\textdegree/s, and the tower base DEL by a further 4\%.
 
-\begin{figure}[htbp]
-    \centering
-    \includegraphics[width=0.49\textwidth]{figures/figDirFASTthesis/cmpCtrlFASTthesis_NTM18B_PI_flapNotch_flapNotchIPC.eps}
-    \caption[Notch filter design with and without IPC on FAST for turbulent wind]{Notch filter design without and with IPC compared with the baseline PI controller on FAST v8.16 for turbulent wind (18\,m/s mean, IEC turbulence class B), pitch rate limit 13\textdegree/s. Displayed signals: wind speed, generator torque, blade 1 pitch angle, rotor speed, tower fore-aft acceleration, generator power with its reference (black dashed line), and blade 1 root out-of-plane moment.}
-    \label{fig:CtrlCmpFASTIPC}
-\end{figure}
-
-\input{figures/figDirFASTthesis/resultsFASTthesis_NTM18B_PI_flapNotch_flapNotchIPC}
 
 
 These summary plots show that IPC and AALC remain the two approaches among the investigated algorithms that are suitable for blade load reduction. AALC achieves the best blade DEL at a moderate actuator power by offloading part of the pitch action onto the trailing edge flaps. The qLMPC is the only approach that reduces the power variance, and it keeps this property in the presence of model mismatch, with a reduction of about a third on FAST compared with about 40\% on Mdl2. The tower load reduction that the qLMPC achieves without model mismatch, however, is not retained on FAST, where all qLMPC designs increase the tower DEL. The smooth qLMPC combined with IPC is the most balanced design among the qLMPC variants and the only controller that reduces both the blade DEL and the power standard deviation, at an actuator power comparable to IPC and AALC.

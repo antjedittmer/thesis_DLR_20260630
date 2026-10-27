@@ -1,15 +1,15 @@
 \begin{table}[h]
 \centering
-\caption[Controller comparison on FAST, sweep.]{Controller comparison on FAST v8.16, sweep, pitch rate limit 13\textdegree/s. Standard deviations (top) and blade pitch rate, blade root out-of-plane moment standard deviation and damage equivalent loads of the blade root (W\"ohler exponent 10, maximum of the blades) and tower base (exponent 4) (bottom); in parentheses the ratio baseline PI/controller, values above 1 indicate an improvement.}
+\caption[Controller comparison on FAST, sweep.]{Controller comparison on FAST v8.16, sweep, pitch rate limit 13\textdegree/s. Top: standard deviations of the tower fore-aft acceleration, the power tracking error, the rotor speed, and the (collective) pitch rate. Bottom: standard deviations of the blade 1 pitch rate and the blade root out-of-plane moment (mean of the blades), and damage equivalent loads of the blade root (W\"ohler exponent 10, maximum of the blades) and the tower base (exponent 4). In parentheses the ratio baseline PI/controller, values above 1 indicate an improvement.}
 \label{tab:CtrlComparisonFASTSweep_PI_beta_flapNotch_flapNotchSmooth12}
-\begin{tabular}{lccccc}
+\begin{tabular}{lcccc}
 \toprule
-{Controller} & {$\omega_r$ (rpm)} & {$|P_{g,\text{ref}}-P_g|$ (kW)} & {Twr$_\text{FA}$ (m/s$^2$)} & {$\dot T_g$ (kNm/s)} & {$\dot\beta$ (\textdegree/s)} \\
+{Controller} & {Tower acc.\ (m/s$^2$)} & {Power error (kW)} & {Rotor speed (rpm)} & {Pitch rate (\textdegree/s)} \\
 \midrule
-Baseline PI & 1.698 & 141.9 & 0.056 & 0.57 & 0.22 \\
-original qLMPC & 1.626 (1.04) & 136.1 (1.04) & 0.052 (1.08) & 0.68 (0.83) & 0.12 (1.76) \\
-notch filter design & 1.499 (1.13) & 144.6 (0.98) & 0.083 (0.67) & 0.68 (0.83) & 0.50 (0.44) \\
-smooth design & 1.772 (0.96) & 156.7 (0.91) & 0.068 (0.82) & 1.17 (0.49) & 0.39 (0.55) \\
+Baseline PI & 0.0558 & 141.85 & 1.6977 & 0.22 \\
+original qLMPC & 0.0516 (1.08) & 136.15 (1.04) & 1.6264 (1.04) & 0.12 (1.76) \\
+notch filter design & 0.0826 (0.67) & 144.65 (0.98) & 1.4993 (1.13) & 0.50 (0.44) \\
+smooth design & 0.0684 (0.82) & 156.66 (0.91) & 1.7719 (0.96) & 0.39 (0.55) \\
 \bottomrule
 \end{tabular}
 
