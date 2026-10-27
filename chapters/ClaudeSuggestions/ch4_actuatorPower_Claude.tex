@@ -1,0 +1,22 @@
+% Suggested change for chapter 04_WindTurbineControl_02_notBold.tex (main 49911eb):
+% estimate of the actuator power C_Act for Mdl2 (C_ActEst of runParetoVerif2.m).
+% Basis (FAST v8.16, Verif. 2 wind, 8 deg/s, PI and notch filter design, from 66 s):
+% R^2 = 0.25 of the regression of RootMzb1 on [1, b, b^2, V, V^2, b*V, db/dt, d2b/dt2];
+% 73-79 % of the residual variance in 0.1-0.3 Hz (1P = 0.20 Hz); mean RootMzb1 -85.7 kNm (PI)
+% and -85.8 kNm (notch filter design), always negative; C_ActEst/C_Act - 1 <= 0.2 % for the
+% notch filter and smooth designs at 4, 8, 13 deg/s; C_PitchRate vs C_Act on FAST <= 1.8 %;
+% C_ActEst vs C_PitchRate on Mdl2 <= 0.34 %.
+% Note: the paragraph says "evaluated from 60 s onwards", runParetoVerif2 evaluates from 66 s.
+
+% ---- original line 1082 (after: "4 for the steel tower; all criteria are evaluated from 60\,s onwards t")
+% OLD: tower top fore-aft acceleration replaces the tower base DEL, no blade and tower top DELs are given, and $C_\text{Act}$ is calculated with a pitch moment estimated from the pitch angle, its derivatives, and the wind
+% OLD: speed. This estimate is fitted to FAST runs and reproduces the actuator power of the qLMPC on
+% OLD: FAST within 2\%.
+tower top fore-aft acceleration replaces the tower base DEL, no blade and tower top DELs are given, and $C_\text{Act}$ is calculated with a pitch moment estimated from the pitch angle, its derivatives, and the wind
+speed, fitted by least squares to the pitch moment of blade~1 in the FAST runs of the PI and the notch filter design at
+8\textdegree/s. The fit explains only a quarter of the variance of the pitch moment ($R^2 = 0.25$); most of the
+remaining variance lies around the rotational frequency 1P, which depends on the blade azimuth and cannot be
+represented by the collective signals of Mdl2. The actuator power is nevertheless reproduced within 0.2\% for the
+qLMPC designs on FAST, as the pitch moment is dominated by its nearly constant mean value of about $-86$\,kNm,
+which is the same for all controllers. $C_\text{Act}$ is therefore essentially the ratio of the mean absolute
+pitch rates: on FAST, the two differ by less than 2\%, and for the qLMPC on Mdl2 by less than 0.5\%.
