@@ -666,7 +666,9 @@ Figure~\ref{fig:CtrlCmpFAST} shows the baseline PI controller, the original qLMP
 %
 \begin{figure}[htbp]
     \subfloat[Stepped wind sweep]{\includegraphics[height=0.52\textheight]{figures/figDirFASTthesis/cmpCtrlFASTthesis_Sweep_PI_beta_flapNotch_flapNotchSmooth12.eps}}\hfill
-    \subfloat[Turbulent wind, IEC class B, 18~m/s mean speed]{\includegraphics[height=0.55\textheight,trim=0 42 0 0, clip]{figures/figDirFASTthesis/cmpCtrlFASTthesis_NTM18B_PI_beta_flapNotch_flapNotchSmooth12.eps}}
+% CLAUDE (original line 660): all FAST figures are now exported with the same fixed size (14.8 x 25.6 cm, vector eps), so both subfloats get the same height and the manual trim is no longer needed
+% OLD:     \subfloat[Turbulent wind, IEC class B, 18~m/s mean speed]{\includegraphics[height=0.55\textheight,trim=0 42 0 0, clip]{figures/figDirFASTthesis/cmpCtrlFASTthesis_NTM18B_PI_beta_flapNotch_flapNotchSmooth12.eps}}
+    \subfloat[Turbulent wind, IEC class B, 18~m/s mean speed]{\includegraphics[height=0.52\textheight]{figures/figDirFASTthesis/cmpCtrlFASTthesis_NTM18B_PI_beta_flapNotch_flapNotchSmooth12.eps}}
     \caption[Controller comparison on FAST: baseline PI, original qLMPC, and the qLMPC designs for FAST]{Controller comparison on FAST: baseline PI controller (blue), original qLMPC (red), notch filter design (yellow), and smooth design (purple) for the stepped wind sweep and turbulent wind (18\,m/s mean, IEC turbulence class B), pitch rate limit 13\textdegree/s. Displayed signals: wind speed, generator torque, blade 1 pitch angle, rotor speed, tower fore-aft acceleration, generator power with its reference (black dashed line), and blade 1 root out-of-plane moment.}
     \label{fig:CtrlCmpFAST}
 \end{figure}
