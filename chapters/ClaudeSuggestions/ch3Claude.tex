@@ -1,0 +1,8 @@
+% Suggested sentences for chapter 03_WindTurbineqLPVmodel_01.tex: after the description of the
+% rotor-effective wind filter, i.e. after line 686 on main ("... bypass the filter, i.e.,
+% $\alpha_i = 1$."), before the "%" line and "As shown in Figure~\ref{fig:TimeCmpMdlNTM}(a) ...".
+% Basis: check with the paper model version, pitch rate limit 13 deg/s, PI and qLMPC on the
+% unfiltered Mdl2, wecs.kWindEff = cos(5 deg) in the plant and kWindEffCtrl = cos(5 deg) at the
+% qLMPC wind input: in turbulent wind, all standard deviations and their ratios change by at most
+% about 1 % (e.g. tower acceleration ratio 4.14 -> 4.10, power error ratio 11.35 -> 11.25).
+In Mdl1 and Mdl2 without the wind filter, the rotor tilt of 5\textdegree{} is neglected; applying the projection $\cos(5^\circ)$ consistently to the plant and to the wind of the qLMPC changes the standard deviations and their ratios in turbulent wind by less than 1\,\% (cf.\ Section~\ref{quasiLPVMPCResults}). The projection is nevertheless included in the rotor-effective wind filter, since the filter converts the hub height wind into the wind acting on the rotor and is thus the natural place for this geometric correction, which keeps the filtered model as close to the physics as possible. The precone of 2.5\textdegree{}, in contrast, is a property of the rotor geometry rather than of the wind direction and is therefore not included in the projection.
