@@ -574,8 +574,8 @@ Figure~\ref{fig:CtrlCmpMdlSweep}(b) shows results for the turbulent wind. The im
 
 
 \begin{figure} [ht]
-    \subfloat[Stepped wind sweep]{\includegraphics[width=0.49\textwidth]{figures/Figures_ADi/cmpCtrlTimeDomain_All_RefSimulinkClosedLoop_beta.eps}}\hfill
-    \subfloat[Turbulent wind, IEC class B, 18~m/s mean speed]{\includegraphics[width=0.48\textwidth]{figures/Figures_ADi/cmpCtrlTimeDomain_All_RefSimulinkClosedLoopNTW18_beta.eps}}\hfill
+    \subfloat[Stepped wind sweep]{\includegraphics[width=0.495\textwidth]{figures/Figures_ADi/cmpCtrlTimeDomain_All_RefSimulinkClosedLoop_beta.eps}}\hfill
+    \subfloat[Turbulent wind, IEC class B, 18~m/s mean speed]{\includegraphics[width=0.495\textwidth]{figures/Figures_ADi/cmpCtrlTimeDomain_All_RefSimulinkClosedLoopNTW18_beta.eps}}\hfill
     %\subfloat[blc blc]{\includegraphics[width=0.31\textwidth]{figures/twoTurbinesGreedyOpt_2d.eps}}
     \caption[Controller comparison with qLPV model Mdl2: Baseline PI vs.\ qLMPC for stepped wind sweep and turbulent wind.]{Controller comparison with qLPV model Mdl2: Baseline PI vs.\ qLMPC for stepped wind sweep and turbulent wind (18\,m/s mean, IEC turbulence
         class B (14\%)).  PI control (blue line), qLMPC (red line) and power reference (black dashed line). Displayed signals: wind speed, control inputs, tower fore-aft
@@ -609,8 +609,8 @@ The improvements regarding the reduction of tower acceleration and power varianc
 
 As more improvement in power variance was observed for the above-rated turbulent wind, the following discussion focuses on this case. In the results above, the pitch command increments are penalized, but the pitch rate state is not, and the pitch rate limit of 13\textdegree/s is relatively high compared to the 8\textdegree/s of the NREL 5MW reference turbine \cite{jonkman2009definition}. Figure~\ref{fig:CtrlCmpRates} shows the results of six test runs with different pitch rate limits on the plant without the wind filters: three with the baseline PI controller and three with the qLMPC algorithm.
 \begin{figure}[h]
-    \subfloat[Baseline PI controller]{\includegraphics[height=0.4658\textheight]{figures/figDirConstr1/cmpTimeDomain_All5PINewLim_NoFilt.eps}}\hfill
-    \subfloat[qLMPC algorithm]{\includegraphics[width=0.485\textwidth]{figures/figDirConstr1/cmpTimeDomain_All5MPCNewLim.eps}}\hfill
+    \subfloat[Baseline PI controller]{\includegraphics[width=0.495\textwidth]{figures/figDirConstr1/cmpTimeDomain_All5PINewLim_NoFilt.eps}}\hfill
+    \subfloat[qLMPC algorithm]{\includegraphics[width=0.495\textwidth]{figures/figDirConstr1/cmpTimeDomain_All5MPCNewLim.eps}}\hfill
     \caption[Controller comparison: Baseline PI and qLMPC with different pitch rate limits.]{Controller comparison: Baseline PI and qLMPC with different pitch rate limits for turbulent wind (18\,m/s mean, IEC turbulence  class B (14\%)), both controllers on the plant without the wind filters. Rate limits: Standard 8\textdegree/s~(black line), high 13\textdegree/s~(blue line), and low 4\textdegree/s~(red line). Displayed signals: wind speed, pitch, states, and power.}
     \label{fig:CtrlCmpRates}
 \end{figure}
@@ -619,7 +619,7 @@ The effect of different pitch rate limits on the PI controller is depicted in Fi
 Figure~\ref{fig:CtrlCmpFilt2} shows both controllers on the plant with the wind filters introduced in Section~\ref{sec:qLPVModelVerificationwithFAST0}, which imitate the averaging effect of a wind field acting on the whole rotor instead of a single-point wind speed. 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=0.485\textwidth]{figures/figDirConstr1/cmpTimeDomain_All5PIvsMPC_Filt.eps}
+    \includegraphics[width=0.495\textwidth]{figures/figDirConstr1/cmpTimeDomain_All5PIvsMPC_Filt.eps}
     \caption[Controller comparison with qLPV model Mdl2 with filtered wind: Baseline PI vs.\ qLMPC .]{Controller comparison with qLPV model Mdl2 with filtered wind: Baseline PI (blue line) vs.\ qLMPC (red line) on the plant with the rotor-effective wind filters for turbulent wind (18\,m/s mean, IEC turbulence class B (14\%)), pitch rate limit 13\textdegree/s. Displayed signals: freestream wind speed, pitch, states, and power.}
     \label{fig:CtrlCmpFilt2}
 \end{figure}
@@ -665,10 +665,10 @@ All ratios in this table relate the two controllers on the same plant, with one 
 Figure~\ref{fig:CtrlCmpFAST} shows the baseline PI controller, the original qLMPC, and the notch filter and smooth designs of Section~\ref{sec:qLMPCFAST} on FAST for the stepped wind sweep and the turbulent 18\,m/s wind field of Section~\ref{quasiLPVMPCResults}, with a pitch rate limit of 13\textdegree/s. The standard deviations are summarized in Table~\ref{tab:CtrlComparisonFAST}, with the ratio of the baseline PI value to the value of the respective controller in parentheses.
 %
 \begin{figure}[htbp]
-    \subfloat[Stepped wind sweep]{\includegraphics[height=0.52\textheight]{figures/figDirFASTthesis/cmpCtrlFASTthesis_Sweep_PI_beta_flapNotch_flapNotchSmooth12.eps}}\hfill
+    \subfloat[Stepped wind sweep]{\includegraphics[width=0.495\textwidth]{figures/figDirFASTthesis/cmpCtrlFASTthesis_Sweep_PI_beta_flapNotch_flapNotchSmooth12.eps}}\hfill
 % CLAUDE (original line 660): all FAST figures are now exported with the same fixed size (14.8 x 25.6 cm, vector eps), so both subfloats get the same height and the manual trim is no longer needed
 % OLD:     \subfloat[Turbulent wind, IEC class B, 18~m/s mean speed]{\includegraphics[height=0.55\textheight,trim=0 42 0 0, clip]{figures/figDirFASTthesis/cmpCtrlFASTthesis_NTM18B_PI_beta_flapNotch_flapNotchSmooth12.eps}}
-    \subfloat[Turbulent wind, IEC class B, 18~m/s mean speed]{\includegraphics[height=0.52\textheight]{figures/figDirFASTthesis/cmpCtrlFASTthesis_NTM18B_PI_beta_flapNotch_flapNotchSmooth12.eps}}
+    \subfloat[Turbulent wind, IEC class B, 18~m/s mean speed]{\includegraphics[width=0.495\textwidth]{figures/figDirFASTthesis/cmpCtrlFASTthesis_NTM18B_PI_beta_flapNotch_flapNotchSmooth12.eps}}
     \caption[Controller comparison on FAST: baseline PI, original qLMPC, and the qLMPC designs for FAST]{Controller comparison on FAST: baseline PI controller (blue), original qLMPC (red), notch filter design (yellow), and smooth design (purple) for the stepped wind sweep and turbulent wind (18\,m/s mean, IEC turbulence class B), pitch rate limit 13\textdegree/s. Displayed signals: wind speed, generator torque, blade 1 pitch angle, rotor speed, tower fore-aft acceleration, generator power with its reference (black dashed line), and blade 1 root out-of-plane moment.}
     \label{fig:CtrlCmpFAST}
 \end{figure}
