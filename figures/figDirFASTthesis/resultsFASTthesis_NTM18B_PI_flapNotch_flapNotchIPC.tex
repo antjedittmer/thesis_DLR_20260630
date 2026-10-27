@@ -1,14 +1,14 @@
 \begin{table}[h]
 \centering
-\caption[Controller comparison on FAST, 18 m/s turbulent (class B).]{Controller comparison on FAST v8.16, 18 m/s turbulent (class B), pitch rate limit 13\textdegree/s. Standard deviations (top) and blade pitch rate, blade root out-of-plane moment standard deviation and damage equivalent loads of the blade root (W\"ohler exponent 10, maximum of the blades) and tower base (exponent 4) (bottom); in parentheses the ratio baseline PI/controller, values above 1 indicate an improvement.}
+\caption[Controller comparison on FAST, 18 m/s turbulent (class B).]{Controller comparison on FAST v8.16, 18 m/s turbulent (class B), pitch rate limit 13\textdegree/s. Top: standard deviations of the tower fore-aft acceleration, the power tracking error, the rotor speed, and the (collective) pitch rate. Bottom: standard deviations of the blade 1 pitch rate and the blade root out-of-plane moment (mean of the blades), and damage equivalent loads of the blade root (W\"ohler exponent 10, maximum of the blades) and the tower base (exponent 4). In parentheses the ratio baseline PI/controller, values above 1 indicate an improvement.}
 \label{tab:CtrlComparisonFASTNTM18B_PI_flapNotch_flapNotchIPC}
-\begin{tabular}{lccccc}
+\begin{tabular}{lcccc}
 \toprule
-{Controller} & {$\omega_r$ (rpm)} & {$|P_{g,\text{ref}}-P_g|$ (kW)} & {Twr$_\text{FA}$ (m/s$^2$)} & {$\dot T_g$ (kNm/s)} & {$\dot\beta$ (\textdegree/s)} \\
+{Controller} & {Tower acc.\ (m/s$^2$)} & {Power error (kW)} & {Rotor speed (rpm)} & {Pitch rate (\textdegree/s)} \\
 \midrule
-Baseline PI & 0.246 & 59.6 & 0.171 & 0.00 & 0.49 \\
-notch filter design & 0.065 (3.77) & 17.9 (3.33) & 0.231 (0.74) & 0.00 (0.00) & 2.87 (0.17) \\
-notch filter design + IPC & 0.066 (3.73) & 18.1 (3.30) & 0.239 (0.72) & 0.00 (0.00) & 2.88 (0.17) \\
+Baseline PI & 0.1712 & 59.60 & 0.2460 & 0.49 \\
+notch filter design & 0.2310 (0.74) & 17.90 (3.33) & 0.0653 (3.77) & 2.87 (0.17) \\
+notch filter design + IPC & 0.2393 (0.72) & 18.08 (3.30) & 0.0660 (3.73) & 2.88 (0.17) \\
 \bottomrule
 \end{tabular}
 
