@@ -456,21 +456,12 @@ An offline-identified model, trained for a constant wind speed of $7\,\mathrm{m/
 %\end{figure}
 
 \begin{figure}[ht]
-    \centering
-    \subfloat[Non-adaptive model ($V_\infty = 7$\,m/s)]{
-        \begin{minipage}[b]{0.485\textwidth}
-            \includegraphics[width=\textwidth]{figures/figures_CDC22/Fig01_OL_Update0_tex.eps}
-            \vspace{0.4cm} 
-        \end{minipage}
-    }\hfill 
-    \subfloat[Online-updated model]{
-        \begin{minipage}[b]{0.485\textwidth}
-            \includegraphics[width=\textwidth]{figures/figures_CDC22/Fig02_OL_Update1_tex.eps}
-        \end{minipage}
-    }
-    \caption[Open-loop identification comparison during a wind speed step]{Open-loop identification comparison during a wind speed step at $t=5000$\,s. Subplots (top to bottom): thrust $C_T$; wind speeds $V_\infty$ (black) and $V_1$ (blue); and real vs. estimated effective wind $V_{r1}, V_{r2}$. Bottom plot in (b) shows the update signal (black). WT1/WT2 signals are blue/red; dashed lines denote estimates.}
+    \subfloat[Non-adaptive model ($V_\infty = 7$\,m/s)]{\includegraphics[width=0.485\textwidth]{figures/figures_CDC22/Fig01_OL_Update0_tex.eps}}\hfill
+    \subfloat[Online-updated model]{\includegraphics[width=0.485\textwidth]{figures/figures_CDC22/Fig02_OL_Update1_tex.eps}}
+    \caption[Open-loop identification comparison during a wind speed step]{Open-loop identification comparison during a wind speed step at $t=5000$\,s. Subplots (top to bottom): thrust $C_T$; wind speeds $V_\infty$ (black) and $V_1$ (blue);real vs. estimated effective wind $V_{r1}, V_{r2}$; and the update signal (black). WT1/WT2 signals are blue/red; dashed lines denote estimates.}
     \label{fig:ValComp}
 \end{figure}
+
 
 To quantify the model's accuracy, the Variance Accounted For (VAF) is utilized to measure the similarity between the simulated and estimated effective wind speeds. This measure of how well the output signal variation is explained by the model is also used in previous studies on Koopman DMD, e.g., \cite{Cassamo.2020}, and is defined as:
 \begin{equation}
@@ -487,19 +478,19 @@ The first subplot in Figure~\ref{fig:ValComp}(a) shows the thrust control signal
 %    \label{fig:Valonline}
 %\end{figure}
 
-Figure~\ref{fig:SingVal} depicts the maximum and minimum singular values of four linear Koopman models at different stages of the online update process. The black dashed line represents the result of a system identification performed offline using the complete dataset from the second open-loop simulation, which includes the wind speed step. The colored solid lines correspond to the singular values of specific update instances at sample index $k$, which are highlighted using matching colors in the fifth subplot of Figure~\ref{fig:ValComp}(b). The initial model (blue line) is calculated on the dataset of the first open-loop simulation that does not contain the wind speed step. Note that with a sampling interval of $t_k = 1$\,s, the index $k$ corresponds directly to the simulation time in seconds. Singular values represent the gain of a system over a frequency range, with the maximum and minimum singular values defining the bounds of the system's amplification of input signals. Investigating these trajectories allows for an assessment of how the identified dynamics evolve, as shifts in the singular values indicate that the model is successfully capturing the underlying system's frequency response under varying operating conditions.
+Figure~\ref{fig:SingVal} depicts the maximum and minimum singular values of four linear Koopman models at different stages of the online update process. The black dashed line represents the result of a system identification performed offline using the complete dataset from the second open-loop simulation at 9\,m/s. The colored solid lines correspond to the singular values of specific update instances at sample index $k$, which are highlighted using matching colors in the fifth subplot of Figure~\ref{fig:ValComp}(b). The initial model (grey line) is calculated on the dataset of the first open-loop simulation that does not contain the wind speed step. Note that with a sampling interval of $t_k = 1$\,s, the index $k$ corresponds directly to the simulation time in seconds. Singular values represent the gain of a system over a frequency range, with the maximum and minimum singular values defining the bounds of the system's amplification of input signals. Investigating these trajectories allows for an assessment of how the identified dynamics evolve, as shifts in the singular values indicate that the model is successfully capturing the underlying system's frequency response under varying operating conditions.
 \begin{figure}[ht]
     \centering
     \includegraphics[width=0.65\textwidth]{figures/figures_CDC22/Fig03_OL_Bode_tex.eps}
-    \caption[Maximum and minimum singular values of the Koopman models at various sample steps $k$ during online identification].{Maximum and minimum singular values of the Koopman models at various sample steps $k$ during online identification. The shift from the initial model (blue) to the final adapted model (purple) demonstrates the convergence of the model's frequency response toward the reference offline identification (dashed black) following the wind speed step change.}
+    \caption[Maximum and minimum singular values of the Koopman models at various sample steps $k$ during online identification]{Maximum and minimum singular values of the Koopman models at various sample steps $k$ during online identification. The shift from the initial model (blue) to the final adapted model (purple) demonstrates the convergence of the model's frequency response toward the reference offline identification (dashed black) following the wind speed step change.}
     \label{fig:SingVal}
 \end{figure}
 
 \begin{itemize}
-    \item The blue line ($k = 1$) represents the initial Koopman model identified at $V_{\infty} = 7\,\mathrm{m/s}$. Its frequency response differs significantly from the reference offline model (black dashed line). As this initial model was identified using data with a constant freestream wind speed, it lacks the low-frequency excitation necessary to capture steady-state gains. This results in a 'hump' at $10^{-3}$\,rad/s.
-    \item The red line ($k = 5100$) shows the model immediately after the wind speed step at $5000\,\mathrm{s}$. Following the wind speed step, the identification process uses data with low-frequency content due to the change in freestream wind, causing the singular values to converge toward the low-pass behavior seen in the offline reference model. While the elevation in the low frequency range is still considerably visible in the red line, its decrease compared to the blue line indicates the adaptation to the new operating point.
-    \item The yellow line ($k = 6000$) illustrates the model during the transition as more data from the $9\,\mathrm{m/s}$ regime is incorporated.
-    \item The purple line ($k = 7949$) represents the final adapted model, showing a high degree of correlation with the reference offline model across the relevant frequency range.
+    \item The grey line ($k = 240$) represents the initial Koopman model identified at $V_{\infty} = 7\,\mathrm{m/s}$. Its frequency response differs significantly from the reference offline model (black dashed line).
+    \item The yellow line ($k = 5100$) shows the model immediately after the wind speed step at $5000\,\mathrm{s}$. Following the wind speed step, the identification process uses data with low-frequency content due to the change in freestream wind, causing the singular values to converge toward the low-pass behavior seen in the offline reference model. While the elevation in the low frequency range is still considerably visible in the red line, its decrease compared to the blue line indicates the adaptation to the new operating point.
+    \item The purple line ($k = 6000$) illustrates the model during the transition as more data from the $9\,\mathrm{m/s}$ regime is incorporated.
+    \item The green line ($k = 7949$) represents the final adapted model, showing a high degree of correlation with the reference offline model across the relevant frequency range. However, As this initial model was identified using data with a constant freestream wind speed, it lacks the low-frequency excitation necessary to capture steady-state gains. This results in a 'hump' at $10^{-3}$\,rad/s.
 \end{itemize}
 
 
@@ -515,23 +506,13 @@ Figure~\ref{fig:CL_Comparison} compares the performance of the non-adaptive (a) 
 \begin{figure}[ht]
     \centering
     % Subfigure (a): No online update
-    \subfloat[Non-adaptive Koopman MPC]{
-        \begin{minipage}[b]{0.485\textwidth}
-            \centering
-            \includegraphics[width=\textwidth]{figures/figures_CDC22/Fig04_CL_Update0_tex.eps}
-            \vspace{-0.35cm} 
-        \end{minipage}
-    }\hfill 
-    % Subfigure (b): Online update
-    \subfloat[Adaptive Koopman MPC with online updates]{
-        \begin{minipage}[b]{0.485\textwidth}
-            \centering
-            \includegraphics[width=\textwidth]{figures/figures_CDC22/Fig05_CL_Update1_tex.eps}
-        \end{minipage}
-    }
+    \subfloat[Non-adaptive Koopman MPC] {\includegraphics[width=0.495\textwidth]{figures/figures_CDC22/Fig04_CL_Update0_tex.eps}}\hfill
+    \subfloat[Adaptive Koopman MPC with online updates]{\includegraphics[width=0.495\textwidth]{figures/figures_CDC22/Fig05_CL_Update1_tex.eps}}
     \caption[Closed-loop tracking comparison during a wind speed ramp and power reference step.]{Closed-loop tracking comparison during a wind speed ramp and power reference step. Subplots (top to bottom): reference $P_{\text{ref}}$ (black) and total power $P_{\text{WF}}$ (purple dashed); wind speeds $V_\infty$ (black) and $V_1$ (blue); thrust $C_T$; and real vs. estimated effective wind $V_{r1}, V_{r2}$. Bottom plot in (b) shows the update signal (black). WT1/WT2 signals are blue/red; dashed lines denote estimates.}
     \label{fig:CL_Comparison}
 \end{figure}
+
+
 
 The top subplots illustrate the farm-level power yield $P_{\text{WF}}$ (purple) relative to the reference signal $P_{\text{ref}}$ (black). The subsequent subplots display the freestream wind speed $V_{\infty}$ alongside the local wind speed $V_1$ measured at turbine WT1, followed by the thrust control inputs $C_{T1}$ and $C_{T2}$. Consistent with the previous identification plots, signals for WT1 are shown in blue and WT2 in red. The fourth and fifth rows compare the true effective wind speeds $V_{r1}, V_{r2}$ with their estimates, while the final subplot in Figure~\ref{fig:CL_Comparison}(b) indicates the specific instances where the Koopman model was updated online.
 
