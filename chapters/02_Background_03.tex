@@ -890,19 +890,19 @@ Figure~\ref{fig:BlockEDMDEIODMD} shows the inputs and outputs of the EDMD and EI
 \centering
 \subfloat[EDMD]{\includegraphics[width=0.35\textwidth]{figures/figuresBlockDiagram_IFAC23/farm1_OL2.pdf}}%
 \hspace{0.05\textwidth}
-\subfloat[EIODMD]{\includegraphics[width=0.35\textwidth, trim=0.0cm 1cm 8.5cm 0.5cm, clip]{figures/figuresBlockDiagram_IFAC23/EIODMD.pdf}}
+\subfloat[EIODMD]{\includegraphics[width=0.35\textwidth]{figures/figuresBlockDiagram_IFAC23/EIODMD.pdf}}
 \caption{Inputs and outputs of the EDMD and EIODMD models with lifted states $\bm{\varphi}$ based on effective wind speeds $V_{r1}$ and $V_{r2}$.}
 \label{fig:BlockEDMDEIODMD}
 \end{figure}
 
 The states used to construct both models are the effective wind speeds acting on the turbines, specifically \( V_{r1} \) and \( V_{r2} \), along with lifted states derived from them. In this work, only polynomial functions are used, specifically the squares and cubes of the effective wind speeds, which correspond to aerodynamic force and power dependencies. The observable vector for both algorithms is:
 \begin{align*}
-\bm{\varphi} = [V_{r1} \quad V_{r2} \quad V^2_{r1} \quad V^2_{r2} \quad  V^3_{r1} \quad V^3_{r2}]^\top \in \mathbb{R}^6.
+\bm{\varphi} = [V_{r1} \quad V_{r2} \quad V^2_{r1} \quad V^2_{r2} \quad  V^3_{r1} \quad V^3_{r2}]^T \in \mathbb{R}^6.
 \end{align*}
-For EDMD, the inputs include the thrust control inputs and the wind measurement taken in front of the first turbine. For EIODMD, the inputs include all those used in EDMD, as well as the yaw control input of the first turbine, since EIODMD is applied in a combined thrust and yaw control setting. Hence, the inputs are:
+For EDMD, the inputs are the thrust control inputs. For EIODMD, the inputs ar the thrust control inputs as well as the yaw control input of the first turbine, since EIODMD is applied in a combined thrust and yaw control setting. Hence, the inputs are:
 \begin{align*}
-\bm{w}_{u} = [V_1 \quad C^{\prime}_{T1} \quad C^{\prime}_{T2}]^\top \in \mathbb{R}^3 \quad\text{and} \quad
-\bm{w} = [V_1 \quad C^{\prime}_{T1} \quad C^{\prime}_{T2} \quad \gamma_1]^\top \in \mathbb{R}^4.
+\bm{w}_{u} = [C^{\prime}_{T1} \quad C^{\prime}_{T2}]^T \in \mathbb{R}^3 \quad\text{and} \quad
+\bm{w} = [C^{\prime}_{T1} \quad C^{\prime}_{T2} \quad \gamma_1]^T \in \mathbb{R}^4.
 \end{align*}
 The output of the EDMD model consists of the two states \( V_{r1} \) and \( V_{r2} \), whereas the output of the EIODMD model is the total wind farm power, i.e., the sum of the power outputs of both turbines.
 
