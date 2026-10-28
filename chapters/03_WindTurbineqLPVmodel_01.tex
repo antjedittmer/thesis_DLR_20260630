@@ -650,8 +650,8 @@ where the blade modal mass $m_b$ is assumed to be located at the application poi
     Figure~\ref{fig:TimeCmpMdlSweep}(a) shows the results for the stepped wind sweep across all three closed-loop models. The wind increases in steps of 1\,m/s every 100\,s. The first 60\,s of the simulation, which contain initialization artifacts, are omitted. As a result, 40\,s of excitation is shown for 4\,m/s, and 100\,s for all other wind speeds. Figure~\ref{fig:TimeCmpMdlSweep}(b) presents the signals between 600\,s and 1000\,s of simulation time, corresponding to wind speeds between 10\,m/s and 13\,m/s. As before, the signals of the 5th-order model are plotted in black (dashed), the 9th-order model in blue, and the FAST model in red.
     \begin{figure}[h]
         \centering
-        \subfloat[Stepped wind sweep from 4\,m/s to 25\,m/s]{\includegraphics[width=0.48\textwidth]{figures/Figures_ADi/cmpTimeDomain_AllStep.eps}}\hspace{0.01\textwidth}
-        \subfloat[Zoom on wind speed range 10\,m/s to 13\,m/s]{\includegraphics[width=0.495\textwidth]{figures/Figures_ADi/cmpTimeDomain_AllZoom.eps}}
+        \subfloat[Stepped wind sweep from 4\,m/s to 25\,m/s]{\includegraphics[width=0.485\textwidth]{figures/Figures_ADi/cmpTimeDomain_AllStep.eps}}\hspace{0.01\textwidth}
+        \subfloat[Zoom on wind speed range 10\,m/s to 13\,m/s]{\includegraphics[width=0.485\textwidth]{figures/Figures_ADi/cmpTimeDomain_AllZoomStep.eps}}
         \caption[Closed-loop verification: FAST and qLPV models with PI baseline 
         controller, stepped wind sweep 4\,m/s to 25\,m/s.]%
         {Closed-loop verification: FAST and qLPV models simulated in closed loop with the PI baseline controller with a stepped wind sweep from 4\,m/s to 25\,m/s. 
@@ -666,7 +666,8 @@ where the blade modal mass $m_b$ is assumed to be located at the application poi
     \begin{figure}[htbp]
         \centering
         \subfloat[No filter]{\includegraphics[width=0.45\textwidth]{figures/Figures_ADi/cmpTimeDomain_AllNTW18.eps}}\hspace{0.01\textwidth}
-        \subfloat[Filter with $k_\tau = 0.75$ and  $k_T = 0.25$ ]{\includegraphics[width=0.45\textwidth]{figures/Figures_ADi/cmpTimeDomain_AllNTW18_kVe0dot25_kVeTau0dot75.eps}}
+        \subfloat[Filter with $k_\tau = 0.75$ and  $k_T = 0.25$ ]
+        {\includegraphics[width=0.45\textwidth]{figures/Figures_ADi/cmpTimeDomain_AllNTW18_kVe0dot25_kVeTau0dot75.eps}}
         \caption[Closed-loop model comparison: FAST and qLPV models with baseline 
         PI controller, under turbulent wind with and without filter on freestream wind.]{Closed-loop model comparison: FAST and qLPV models with PI baseline controller, under turbulent wind, 18\,m/s mean, IEC turbulence 
             class B (14\%), with and without filter on freestream wind. Mdl1 (black 
