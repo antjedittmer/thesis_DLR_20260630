@@ -1028,24 +1028,32 @@ Open-loop simulations are used to create signals that can be used to design the 
 
 
 \subsubsection{Open-Loop Results}
-As in Section~\ref{sec:AdaptiveWindFarmqLMPCforAIC}, two datasets that differ from the one used for system identification in the original publication \cite{dittmer2023koopman} are designed. The  with $n_0 = 29,999$ samples to comprise different combination of the two 
-\begin{figure}[htb]
+As in Section~\ref{sec:AdaptiveWindFarmqLMPCforAIC}, two datasets that differ from the one used for system identification in the original publication \cite{dittmer2023koopman} are designed. Both the identification dataset with $n_0 = 29,999$ samples and the verification data sets with 9.999 samples comprise combination of the two thrust controls and yaw control at different levels. 
+
+ Figure~\ref{fig:WRCAICOL_EDMD} shows the results for the EDMD and the EIODMD identification. For the identification dataset, depicted in Figure~\ref{fig:WRCAICOL_EDMD}(a) and~(c), and for the verification dataset, presented in Figure~\ref{fig:WRCAICOL_EDMD}(b) and~(d), VAF values of more than 90\% are achieved for both datasets for the two effective wind speeds. 
+\begin{figure}[htbp]
     \centering
-    \subfloat[Identification dataset.]{
-        \includegraphics[width=0.48\textwidth]{figures/figures_IFAC23/03aFig_WRC_Id_Vr.eps}
+    \subfloat[Identification dataset EDMD.]{
+        \includegraphics[width=0.485\textwidth]{figures/figures_IFAC23/03aFig_WRC_Id_Vr.eps}
         %\label{fig:WFSimgamma0}
     }
     \hfill
-    \subfloat[Verification dataset.]{
-        \includegraphics[width=0.48\textwidth]{figures/figures_IFAC23/03aFig_WRC_Val_Vr.eps}
+    \subfloat[Verification dataset EDMD.]{
+        \includegraphics[width=0.485\textwidth]{figures/figures_IFAC23/03aFig_WRC_Val_Vr.eps}
        % \label{fig:PowerPerYaw}
+    }\\
+      \subfloat[Identification dataset EIODMD.]{
+        \includegraphics[width=0.485\textwidth]{figures/figures_IFAC23/03aFig_WRC_Id_P.eps}
+        %\label{fig:WFSimgamma0}
     }
-    \caption[Open-loop validation of the Gaussian wake model against WFSim.]{Identification and verification datasets for the Koopman qLMPC model derived with EDMD. Subplots (top to bottom): Subplots (top to bottom): thrust $C_T^\prime$; constant wind speed $V_\infty$ (black) and $V_1$ (blue); real vs.estimated effective wind $V_{r1}, V_{r2}$. WT1/WT2 signals are blue/red; black dashed lines denote estimates.}
+    \hfill
+    \subfloat[Verification dataset  EIODMD.]{
+        \includegraphics[width=0.485\textwidth]{figures/figures_IFAC23/03aFig_WRC_Val_P.eps}
+        % \label{fig:PowerPerYaw}
+    }
+    \caption[Open-loop validation of the Gaussian wake model against WFSim.]{Identification and verification datasets for the Koopman matrices $\bm{\hat{K}}_1$ and  $\bm{\hat{K}}_1$. Subplots (top to bottom): Subplots (top to bottom): thrust $C_T^\prime$; constant wind speed $V_\infty$ (black) and $V_1$ (blue); real vs.estimated effective wind $V_{r1}, V_{r2}$. WT1/WT2 signals are blue/red; black dashed lines denote estimates.}
     \label{fig:WRCAICOL_EDMD}
 \end{figure}
-
-
- 
 
 
 Apart from the above described datasets, open-loop WFSim simulation results to quantify the effect of wake misalignment are obtained for a step-sweep of the yaw angle $\gamma_1$ from 0\textdegree{} to 35\textdegree{} with consecutive increases of 5\textdegree{} every 500 samples, resulting in a total of 4000 samples. During this sweep, the thrust control signals are set to their maximum value of 2 and the freestream wind is held constant at 8\,m/s. Figure~\ref{fig:OpenLoopResultsCombined} shows the resulting longitudinal wind field and the power output of the turbines and farm.
