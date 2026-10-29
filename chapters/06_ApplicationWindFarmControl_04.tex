@@ -266,7 +266,7 @@ with dimensions $n_\varphi = 6$ and $n_x = 2$. The input vector $\bm{w}$ used in
 \end{align}
 with $n_w = n_u = 2$, as in \cite{sharan2022Koopman}. In \cite{dittmer2022data}, the input vector additionally contained the measured wind speed in front of the upstream turbine. With an improved selection of the identification signals, the models identified without this input reach an acceptable performance level, see the discussion of simulation results in Section~\ref{section:AICWindFarmControl}. This removes the need to measure the freestream wind upstream of the wind farm; the effective wind speeds at the turbines, which initialize the lifted state, are still required. Changes of the freestream wind are then captured by the online model update rather than by a disturbance input.
 
-EDMD is employed to calculate the Koopman matrix, which approximates the infinite-dimensional Koopman operator $\mathcal{K}$ \cite{arbabi2018data}. To facilitate this, the extended lifted lifted states, which combine the nonlinear state lifted states and the inputs, are defined as:
+EDMD is employed to calculate the Koopman matrix, which approximates the infinite-dimensional Koopman operator $\mathcal{K}$ \cite{arbabi2018data}. To facilitate this, the extended lifted states, which combine the nonlinear state lifted states and the inputs, are defined as:
 \begin{align}\label{eq:extLiftObs}
     \bm{\varphi}_w(\bm{x},\bm{w}) = 
     \begin{bmatrix}
@@ -733,9 +733,26 @@ The qLMPC described in the previous section is applied to a wind farm of two tur
 
 \subsubsection{Open-Loop Results}
 
-For the data acquisition phase of this study, two simulations were performed to excite the turbines using open-loop thrust control signals provided in WFSim. Each simulation generated $n_o = 32,987$ samples. The first simulation was conducted under a constant freestream wind speed of $V_\infty = 7\,\mathrm{m/s}$. In the second simulation, the wind speed was initially set to $7\,\mathrm{m/s}$ and then subjected to a step increase to $9\,\mathrm{m/s}$ at $t = 5000\,\mathrm{s}$.
+For the data acquisition phase of \cite{dittmer2022data}, two simulations were performed to excite the turbines using open-loop thrust control signals provided in WFSim. Each simulation generated $n_o = 32,987$ samples. The first simulation was conducted under a constant freestream wind speed of $V_\infty = 7\,\mathrm{m/s}$ and with the thrust control signals from \cite{sharan2022Koopman}. In the second simulation, the thrust controls were same as in the first one, but the wind speed was initially set to $7\,\mathrm{m/s}$ and then subjected to a step increase to $9\,\mathrm{m/s}$ at $t = 5000\,\mathrm{s}$. For the presented analysis, two similar but not identical datasets were used, and three additional are designed for a thorough performance analysis of the models in open loop. 
+Figure~\ref{fig:IDdataAIC}(a) shows the first dataset with  $n_o = 29,999$. The control signals are set to a multitude of different combination in the range of allowed values of $C_T^\prime$, i.e., between 0.2 and 2. The steps are kept constant for at least 200\,s, but a small noise signal, with an amplitude range of 0.2\,m/s is then added to these stepwise changes. The freestream wind speed is fixed to 7\,m/s throughout the simulation. A similar verification dataset, also with constant freestream wind is created and depicted in Figure~\ref{fig:IDdataAIC}(b).
+\begin{figure}[ht]
+    \centering
+ \subfloat[Identification dataset]{\includegraphics[width=0.485\textwidth]{figures/figures_CDC22/Fig00_AIC7mpers_OL_id.eps}}\hfill
+ \subfloat[Verification dataset]{\includegraphics[width=0.485\textwidth]{figures/figures_CDC22/Fig00_AIC7mpers_OL_val.eps}}
+     \caption[Identification and verification datasets at $V_\infty = 7$\,m/s for the Koopman model identification of the adaptive AIC algorithm]{Identification and verification datasets at $V_\infty = 7$\,m/s for the Koopman model identification of the adaptive AIC algorithm. Subplots (top to bottom): thrust $C_T^\prime$; constant wind speed $V_\infty$ (black) and $V_1$ (blue); real vs.estimated effective wind $V_{r1}, V_{r2}$. WT1/WT2 signals are blue/red; black dashed lines denote estimates.}
+    \label{fig:IDdataAIC}
+\end{figure}
+To quantify the model's accuracy, the Variance Accounted For (VAF) is utilized to measure the similarity between the simulated and estimated effective wind speeds. This measure of how well the output signal variation is explained by the model is also used in previous studies on Koopman DMD, e.g., \cite{Cassamo.2020}, and is defined as:
+\begin{equation}
+    \text{VAF} = \max \left(0, \left( 1 - \frac{\operatorname{var}(\bm{X} - \hat{\bm{X}})}{\operatorname{var}(\bm{X})} \right) \right)  \cdot 100\%
+\end{equation}
+where $\bm{X}$ is the simulated or real signal, $\hat{\bm{X}}$ is the estimated signal, and $\operatorname{var}(\cdot)$ denotes the variance. 
 
-An offline-identified model, trained for a constant wind speed of $7\,\mathrm{m/s}$, is validated against data from the second simulation featuring a step change. As illustrated in Figure~\ref{fig:ValComp}(a), the offline-identified model fails to track the system states once the freestream wind speed deviates from the training condition. This discrepancy occurs because the Koopman operator identified at the lower wind speed cannot capture the altered aerodynamic sensitivity and wake dynamics present at the higher wind speed.
+It can be seen that these values are significantly different for the effective wind speed of the first turbine WT1. This turbine experiences constant freestream wind and its behavior can be predicted exactly by the change in its thrust control signal. The second turbine is much harder to predict, as it experiences wake from the second turbine. However, it can be seen that the VAF value is nearly the same between the identification and the verification dataset. 
+
+A third dataset for with 9,999 samples is created with a step change of the freestream wind from 7\,m/s to 9\, m/s at the 5000th sample. A fourth one with $n_o = 29,999$ with a constant freestream wind spead of 9\,m/s, and the corresponding verification dataset with 9,999 samples. 
+
+The offline-identified model, trained on the first dataset depicted in Figure~\ref{fig:IDdataAIC}(a), that is with constant wind speed of $7\,\mathrm{m/s}$, is validated against the dataset from the third simulation featuring a step change. As illustrated in Figure~\ref{fig:ValComp}(a), the offline-identified model fails to track the system states once the freestream wind speed deviates from the training condition. This discrepancy occurs because the Koopman operator identified at the lower wind speed cannot capture the altered aerodynamic sensitivity and wake dynamics present at the higher wind speed. However, with the adaptive AIC algorithm, the accuracies of the non-adaptive AIC algorithm under constant wind speed are nearly recovered for this more challenging test case. In \cite{sharan2022Koopman} VAF values between 86\% and 90\% were reported. With the updat
 
 %\begin{figure}[ht]
 %    \centering
@@ -747,16 +764,11 @@ An offline-identified model, trained for a constant wind speed of $7\,\mathrm{m/
 \begin{figure}[ht]
     \subfloat[Non-adaptive model ($V_\infty = 7$\,m/s)]{\includegraphics[width=0.485\textwidth]{figures/figures_CDC22/Fig01_OL_Update0_tex.eps}}\hfill
     \subfloat[Online-updated model]{\includegraphics[width=0.485\textwidth]{figures/figures_CDC22/Fig02_OL_Update1_tex.eps}}
-    \caption[Open-loop identification comparison during a wind speed step]{Open-loop identification comparison during a wind speed step at $t=5000$\,s. Subplots (top to bottom): thrust $C_T$; wind speeds $V_\infty$ (black) and $V_1$ (blue); real vs.estimated effective wind $V_{r1}, V_{r2}$; and the update signal (black). WT1/WT2 signals are blue/red; dashed lines denote estimates.}
+    \caption[Open-loop identification comparison during a wind speed step]{Open-loop identification comparison during a wind speed step at $t=5000$\,s. Subplots (top to bottom): thrust $C_T^\prime$; wind speeds $V_\infty$ (black) and $V_1$ (blue); real vs.estimated effective wind $V_{r1}, V_{r2}$; and the update signal (black). WT1/WT2 signals are blue/red; dashed lines denote estimates.}
     \label{fig:ValComp}
 \end{figure}
 
 
-To quantify the model's accuracy, the Variance Accounted For (VAF) is utilized to measure the similarity between the simulated and estimated effective wind speeds. This measure of how well the output signal variation is explained by the model is also used in previous studies on Koopman DMD, e.g., \cite{Cassamo.2020}, and is defined as:
-\begin{equation}
-    \text{VAF} = \max \left(0, \left( 1 - \frac{\operatorname{var}(\bm{X} - \hat{\bm{X}})}{\operatorname{var}(\bm{X})} \right) \right)  \cdot 100\%
-\end{equation}
-where $\bm{X}$ is the simulated or real signal, $\hat{\bm{X}}$ is the estimated signal, and $\operatorname{var}(\cdot)$ denotes the variance. 
 
 The first subplot in Figure~\ref{fig:ValComp}(a) shows the thrust control signals (blue for Turbine WT1, red for Turbine WT2). The second plot shows the freestream wind speed in black and the wind measured directly in front of the first turbine in blue. The third and fourth plots display the simulated effective wind speeds as solid lines and the estimated values as dashed lines. Up to the wind speed change at $t = 5000\,\mathrm{s}$, the estimates follow the real data accurately. However, after the step, the model fails to predict the effective wind speed, resulting in a significant offset and an overall VAF of $0\%$ for both signals. In contrast, Figure~\ref{fig:ValComp}(b) presents the results from the online update scheme applied to the same dataset. With adaptation enabled, the estimated effective wind speeds $V_{r1}$ and $V_{r2}$ achieve VAFs of 99\% and 91\%, respectively. While the first four subplots display the same categories of signals as Figure~\ref{fig:ValComp}(a), the fifth subplot explicitly illustrates the update trigger logic. This plot indicates the instances where the model is updated because the discrepancy between the most recent five real and estimated data points exceeded the threshold $\nu$.
 
@@ -776,10 +788,10 @@ Figure~\ref{fig:SingVal} depicts the maximum and minimum singular values of four
 \end{figure}
 
 \begin{itemize}
-    \item The grey line ($k = 240$) represents the initial Koopman model identified at $V_{\infty} = 7\,\mathrm{m/s}$. Its frequency response differs significantly from the reference offline model (black dashed line).
-    \item The yellow line ($k = 5100$) shows the model immediately after the wind speed step at $5000\,\mathrm{s}$. Following the wind speed step, the identification process uses data with low-frequency content due to the change in freestream wind, causing the singular values to converge toward the low-pass behavior seen in the offline reference model. While the elevation in the low frequency range is still considerably visible in the red line, its decrease compared to the blue line indicates the adaptation to the new operating point.
+    \item The grey line ($k = 240$) represents the initial Koopman model identified at $V_{\infty} = 7\,\mathrm{m/s}$. Its frequency response differs significantly from the reference offline model (black dashed line) identified with the fourth data set, obtained at $V_{\infty} = 9\,\mathrm{m/s}$ . 
+    \item The yellow line ($k = 5100$) shows the model immediately after the wind speed step at $5000\,\mathrm{s}$. Following the wind speed step, the identification process uses data , causing the singular values to converge toward the low-pass behavior seen in the offline reference model. While the elevation in the low frequency range is still considerably visible in the red line, its decrease compared to the blue line indicates the adaptation to the new operating point.
     \item The purple line ($k = 6000$) illustrates the model during the transition as more data from the $9\,\mathrm{m/s}$ regime is incorporated.
-    \item The green line ($k = 7949$) represents the final adapted model, showing a high degree of correlation with the reference offline model across the relevant frequency range. However, As this initial model was identified using data with a constant freestream wind speed, it lacks the low-frequency excitation necessary to capture steady-state gains. This results in a 'hump' at $10^{-3}$\,rad/s.
+    \item The green line ($k = 7949$) represents the final adapted model, showing a high degree of correlation with the reference offline model across the relevant frequency range. However,
 \end{itemize}
 
 
@@ -788,7 +800,7 @@ The subsequent section presents closed-loop results obtained from WFSim using th
 \subsubsection{Closed Loop Results}
 A test case is implemented to demonstrate the benefits of the adaptive Koopman MPC algorithm versus the non-adaptive scheme. The simulation is run for $5000$\,s, resulting in a dataset of $5000$ samples. At sample $k = 2000$, the freestream wind $V_\infty$ increases from $7$\,m/s to $9$\,m/s with a ramp of $0.1$\,m/s per sample. The farm power reference $P_{\text{ref}}$ is increased in a step change from $1.72$\,MW to $2.58$\,MW at sample $k = 2500$. These values were selected to ensure the wind farm is physically capable of meeting the power demand at the given wind speeds.
 
-The closed-loop performance is quantitatively evaluated using the Tracking Error (TE) and Actuator Activity (AA). While the Variance Accounted For (VAF) metric was previously used to validate the model's open-loop predictive accuracy, it is less suited for evaluating control success. In closed-loop operation, the primary objectives are to minimize the deviation from the power reference and reduce mechanical wear. Therefore, TE and AA are used as they directly correspond to the cost function terms minimized by the controller, as defined in Equation~\eqref{eq:NMPCcostAIC}. The specific weighting matrices $Q$ and $R$ used in the MPC cost function are provided in the title of Figure~\ref{fig:CL_Comparison}.
+The closed-loop performance is quantitatively evaluated using the Tracking Error (TE) and Actuator Activity (AA). While the Variance Accounted For (VAF) metric was previously used to validate the model's open-loop predictive accuracy, it is less suited for evaluating control success. In closed-loop operation, the primary objectives are to minimize the deviation from the power reference and reduce mechanical wear. Therefore, TE and AA are used as they directly correspond to the cost function terms minimized by the controller, as defined in Equation~\eqref{eq:NMPCcostAIC}. The specific weighting matrices $Q = 10^{-4}$ and $R = 10^{-6}$ used in the MPC cost function are the default values. They are used for all simulation shown in this thesis.
 
 Figure~\ref{fig:CL_Comparison} compares the performance of the non-adaptive (a) and adaptive (b) Koopman MPC schemes.
 
@@ -883,15 +895,15 @@ and are assembled by stacking snapshots as follows:
     \bm{X}_{\text{EIODMD}} &= \bigl[ [\bm{x}(k)^T \quad \bm{w}(k)^T]^T \bigr]_{k=1}^{n_o-1}, \\
     \bm{X}_{\text{EIODMD},+} &= \bigl[ [\bm{x}(k+1)^T \quad \bm{y}(k)^T]^T \bigr]_{k=1}^{n_o-1},
 \end{align}
-
-These matrices are used to construct two Koopman matrices, $\hat{K}_1$ (EDMD) and $\hat{K}_2$ (EIODMD), for the respective MPC designs. The system dynamics are of $6^{\text{th}}$ order with:
+%
+These matrices are used to construct two Koopman matrices, $\hat{K}_1 \mathbb{R}^{8\times8}$ (EDMD) and $\hat{K}_2 \in \mathbb{R}^{7\times9}$ (EIODMD), for the respective MPC designs. These matries are setup as follows: the system dynamics are of $6^{\text{th}}$ order with:
 \begin{description}
-    \item[-] Lifted states $\bm{\varphi} = [\bm{x}^T \;\; (\bm{x}^2)^T \;\; (\bm{x}^3)^T]^T$. The quadratic and cubic terms reflect the relationship between wind, force and power.
-    \item[-] Inputs $w_{K1} = [C_{T1} \;\; C_{T2} \;\; V_1]^T$ and $w_{K2} = [C_{T1} \;\; C_{T2}'\;\; V_1\;\; \gamma_1]^T$.
+    \item[-] Lifted states $\bm{\varphi} = [\bm{x}^T \;\; (\bm{x}^2)^T \;\; (\bm{x}^3)^T]^T$. As before, the quadratic and cubic terms reflect the relationship between wind, force and power.
+    \item[-] Inputs $w_{K1} = [C_{T1} \;\; C_{T2}]^T$ and $w_{K2} = [C_{T1} \;\; C_{T2}'\;\; \gamma_1]^T$. Note that these vectors contained additionally the wind speed $V_1$ in \cite{dittmer2023koopman}.
     \item[-] EDMD outputs $\bm{y}_{K1} = [V_{r1} \;\; V_{r2}]^T$ and EIODMD outputs $\bm{y}_{K2} = P_{\text{WF}}$.
 \end{description}
-
-The matrix $\hat{K}_{w2} \in \mathbb{R}^{7\times11}$ is reordered to separate the contributions of the system states via the matrices $A_w \in \mathbb{R}^{6\times6}$ and $C_w \in \mathbb{R}^{1\times6}$, control inputs via $B_u \in \mathbb{R}^{6\times3}$ and $D_u \in \mathbb{R}^{1\times3}$, and the measured disturbance input $V_1$ via $B_d \in \mathbb{R}^{6\times1}$ and $D_d \in \mathbb{R}^{1\times1}$. To account for the disturbance as a state in the linear MPC, the matrices are augmented, resulting in the state-space matrices $A_{\hat{K}2} \in \mathbb{R}^{7\times7}$, $B_{\hat{K}2} \in \mathbb{R}^{7\times3}$, $C_{\hat{K}2} \in \mathbb{R}^{1\times7}$, and $D_{\hat{K}2} \in \mathbb{R}^{1\times3}$. The relationship to the original matrices obtained from EIODMD is given by:
+%
+In \cite{dittmer2023koopman} the wind speed $V_1$ was part of the input vector and the following dimensions applied in that study: Matrix $\hat{K}_{w2} \in \mathbb{R}^{7\times10}$ is reordered to separate the contributions of the system states via the matrices $A_w \in \mathbb{R}^{6\times6}$ and $C_w \in \mathbb{R}^{1\times6}$, control inputs via $B_u \in \mathbb{R}^{6\times3}$ and $D_u \in \mathbb{R}^{1\times3}$, and the measured disturbance input $V_1$ via $B_d \in \mathbb{R}^{6\times1}$ and $D_d \in \mathbb{R}^{1\times1}$. To account for the disturbance as a state in the linear MPC, the matrices are augmented, resulting in the state-space matrices $A_{\hat{K}2} \in \mathbb{R}^{7\times7}$, $B_{\hat{K}2} \in \mathbb{R}^{7\times3}$, $C_{\hat{K}2} \in \mathbb{R}^{1\times7}$, and $D_{\hat{K}2} \in \mathbb{R}^{1\times3}$. The relationship to the original matrices obtained from EIODMD is given by:
 
 \begin{align*} 
     \hat{K}_{w2} = \left[\begin{array}{c|cc} 
@@ -901,11 +913,22 @@ The matrix $\hat{K}_{w2} \in \mathbb{R}^{7\times11}$ is reordered to separate th
     \end{array}\right] \implies
     \hat{K}_{2} = \left[\begin{array}{cc|c} 
         A_w & B_d & B_u\\ 
-        \bm{0}_{1\times6} & 1 & \bm{0}_{1\times3}\\
+        \bm{0}_{n_d\times6} & \bm{I}_{n_d} & \bm{0}_{n_d\times3}\\
         \hline 
         C_w & D_d & D_u 
     \end{array}\right].
 \end{align*}
+with $n_d = 1$. In this study, without the wind speed $V_1$ as an input and hence with $n_d = 0$ and with $B_d$ and $D_d$ being therefore empty, there is
+
+\begin{align*} 
+    \hat{K}_{w2} = \left[\begin{array}{c|c} 
+        A_w & B_u\\ 
+        \hline 
+        C_w & D_u 
+    \end{array}\right] =
+    \hat{K}_{2} \in \mathbb{R}^{7\times9},
+\end{align*}
+with the matrices $A_w$, $B = B_u$, $C_w$ amd $D_u$ having the dimensions as described above. 
 
 The specific formulation and implementation of the qLMPC (based on $\hat{K}_1$) and linear Koopman MPC (based on $\hat{K}_2$) are detailed in Section~\ref{qLMPCDesign}.
 
@@ -978,7 +1001,7 @@ In the EIODMD approach based on $\hat{K}_2$, the wind farm power $\bm{P}_{\text{
 \end{align*}
 Since $\bm{P}_{\text{WF}}$ is the direct output of the EIODMD model, there is $\tilde{\bm{L}}_{\hat{K}2} = \bm{\Lambda}_{\hat{K}2}$ and $\tilde{\bm{S}}_{\hat{K}2} = \bm{S}_{\hat{K}2}$. Note that the inclusion of non-zero elements in the $\bm{D}_{\hat{K}2}$ matrix is a direct consequence of the simplified modeling approach used in WFSim. EIODMD is employed to map control signals directly to farm power without the intermediate scheduling parameter effective wind speed, which was used before. In this case, the relationship between the output power and thrust and yaw inputs is captured including a feedthrough term. This non-zero direct feedthrough reflects the absence of explicit turbine dynamics in the turbine power extraction model.
 
-The next section presents simulation results obtained in WFSim both in open-loop and in closed-loop, using an AIC MPC baseline controller as well as the two MPC controller designs presented above.
+The next section presents simulation results obtained in WFSim both in open-loop and in closed-loop, using an AIC MPC as a baseline controller as well as the two WRC-AIC controller designs presented above.
 %b_{KMPMC2,const} = [b_{const}, \delta u_M \mathbf{1}^{1\times N\cdotn_T}, -\delta u_m \mathbf{1}^{1\times N\cdot n_T}]^T  
 
 %As the cost function is quadratic a reformulation of it as a QP problem gives a perfect reconstruction. Hence, we could show in \cite{adki2021MPC} that we get exactly the same results previously reported regarding power reference tracking performance in \cite{vali2019adjoint}, but with a 15 times speed-up.\\
@@ -1001,11 +1024,31 @@ The next section presents simulation results obtained in WFSim both in open-loop
 %with rate limits $u_{r,M}$ and $u_{r,m}$ 
 
 \subsection{Results} \label{SimResults}
-Open-loop simulations are used to investigate the potential power increase from WRC and to confirm the consistency between the results from the 2D NSE and the Gaussian wake model. Subsequently, closed-loop simulations are performed to evaluate power reference tracking performance.
+Open-loop simulations are used to create signals that can be used to design the Koopman EDMD and IOEDMD models. Furthermore, an additional open loop simulation is run to investigate the potential power increase from WRC and to confirm the consistency between the results from the 2D NSE and the Gaussian wake model. Subsequently, closed-loop simulations are performed to evaluate power reference tracking performance.
 
 
 \subsubsection{Open-Loop Results}
-Open-loop WFSim simulation results to quantify the effect of wake misalignment are obtained for a step-sweep of the yaw angle $\gamma_1$ from 0\textdegree{} to 35\textdegree{} with consecutive increases of 5\textdegree{} every 500 samples, resulting in a total of 4000 samples. During this sweep, the thrust control signals are set to their maximum value of 2 and the freestream wind is held constant at 8\,m/s. Figure~\ref{fig:OpenLoopResultsCombined} shows the resulting longitudinal wind field and the power output of the turbines and farm.
+As in Section~\ref{sec:AdaptiveWindFarmqLMPCforAIC}, two datasets that differ from the one used for system identification in the original publication \cite{dittmer2023koopman} are designed. The  with $n_0 = 29,999$ samples to comprise different combination of the two 
+\begin{figure}[htb]
+    \centering
+    \subfloat[Identification dataset.]{
+        \includegraphics[width=0.48\textwidth]{figures/figures_IFAC23/03aFig_WRC_Id_Vr.eps}
+        %\label{fig:WFSimgamma0}
+    }
+    \hfill
+    \subfloat[Verification dataset.]{
+        \includegraphics[width=0.48\textwidth]{figures/figures_IFAC23/03aFig_WRC_Val_Vr.eps}
+       % \label{fig:PowerPerYaw}
+    }
+    \caption[Open-loop validation of the Gaussian wake model against WFSim.]{Identification and verification datasets for the Koopman qLMPC model derived with EDMD. Subplots (top to bottom): Subplots (top to bottom): thrust $C_T^\prime$; constant wind speed $V_\infty$ (black) and $V_1$ (blue); real vs.estimated effective wind $V_{r1}, V_{r2}$. WT1/WT2 signals are blue/red; black dashed lines denote estimates.}
+    \label{fig:WRCAICOL_EDMD}
+\end{figure}
+
+
+ 
+
+
+Apart from the above described datasets, open-loop WFSim simulation results to quantify the effect of wake misalignment are obtained for a step-sweep of the yaw angle $\gamma_1$ from 0\textdegree{} to 35\textdegree{} with consecutive increases of 5\textdegree{} every 500 samples, resulting in a total of 4000 samples. During this sweep, the thrust control signals are set to their maximum value of 2 and the freestream wind is held constant at 8\,m/s. Figure~\ref{fig:OpenLoopResultsCombined} shows the resulting longitudinal wind field and the power output of the turbines and farm.
 \begin{figure}[htb]
 \centering
 \subfloat[Longitudinal wind field for $\gamma_1$ at 0\textdegree{} and 20\textdegree{}.]{
@@ -1025,7 +1068,7 @@ Figure~\ref{fig:WFSimgamma0} visualizes the simulated longitudinal wind in stead
 
 Figure~\ref{fig:PowerPerYaw} shows the steady-state power at the end of each yaw step as a function of the yaw angle $\gamma_1$ for both WFSim and the Gaussian wake model. The power of the upstream turbine (blue) decreases as the yaw angle increases. This reduction is attributed to the reduced effective rotor area facing the wind and the inherent decrease in aerodynamic efficiency during yawed operation. These effects are analyzed in a comparative study of various yaw models \cite{sant2016comparing} and are further supported by recent field evaluations \cite{hulsman2022turbine}. Between 10\textdegree{} and 30\textdegree{}, the WFSim power of the first turbine slightly exceeds the Gaussian wake model prediction.
 
-At farm level, the power increase due to WRC is 10\% in WFSim, compared to 6\% predicted by the Gaussian model. While this difference is non-negligible, the curves remain in close agreement, and both models identify the maximum farm power (green marker) at approximately 20\textdegree{} yaw, within the 5\textdegree{} resolution of the sweep. The matching location of the maximum and the similar curve shapes indicate that the Gaussian wake model is a computationally efficient and reasonable approximation of WFSim for determining the yaw angle in the combined controller, while the effective wind speeds for the thrust control are predicted with the Koopman model.S
+At farm level, the power increase due to WRC is 10\% in WFSim, compared to 6\% predicted by the Gaussian model. While this difference is non-negligible, the curves remain in close agreement, and both models identify the maximum farm power (green marker) at approximately 20\textdegree{} yaw, within the 5\textdegree{} resolution of the sweep. The matching location of the maximum and the similar curve shapes indicate that the Gaussian wake model is a computationally efficient and reasonable approximation of WFSim for determining the yaw angle in the combined controller, while the effective wind speeds for the thrust control are predicted with the Koopman model.
 
 %\cite{boersma2019constrained}
 % the deduction from the simulated wind fields
