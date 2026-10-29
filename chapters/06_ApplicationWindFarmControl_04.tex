@@ -191,7 +191,7 @@ The simulation studies presented in this thesis, the adaptive AIC \cite{dittmer2
     \end{tabular}
 \end{table}
 %
-The turbines are modeled after the NREL 5MW turbine, featuring a rotor diameter of $D = 126.4\,\text{m}$. They are spaced $632\,\text{m}$ apart, corresponding to a streamwise distance of five rotor diameters downstream ($5D$). The discrete simulation sample time is set to $1\,\text{s}$. Regarding wind conditions, the lateral freestream component is set to $0\,\text{m/s}$ for both studies. However, the longitudinal freestream wind speed $v_{x,\infty}$ differs: in the adaptive AIC study \cite{dittmer2022data}, it varies between $7\,\text{m/s}$ and $9\,\text{m/s}$, whereas in the WRC-AIC study \cite{dittmer2023koopman}, it is held constant at $8\,\text{m/s}$.
+The turbines are modeled after the NREL 5MW turbine, featuring a rotor diameter of $D = 126.4\,\text{m}$. They are spaced~$632\,\text{m}$ apart, corresponding to a streamwise distance of five rotor diameters downstream~($5D$). The discrete simulation sample time is set to $1\,\text{s}$. Regarding wind conditions, the lateral freestream component is set to $0\,\text{m/s}$ for both studies. However, the longitudinal freestream wind speed $v_{x,\infty}$ differs: in the adaptive AIC study \cite{dittmer2022data}, it varies between $7\,\text{m/s}$ and $9\,\text{m/s}$, whereas in the WRC-AIC study \cite{dittmer2023koopman}, it is held constant at $8\,\text{m/s}$.
 
 The thrust control inputs $C_T'$ are constrained within the range $[0.1, 2]$.  Both turbines face the wind directly ($\gamma = 0^{\circ}$) in the AIC algorithm. In the WRC-AIC application, the upstream turbine is permitted a maximum yaw misalignment of $25^{\circ}$.
 
@@ -219,7 +219,7 @@ Given that the yaw angle of both turbines is fixed at $0^\circ$ for the AIC algo
 \end{align}
 where $v_{x,i_j}$ represents the wind speed component in the $x$-direction at the $j^{\text{th}}$ of $n_r$ mesh points in front of the $i^{\text{th}}$ turbine rotor.
 
-The visualization in Figure~\ref{fig:WFSimFlowAIC} is adapted from the general WFSim diagram (Figure~\ref{figBlockDiagramFarm}) to explicitly distinguish between the local measured wind speed $V_{1_m}$ and the effective wind speed $V_{r1}$. To achieve this without overcrowding the diagram, the following modifications regarding signals and their visual representation as arrows are made:
+The visualization in Figure~\ref{fig:WFSimFlowAIC} is adapted from the general WFSim diagram (Figure~\ref{figBlockDiagramFarm}) to explicitly distinguish between the local wind speed $V_{1_m}$ and the effective wind speed $V_{r1}$. To achieve this without overcrowding the diagram, the following modifications regarding signals and their visual representation as arrows are made:
 \begin{itemize}
     \item In contrast to Figure~\ref{figBlockDiagramFarm}, where local wind speeds were summarized into vectors denoted $\bm{V}_{o1}$ and $\bm{V}_{o2}$, Figure~\ref{fig:WFSimFlowAIC} explicitly displays the individual wind speed signals $V_{1\text{out}_1}$ to $V_{1\text{out}_{n_r}}$ behind WT1. This visualization highlights the spatial signals involved in the wake interaction, while the corresponding signals behind WT2 are omitted, as they do not contribute to the MPC algorithm. Similarly to the rotor outflow, the rotor inflow velocities $V_{1_1}$ to $V_{1_{n_r}}$ and  $V_{2_1}$ to $V_{2_{n_r}}$ are visualized as arrows in Figure~\ref{fig:WFSimFlowAIC}.
     \item The turbine forces resulting from the effective wind speeds and control inputs are calculated within the standard WFSim MPC and are retained as states in the turbine model, see Equation~\eqref{eqPowerWT} in Chapter~\ref{Subsection:Windfarmcontrol} or Equation~\eqref{eqPowerWTAIC_vector}. However, since they are not used in the cost function of either MPC scheme and do not affect the control inputs, they are omitted from Figure~\ref{fig:WFSimFlowAIC} to reduce visual clutter.
@@ -229,7 +229,7 @@ The signals depicted in Figure~\ref{fig:WFSimFlowAIC} are:
 \begin{itemize}
     \item Freestream wind $V_\infty$: the freestream wind condition, consisting of a varying longitudinal component $v_{x,\infty}$ and a zero lateral component.
     \item Farm power reference $P_{\text{ref}}$: the reference power output for the entire wind farm.
-    \item Measured wind $V_1$: the local wind speed at the rotor center of the upstream turbine (labeled $V_{1_m}$ in the figure).
+    \item Wind $V_1$: the local wind speed at the rotor center of the upstream turbine (labeled $V_{1_m}$ in the figure).
     \item Rotor inflow $V_{1_1}$ to $V_{1_{n_r}}$: the array of local wind speeds at the $n_r$ grid points directly in front of the rotor of WT1.
     \item Effective wind $V_{r1}$: the RMS average of the inflow velocities $V_{1_1}$ to $V_{1_{n_r}}$ acting on WT1.
     \item Control signal $C_{T1}^{\prime}$: the thrust control signal applied to WT1.
@@ -240,7 +240,7 @@ The signals depicted in Figure~\ref{fig:WFSimFlowAIC} are:
     \item Control $C_{T2}^{\prime}$: the thrust control signal applied to WT2.
     \item Power $P_2$: the electrical power generated by WT2.
 \end{itemize}
-Specific signals from this set are recorded during open-loop simulations to construct the linear EDMD models. The identified models utilize three inputs, the measured wind speed $V_1$ and the thrust control signals $C_{T1}^{\prime}$ and $C_{T2}^{\prime}$, to estimate two outputs, the effective wind speeds $V_{r1}$ and $V_{r2}$.
+Specific signals from this set are recorded during open-loop simulations to construct the linear EDMD models. The identified model utilizes  the thrust control signals $C_{T1}^{\prime}$ and $C_{T2}^{\prime}$, to estimate two outputs, the effective wind speeds $V_{r1}$ and $V_{r2}$.
 
 \subsection{Koopman-Based Identification of qLPV Models}
 To derive a Koopman-based linear model for predicting the effective wind speeds, open-loop simulations are first performed to generate training data. Before applying EDMD, this data is lifted using nonlinear functions, following the fundamental principles of Koopman operator theory. This section summarizes the model identification procedure using EDMD and its adaptation for data-driven adaptive control. While the Koopman operator and its matrix representation are described in detail in Sections~\ref{KoopmanOperator} and~\ref{KoopmanIdentification}, key concepts are revisited here to establish the connection to the qLPV model utilized in the wind farm MPC algorithm.
@@ -253,18 +253,18 @@ Consider a linear system in the lifted space of the form:
     \quad \hat{\bm{x}}(k) = \bm{C} \bm{\varphi}(k), 
     \label{eq:linearPredictor}
 \end{align}
-where $\bm{\varphi} \in \mathbb{R}^{n_\varphi \times 1}$ is the lifted state vector containing $n_\varphi$ lifted states, and $\bm{w} \in \mathbb{R}^{n_w \times 1}$ denotes the input vector, which includes both control signals and measured disturbances. The vector $\hat{\bm{x}} \in \mathbb{R}^{n_x \times 1}$ represents the predicted output. The system dynamics are defined by the state matrix $\bm{A} \in \mathbb{R}^{n_\varphi \times n_\varphi}$, the input matrix $\bm{B} \in \mathbb{R}^{n_\varphi \times n_w}$, and the output matrix $\bm{C} \in \mathbb{R}^{n_x \times n_\varphi}$. The initial lifted state is given by $\bm{\varphi}(\bm{x}_0) = [g_{1}(\bm{x}_0)\;\; g_{2}(\bm{x}_0) \;\; \ldots\;\;g_{n_\varphi}(\bm{x}_0)]^T$.
+where $\bm{\varphi} \in \mathbb{R}^{n_\varphi \times 1}$ is the lifted state vector containing $n_\varphi$ lifted states, and $\bm{w} \in \mathbb{R}^{n_w \times 1}$ denotes the input vector, which may include both control signals and measured disturbances. The vector $\hat{\bm{x}} \in \mathbb{R}^{n_x \times 1}$ represents the predicted output. The system dynamics are defined by the state matrix $\bm{A} \in \mathbb{R}^{n_\varphi \times n_\varphi}$, the input matrix $\bm{B} \in \mathbb{R}^{n_\varphi \times n_w}$, and the output matrix $\bm{C} \in \mathbb{R}^{n_x \times n_\varphi}$. The initial lifted state is given by $\bm{\varphi}(\bm{x}_0) = [g_{1}(\bm{x}_0)\;\; g_{2}(\bm{x}_0) \;\; \ldots\;\;g_{n_\varphi}(\bm{x}_0)]^T$.
 
 In the proposed framework, the lifted state vector $\bm{\varphi}$ is structured such that its first $n_x$ elements correspond directly to the predicted output $\hat{\bm{x}}$, which are the effective wind speeds, followed by their quadratic and cubic terms:
 \begin{align*}
     \bm{\varphi} &= [V_{r1} \quad V_{r2} \quad V^2_{r1} \quad V^2_{r2} \quad  V^3_{r1} \quad V^3_{r2}]^T   \in \mathbb{R}^{n_\varphi \times 1}, \\
     \hat{\bm{x}} &=  [V_{r1} \quad V_{r2}] ^T   \in \mathbb{R}^{n_x \times 1},
 \end{align*}
-with dimensions $n_\varphi = 6$ and $n_x = 2$. The input vector $\bm{w}$ contains the measured wind speed in front of the upstream turbine and the thrust control signals:
-\begin{align*}
-    \bm{w} = [V_1 \quad C^{\prime}_{T1} \quad C^{\prime}_{T2}]^T   \in \mathbb{R}^{n_w \times 1},
-\end{align*}
-with $n_w = 3$.
+with dimensions $n_\varphi = 6$ and $n_x = 2$. The input vector $\bm{w}$ used in this thesis consists of the thrust control signals of the two wind turbines in the wind farm:
+\begin{align} \label{eq:wOnlyCt}
+    \bm{w} = \bm{u}_{\text{WF}} = [C^{\prime}_{T1} \quad C^{\prime}_{T2}]^T \in \mathbb{R}^{n_w \times 1},
+\end{align}
+with $n_w = n_u = 2$, as in \cite{sharan2022Koopman}. In \cite{dittmer2022data}, the input vector additionally contained the measured wind speed in front of the upstream turbine. With an improved selection of the identification signals, the models identified without this input reach an acceptable performance level, see the discussion of simulation results in Section~\ref{section:AICWindFarmControl}. This removes the need to measure the freestream wind upstream of the wind farm; the effective wind speeds at the turbines, which initialize the lifted state, are still required. Changes of the freestream wind are then captured by the online model update rather than by a disturbance input.
 
 EDMD is employed to calculate the Koopman matrix, which approximates the infinite-dimensional Koopman operator $\mathcal{K}$ \cite{arbabi2018data}. To facilitate this, the extended lifted lifted states, which combine the nonlinear state lifted states and the inputs, are defined as:
 \begin{align}\label{eq:extLiftObs}
@@ -280,7 +280,7 @@ Given $n_o$ samples of state and input data collected in simulation runs, the da
     \bm{X} &= \bigl[ [\bm{x}(k)^T \quad \bm{w}(k)^T]^T \bigr]_{k=1}^{n_o-1} \in \mathbb{R}^{(n_x+n_w)\times (n_o-1)}, \\
     \bm{X}_{+} &= \bigl[ [\bm{x}(k+1)^T\quad \bm{w}(k+1)^T]^T \bigr]_{k=1}^{n_o-1} \in \mathbb{R}^{(n_x+n_w)\times (n_o-1)},
 \end{align}
-where the dimension of the combined state and input vector is $n_x + n_w = 5$. To ensure an accurate approximation of the system dynamics, the number of samples must be significantly larger than the dimension of the extended lifted space ($n_\varphi + n_w$). For the study presented here, a dataset of $n_o = 32987$ samples is utilized for identification.
+where the dimension of the combined state and input vector is $n_x + n_w = 5$. To ensure an accurate approximation of the system dynamics, the number of samples must be significantly larger than the dimension of the extended lifted space ($n_\varphi + n_w$). The data must be sufficiently rich, i.e., excite all relevant frequencies and cover the operating range of interest. For the study presented in \cite{dittmer2022data}, a dataset of $n_o = 32987$ samples, first used in \cite{sharan2022Koopman}, was utilized for identification. While this dataset resulted in satisfying performance for the non-adaptive case at constant wind speed discussed in that earlier study, later investigations showed that for changing wind speeds and an adaptive controller, a newly designed excitation signal exciting a wider range of frequency is beneficial. For the thus slightly modified study presented here, a dataset of $n_o = 29999$ samples is used.
 
 The extended Koopman matrix $\tilde{\bm{K}}$ is obtained by solving the least-squares problem:
 \begin{align}
@@ -339,7 +339,7 @@ the analytical least-squares solution is given by:
     = \bm{G}_{+}  \bm{G}_w^{\dagger}
     \in \mathbb{R}^{n_\varphi \times (n_\varphi + n_w)},
 \end{align}
-where ${}^\dagger$ denotes the Moore–Penrose pseudoinverse. Since the number of samples is significantly larger than the number of lifted states, i.e., $n_o \gg n_\varphi + n_w$, $\bm{G}_w$ has full row rank, and the pseudoinverse can be explicitly computed as:
+where ${}^\dagger$ denotes the Moore–Penrose pseudoinverse.  The number of samples $n_o$ is typically, as well as in the discussed simulation cases in this thesis, significantly larger than the number of lifted states, i.e., $n_o \gg n_\varphi + n_w$. Provided that the data are sufficiently rich,  $\bm{G}_w$ has full row rank, and the pseudoinverse can be explicitly computed as:
 \begin{align*}
     \bm{G}_w^{\dagger} = \bm{G}_w^T (\bm{G}_w \bm{G}_w^T)^{-1} \in \mathbb{R}^{(n_o-1) \times (n_\varphi + n_w)}.
 \end{align*}
@@ -356,16 +356,16 @@ Equivalently, the identified matrix can be written as $\hat{\bm{K}}_0 = \mathbf{
 \end{align*}
 which serve as initial values for the online update explained below.
 %
-To utilize the identified matrix $\hat{\bm{K}}$ for linear model predictive control, it is partitioned into the system matrix $\bm{A}_{\hat{K}} \in \mathbb{R}^{n_\varphi \times n_\varphi}$ and the input matrix $\bm{B}_{\hat{K}} \in \mathbb{R}^{n_\varphi \times n_w}$. To account for the measured disturbance $V_1$ as an autonomous state within the prediction horizon, the input matrix is further split into $\bm{B}_{\hat{K},d} \in \mathbb{R}^{n_\varphi \times 1}$ for the disturbance and $\bm{B}_{\hat{K},u} \in \mathbb{R}^{n_\varphi \times (n_w-1)}$ for the control inputs $[C'_{T1} \;\; C'_{T2}]^T$.
-%
-The final augmented Koopman matrix $\hat{\bm{K}}_{\text{aug}}$ is then constructed to include the disturbance dynamics. Assuming the disturbance remains constant over the prediction horizon, the augmentation is performed as follows:
-\begin{align} \label{eq:AugmentedKoopmanMPC}
+To utilize the identified matrix $\hat{\bm{K}}$ for linear model predictive control, it is partitioned into the system matrix $\bm{A}_{\hat{K}} \in \mathbb{R}^{n_\varphi \times n_\varphi}$ and the input matrix $\bm{B}_{\hat{K}} \in \mathbb{R}^{n_\varphi \times n_w}$. The system matrix consist of the first $n_\varphi$ columns of $\hat{\bm{K}}$, the input matrix of the remaining  $n_w$ columns, see Equation~\eqref{eq:Koop_G_Gplus_datamatrices}.
+
+In \cite{dittmer2022data}, the measured disturbance $V_1$ is part of the input vector, i.e., $n_w = 3$, and needs to be accounted for as an autonomous state within the prediction horizon. In this case, the input matrix is further split into $\bm{B}_{\hat{K},d} \in \mathbb{R}^{n_\varphi \times n_d}$ for the $n_d$ disturbances and $\bm{B}_{\hat{K},u} \in \mathbb{R}^{n_\varphi \times (n_w-n_d)}$ for the control inputs $[C'_{T1} \;\; C'_{T2}]^T$. The final augmented Koopman matrix $\hat{\bm{K}}_{\text{aug}}$ is then constructed to include the disturbance dynamics. Assuming the disturbance remains constant over the prediction horizon, the augmentation is performed as follows:
+\begin{align}\label{eq:AugmentedKoopmanMPC}
     \hat{\bm{K}}_{\text{aug}} = \left[\begin{array}{cc|c}
         \bm{A}_{\hat{K}} & \bm{B}_{\hat{K},d} & \bm{B}_{\hat{K},u}\\
-        \bm{0}_{1 \times n_\varphi} & 1 & \bm{0}_{1 \times (n_w-1)}
-    \end{array}\right] \in \mathbb{R}^{(n_\varphi+1) \times (n_\varphi+n_w)},
+        \bm{0}_{n_d \times n_\varphi} & \bm{I}_{n_d} & \bm{0}_{n_d \times (n_w-n_d)}
+    \end{array}\right] \in \mathbb{R}^{(n_\varphi+n_d) \times (n_\varphi+n_w)},
 \end{align}
-where the second row ensures the persistence of the measured wind speed disturbance throughout the prediction. This structure allows the MPC to treat the disturbance as a known, constant state during the optimization of the control sequence.
+where the second block row ensures the persistence of the measured wind speed disturbance throughout the prediction, with $n_d = 1$ in this case. This structure allows the MPC to treat the disturbance as a known, constant state during the optimization of the control sequence. If the vector $\bm{w}$ consists only of control inputs, see Equation~\eqref{eq:wOnlyCt}, then $n_d = 0$ and hence $\hat{\bm{K}}_{\text{aug}} = \hat{\bm{K}}$.
 
 
 \subsubsection{Koopman Matrix Update}\label{subsec:koopmanOnlineUpdate}
@@ -425,7 +425,7 @@ The recursive updates are computed as a weighted sum of the existing correlation
         \mathbf{L}^+ &= \frac{1}{n_{\text{upd}}^+} \Big( (n_{\text{upd}}^+-1)\mathbf{L} + \bm{\varphi}(x_{k,5}^+) \bm{\varphi}_w(z_{k,5})^T \Big).
     \end{split}
 \end{equation}
-The updated Koopman matrix is then obtained as $\hat{\bm{K}}^+ = \mathbf{L}^+ (\mathbf{L}_u^+)^{-1}$ and partitioned as in Equation~\eqref{eq:AugmentedKoopmanMPC}.
+The updated Koopman matrix is then obtained as $\hat{\bm{K}}^+ = \mathbf{L}^+ (\mathbf{L}_u^+)^{-1}$ and partitioned as in Equation~\eqref{eq:Koop_G_Gplus_datamatrices}. In \cite{dittmer2022data}, this is the augmented Koopman matrix which is split up according to Equation~\eqref{eq:AugmentedKoopmanMPC}.
 The counter $n_{\text{upd}}$ acts as a weighting factor. In \cite{cisneros2020data}, this counter monotonically increases. In contrast, here the counter $n_{\text{upd}}$ is reset to $1$ whenever the error norm falls below the threshold. This allows the model to adapt to changing dynamics rather than becoming rigid due to a large historical weight. During active updates, the counter is incremented to integrate the new information.
 
 Finally, accurate online identification requires sufficient spectral content in the input. Since standard control signals may not excite all dynamic modes, a low-amplitude band-limited white noise signal is superimposed on the control input during updates.
@@ -437,7 +437,7 @@ Finally, accurate online identification requires sufficient spectral content in 
 % add quotes (Zhang, Princeton, adaptive DMD) ,added several samples
 % Differences to Pable: P initialized as 1, so offline identified model is used
 % P is reset to 1 when no update is necessary (tuning knob -> future work to 
-\subsection{qLMPC Design for Thrust Control}
+\subsection{qLMPC Design for Thrust Control} 
 The aim of wind farm control considered here is accurate tracking of a power reference with minimal changes in the control inputs, as discussed, e.g., in \cite{vali2019adjoint, boersma2019constrained}.
 \subsubsection{Model Derivation and Cost Function}
 As mentioned in Section~\ref{Subsection:Windfarmcontrol}, the main difference to the NMPC that ships with WFSim is that the effective wind speeds over the prediction horizon are predicted with a data-driven Koopman model instead of being kept constant. This turns the wind farm model into a qLPV model, as its input matrices depend on the predicted effective wind speeds. The Koopman model is identified with EDMD from data acquired in open-loop WFSim simulations. It uses the wind speed in front of the first turbine $V_1$ and the two thrust control signals $C_{T1}^{\prime}$ and $C_{T2}^{\prime}$ as inputs and the resulting effective wind speeds as states. Before applying EDMD, the data is extended with nonlinear lifting functions, following the Koopman approach discussed in detail in Section~\ref{KoopmanIdentification}.
@@ -553,13 +553,13 @@ with the matrices $\tilde{L} \in \mathbb{R}^{n_h \times 3n_{\text{WT}}}$ and $\t
 \end{equation}
 where $\bm{B}_{\text{WF},j} = \bm{B}_{\text{WF}}(\hat{\bm{V}}_r(k+j))$ is the input matrix evaluated with the predicted effective wind speeds at step $k+j$. Only $\tilde{S}$ depends on the predicted wind speeds, since $\bm{A}_{\text{WF}}$ and $\bm{C}_{\text{WF}}$ are constant. The current state $\bm{x}_{\text{WF}}(k)$ initializes the prediction and is calculated from the state and input at the previous sample $k-1$.
 
-To evaluate the qLPV wind farm model over the prediction horizon, the effective wind speeds $\hat{V}_{ri}(k+j)$, $j = 1, \dots, n_h$, are required. They are predicted with the identified Koopman model in its augmented form, see Equation~\eqref{eq:AugmentedKoopmanMPC}. The prediction starts from the lifted state $\hat{\bm{\varphi}}(k)$ predicted at the previous time step. The inputs, i.e., the thrust coefficients $\bm{C}_T^\prime(k-1)$ applied at the previous sample and the measured upstream wind speed $V_1(k)$, are held constant over the horizon:
+To evaluate the qLPV wind farm model over the prediction horizon, the effective wind speeds $\hat{V}_{ri}(k+j)$, $j = 1, \dots, n_h$, are required. In \cite{dittmer2022data}, they are predicted with the identified Koopman model in its augmented form, see Equation~\eqref{eq:AugmentedKoopmanMPC}. The prediction starts from the lifted state $\hat{\bm{\varphi}}(k)$ predicted at the previous time step. The inputs, i.e., the thrust coefficients $\bm{C}_T^\prime(k-1)$ applied at the previous sample and, formerly, the measured upstream wind speed $V_1(k)$, are held constant over the horizon. As the matrices $\bm{A}_{\hat{K}}$ and $\bm{B}_{\hat{K}}$ are identified without the wind input and from different open-loop data, they differ from those of \cite{dittmer2022data}. With no wind measurement for the prediction of the effective wind speeds and with matrices $\bm{A}_{\hat{K}}$ and $\bm{B}_{\hat{K}}$ as defined in Equation~\eqref{eq:Koop_G_Gplus_datamatrices} the lifted state trajectories are:
 \begin{align*}
-    \hat{\bm{\varphi}}(k+j) &= \bm{A}_{\hat{K}}\,  \hat{\bm{\varphi}}(k+j-1) + \bm{B}_{\hat{K},u}\, \bm{C}_T^\prime(k-1) + \bm{B}_{\hat{K},d}\, V_1(k), \\
+    \hat{\bm{\varphi}}(k+j) &= \bm{A}_{\hat{K}}\, \hat{\bm{\varphi}}(k+j-1) + \underbrace{\bm{B}_{\hat{K},u}}_{\bm{B}_{\hat{K}}}\, \bm{C}_T^\prime(k-1) + \cancel{\bm{B}_{\hat{K},d}\, V_1(k)}, \\
     \hat{\bm{V}}_r(k+j) &= \bm{C}\, \hat{\bm{\varphi}}(k+j), \\
-    \bm{\varphi}_w(k+j) &= \bm{\varphi}_w\big([\hat{\bm{V}}_r^T(k+j) \;\; \bm{C}_T^{\prime T}(k-1) \;\; V_1(k)]^T\big),
+    \bm{\varphi}_w(k+j) &= \bm{\varphi}_w\big([\hat{\bm{V}}_r^T(k+j) \;\; \bm{C}_T^{\prime T}(k-1) \;\; \cancel{V_1(k)}]^T\big),
 \end{align*}
-where $\hat{\bm{V}}_r = [\hat{V}_{r1} \;\; \hat{V}_{r2}]^T$ contains the predicted effective wind speeds and $\bm{C} = [\bm{I}_{2} \;\; \bm{0}]$ selects them from the lifted state. After each prediction step, the lifted states are recomputed from the predicted wind speeds with the lifting functions from Equation~\eqref{eq:extLiftObs}, so that the nonlinear lifted states remain consistent with the predicted states. The predicted effective wind speeds are then inserted into the input matrices $\bm{B}_{\text{WT},i}(\hat{V}_{ri}(k+j))$ of the turbine models in Equation~\eqref{eqPowerWTAIC_vector}, which yields the time-varying matrices $\bm{B}_{\text{WF},j}$ in $\tilde{S}$. The one-step prediction $\hat{\bm{\varphi}}(k+1)$ is stored as the initial lifted state for the next time step. Since the predicted wind speeds do not depend on $\bm{U}(k)$, the matrix $\tilde{S}$ is independent of the decision variables.
+where $\hat{\bm{V}}_r = [\hat{V}_{r1} \;\; \hat{V}_{r2}]^T$ contains the predicted effective wind speeds and $\bm{C} = [\bm{I}_{2} \;\; \bm{0}_{2 \times 4}]$ selects them from the lifted state.   After each prediction step, the lifted states are recomputed from the predicted wind speeds with the lifting functions from Equation~\eqref{eq:extLiftObs}, so that the nonlinear lifted states remain consistent with the predicted states. The predicted effective wind speeds are then inserted into the input matrices $\bm{B}_{\text{WT},i}(\hat{V}_{ri}(k+j))$ of the turbine models in Equation~\eqref{eqPowerWTAIC_vector}, which yields the time-varying matrices $\bm{B}_{\text{WF},j}$ in $\tilde{S}$. The one-step prediction $\hat{\bm{\varphi}}(k+1)$ is stored as the initial lifted state for the next time step. Since the predicted wind speeds do not depend on $\bm{U}(k)$, the matrix $\tilde{S}$ is independent of the decision variables.
 
 The control increments are a linear function of the control trajectory:
 \begin{align*}
@@ -634,7 +634,6 @@ A_{\text{const}} \tilde{\bm{U}} \le \underbrace{b_{\text{const}} - A_{\text{cons
 %\bm{U}_{\min} \le \bm{U}_\ell \le \bm{U}_{\max},
 %\]
 %otherwise the QP problem will be infeasible.
-The implementation of the controller is summarized in Algorithm~\ref{algo:qLPVMPCAIC}. 
 %\begin{algorithm} \caption{Adaptive qLMPC for AIC}\label{algo:qLPVMPCAIC}
 %    \begin{algorithmic}[1]
     %        \Procedure{qLMPC\_AIC}{$P_{\text{ref}}, V_1 (k), \bm{x}_{\text{WF}}(k), \bm{u}(k-1), \mathcal{X}_{\nu}$}
@@ -666,7 +665,7 @@ The implementation of the controller is summarized in Algorithm~\ref{algo:qLPVMP
 The implementation of the controller is summarized in Algorithm~\ref{algo:qLPVMPCAIC}.
 \begin{algorithm} \caption{Adaptive qLMPC for AIC}\label{algo:qLPVMPCAIC}
     \begin{algorithmic}[1]
-        \Procedure{qLMPC\_AIC}{$\bm{P}_{\text{ref}}(k), V_1(k), \bm{x}_{\text{WF}}(k), \bm{C}_T^\prime(k-1), \mathcal{X}_{\nu}$}
+        \Procedure{qLMPC\_AIC}{$\bm{P}_{\text{ref}}(k), \cancel{V_1(k)}, \bm{x}_{\text{WF}}(k), \bm{C}_T^\prime(k-1), \mathcal{X}_{\nu}$}
         \State Initialize farm model, weighting matrices $Q, R$, and horizon $n_h$
         \State Initialize $\mathbf{L}_u \gets \mathbf{L}_{u,0}$, $\mathbf{L} \gets \mathbf{L}_0$, and $\hat{\bm{K}} \gets \hat{\bm{K}}_0$ from the offline data
         \State $k \gets 0$
@@ -678,7 +677,7 @@ The implementation of the controller is summarized in Algorithm~\ref{algo:qLPVMP
         \EndIf
         \State $l \gets 0$
         \While{stop criterion not met} \Comment{successive QP iterations}
-        \State Predict $\hat{\bm{V}}_r(k+1), \dots, \hat{\bm{V}}_r(k+n_h)$ with $\hat{\bm{K}}$, $\hat{\bm{\varphi}}(k)$, $\bm{C}_T^\prime(k-1)$, and $V_1(k)$
+        \State Predict $\hat{\bm{V}}_r(k+1), \dots, \hat{\bm{V}}_r(k+n_h)$ with $\hat{\bm{K}}$, $\hat{\bm{\varphi}}(k)$, $\bm{C}_T^\prime(k-1)$, and $\cancel{V_1(k)}$
         \State Compute $\tilde{L}$ and $\tilde{S}(\hat{\bm{V}}_r)$ with \eqref{eq:ltildeWF}
         \State Solve QP \eqref{eq:ObjFunAICapprox} to obtain $\bm{U}^l(k)$
         \State $l \gets l + 1$
@@ -697,7 +696,7 @@ The primary distinction between this approach and the individual turbine control
 %
 At each sample time $k$, the controller requires a set of external signals and internally stored variables to compute the optimal control sequence:
 \begin{enumerate}
-    \item The reference power trajectory $\bm{P}_{\text{ref}}(k)$ and the current measured wind speed $V_{1}(k)$ in front of the upstream turbine must be provided.
+    \item The reference power trajectory $\bm{P}_{\text{ref}}(k)$. Unlike in \cite{dittmer2022data}, the current measured wind speed $V_{1}(k)$ in front of the upstream turbine does not have to be provided.
     \item The algorithm utilizes the current state vector $\bm{x}_{\text{WF}}(k)$, the previously applied control input $\bm{C}_T^\prime(k-1)$, and the lifted state $\hat{\bm{\varphi}}(k)$ predicted at the previous sample. Additionally, it maintains the buffer $\mathcal{X}_{\nu}$ containing the most recent $h+1$ pairs of effective wind speeds and thrust coefficients, which are mapped through the extended lifted states $\bm{\varphi}_w$ to evaluate the discrepancy criterion in Equation~\eqref{eq:add_data}.
 \end{enumerate}
 
@@ -798,7 +797,7 @@ Figure~\ref{fig:CL_Comparison} compares the performance of the non-adaptive (a) 
     % Subfigure (a): No online update
     \subfloat[Non-adaptive Koopman MPC] {\includegraphics[width=0.495\textwidth]{figures/figures_CDC22/Fig04_CL_Update0_tex.eps}}\hfill
     \subfloat[Adaptive Koopman MPC with online updates]{\includegraphics[width=0.495\textwidth]{figures/figures_CDC22/Fig05_CL_Update1_tex.eps}}
-    \caption[Closed-loop tracking comparison during a wind speed ramp and power reference step.]{Closed-loop tracking comparison during a wind speed ramp and power reference step. Subplots (top to bottom): reference $P_{\text{ref}}$ (black) and total power $P_{\text{WF}}$ (purple dashed); wind speeds $V_\infty$ (black) and $V_1$ (blue); thrust $C_T$; and real vs. estimated effective wind $V_{r1}, V_{r2}$. Bottom plot in (b) shows the update signal (black). WT1/WT2 signals are blue/red; dashed lines denote estimates.}
+    \caption[Closed-loop tracking comparison during a wind speed ramp and power reference step.]{Closed-loop tracking comparison during a wind speed ramp and power reference step. Subplots (top to bottom): reference $P_{\text{ref}}$ (black) and farm power $P_{\text{WF}}$ (purple dashed); wind speeds $V_\infty$ (black) and $V_1$ (blue); thrust $C_T$; and real vs. estimated effective wind $V_{r1}, V_{r2}$. Bottom plot in (b) shows the update signal (black). WT1/WT2 signals are blue/red; dashed lines denote estimates.}
     \label{fig:CL_Comparison}
 \end{figure}
 
@@ -1052,7 +1051,7 @@ Figure~\ref{fig:ClosedLoopComparison} compares the closed-loop performance of th
     \label{fig:CLMPC2}
 }
 
-\caption[Closed-loop performance comparison of the baseline AIC and the two WRC-AIC algorithms]{Closed-loop performance comparison of the baseline AIC and the two WRC-AIC algorithms. Subplots (top to bottom): reference $P_{\text{ref}}$ (solid black), total power $P_{\text{WF}}$ (purple dashed), and greedy power $P_{\text{greedy}}$ (green dashed); wind speeds $V_\infty$ (black) and $V_1$ (blue); thrust $C'_T$; yaw $\gamma$; and real vs. estimated effective wind speeds $V_{r1}, V_{r2}$. WT1/WT2 signals are blue/red; dashed lines denote estimates. Weighting parameters: $Q$ and $R$ as given in the subplot titles; in (c), additionally $R_{u1}=R_{u2}=1$ and $R_{u3}=0.1$.}
+\caption[Closed-loop performance comparison of the baseline AIC and the two WRC-AIC algorithms]{Closed-loop performance comparison of the baseline AIC and the two WRC-AIC algorithms. Subplots (top to bottom): reference $P_{\text{ref}}$ (solid black), farm power $P_{\text{WF}}$ (purple dashed), and greedy power $P_{\text{greedy}}$ (green dashed); wind speeds $V_\infty$ (black) and $V_1$ (blue); thrust $C'_T$; yaw $\gamma$; and real vs. estimated effective wind speeds $V_{r1}, V_{r2}$. WT1/WT2 signals are blue/red; dashed lines denote estimates.}
 \label{fig:ClosedLoopComparison}
 \end{figure}
 The controllers are tasked with tracking a dynamic power reference signal, defined as:
