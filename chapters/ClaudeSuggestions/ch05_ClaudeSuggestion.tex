@@ -842,7 +842,7 @@ Figure~\ref{fig:SingVal} depicts the maximum and minimum singular values of four
 
 % CLAUDE (original line 798): new: sensitivity study of nu and h (runSensitivityAdaptiveAIC, closed loop with the estimated effective wind speeds)
 % OLD: The subsequent section presents closed-loop results obtained from WFSim using the adaptive Koopman model to provide effective wind speed estimates to the qLMPC controller. The value for the triggering condition $\nu$ was set to 0.15\,m/s which was found to be a good compromise between the number of updates and the accuracy of the estimation.
-The subsequent section presents closed-loop results obtained from WFSim using the adaptive Koopman model to provide effective wind speed estimates to the qLMPC controller. The value for the triggering condition $\nu$ was set to 0.15\,m/s which was found to be a good compromise between the number of updates and the accuracy of the estimation. \claude{A sensitivity study with $\nu \in \{0.02, 0.05, 0.1, 0.15, 0.3\}$\,m/s and $h \in \{5, 10, 20\}$ in the closed-loop test case described below confirms this choice: only $\nu = 0.02$\,m/s with $h = 5$ or $h = 10$ reaches a slightly lower tracking error of 13.7 and 14.0\,kW instead of 17.2\,kW, but with three times as many updates (237 and 270 instead of 80), while all other combinations result in tracking errors between 20 and 100\,kW. As small changes of the update times noticeably change the tracking error, differences of a few kilowatts should not be overinterpreted.}
+The subsequent section presents closed-loop results obtained from WFSim using the adaptive Koopman model to provide effective wind speed estimates to the qLMPC controller. The value for the triggering condition $\nu$ was set to 0.15\,m/s which was found to be a good compromise between the number of updates and the accuracy of the estimation. \claude{A sensitivity study with $\nu \in \{0.02, 0.05, 0.1, 0.15, 0.3\}$\,m/s and $h \in \{5, 10, 20\}$ in the closed-loop test case described below confirms this choice: only $\nu = 0.02$\,m/s with $h = 5$ or $h = 10$ reaches a slightly lower tracking error of 13.7 and 14.0\,kW instead of 17.2\,kW, but with three times as many updates (237 and 270 instead of 80), while all other combinations result in tracking errors between 20 and 100\,kW. As small changes of the update times noticeably change the tracking error, differences of a few kilowatts should not be overinterpreted. All results of the sensitivity study are listed in Table~\ref{tab:sensitivityAdaptiveAIC} at the end of this section.}
 
 \subsubsection{Closed Loop Results}
 A test case is implemented to demonstrate the benefits of the adaptive Koopman MPC algorithm versus the non-adaptive scheme. The simulation is run for $5000$\,s, resulting in a dataset of $5000$ samples. At sample $k = 2000$, the freestream wind $V_\infty$ increases from $7$\,m/s to $9$\,m/s with a ramp of $0.1$\,m/s per sample. The farm power reference $P_{\text{ref}}$ is increased in a step change from $1.72$\,MW to $2.58$\,MW at sample $k = 2500$. These values were selected to ensure the wind farm is physically capable of meeting the power demand at the given wind speeds.
@@ -903,6 +903,9 @@ The adaptive Koopman approach shows that effective wind speeds in waked wind far
 %estimations, around 90\%, were observed both in open and
 %in closed loop. 
 %In closed loop, the adaptive online-update strategy tracked the reference farm power well, outperforming recently presented non-adaptive schemes. Building on these promising results of applying adaptive Koopman models for wind farm control, possible future research directions are employing more realistic wind scenarios, including wind direction variations and the integration of yaw control. The next section discusses the inclusion of yaw control, as wake redirection control (WRC) represents a promising method to further increase overall wind farm yield.
+
+% CLAUDE (new): table of the sensitivity study (runSensitivityAdaptiveAIC) at the end of the AIC results
+\input{figures/figures_CDC22/tab_sensitivityAdaptiveAIC}
 
 \section{Wind Farm MPC with Combined Yaw and Thrust Control} 
 \label{sec:WindFarmLinearMPCforWRC-AIC}
@@ -1001,7 +1004,9 @@ Previous publications utilizing WFSim~\cite{boersma2017tutorial,doekemeijer2018o
          \end{itemize}
  From $C_{T1}'$, $\gamma_1$, and the features $a_1$ and $a_c$ in Equation~\eqref{eq:InputFeatures}, moving means are calculated. They are included directly in the input vector as well as in products with the instantaneous feature $g_2$ at sample $k$:
      \begin{itemize}    
-        \item The signals $M_{C}$, $M_{\gamma}$, $M_{a}$, and $M_{ac}$ are exponential moving means of $C_{T1}'$, $\gamma_1$, $a_1$, and $a_c$ with a time constant of $\tau = 100$\,s, see Equation~\eqref{eq:MovingMeans} below. They represent the delayed effect of the induction and the wake deflection of the upstream turbine on the downstream turbine.
+% CLAUDE (update): filter coefficient tau_M as tau in Equation eqPowerWTAIC_vector (tau_M = 1/100)
+% OLD: \item The signals $M_{C}$, $M_{\gamma}$, $M_{a}$, and $M_{ac}$ are exponential moving means of $C_{T1}'$, $\gamma_1$, $a_1$, and $a_c$ with a time constant of $\tau = 100$\,s, see Equation~\eqref{eq:MovingMeans} below. They represent the delayed effect of the induction and the wake deflection of the upstream turbine on the downstream turbine.
+        \item The signals $M_{C}$, $M_{\gamma}$, $M_{a}$, and $M_{ac}$ are exponential moving means of $C_{T1}'$, $\gamma_1$, $a_1$, and $a_c$ with a time constant of 100\,s, i.e., the filter coefficient $\tau_M = 0.01$ at the sampling time of 1\,s, see Equation~\eqref{eq:MovingMeans} below. They represent the delayed effect of the induction and the wake deflection of the upstream turbine on the downstream turbine.
         \item The products of $g_2$ with $M_{\gamma}$, $M_{a}$, and $M_{ac}$ represent the interaction of these effects with the thrust of the downstream turbine.
     \end{itemize}
 }
@@ -1080,20 +1085,25 @@ In \cite{dittmer2023koopman}\claude{,} the wind speed $V_1$ was part of the inpu
 with $n_d = 1$. \claude{In this thesis, without the wind speed $V_1$ as an input, $n_d = 0$, $B_d$ and $D_d$ are empty, and no augmentation is required for this disturbance. However, the moving means are the states of first-order filters with the known dynamics}
 {\color{blue}
 \begin{equation} \label{eq:MovingMeans}
-    \bm{M}_{\text{mean}}(k) = \beta\, \bm{M}_{\text{mean}}(k-1) + \frac{1}{\tau}\bm{h}(k), \quad \beta = 1 - \frac{1}{\tau}, \quad \bm{h} = [C_{T1}' \;\; \gamma_1 \;\; a_1 \;\; a_c]^T,
+% CLAUDE (update): notation of the filter coefficient as in Equation eqPowerWTAIC_vector: tau_M instead of 1/tau, 1-tau_M instead of beta
+% OLD: \bm{M}_{\text{mean}}(k) = \beta\, \bm{M}_{\text{mean}}(k-1) + \frac{1}{\tau}\bm{h}(k), \quad \beta = 1 - \frac{1}{\tau}, \quad \bm{h} = [C_{T1}' \;\; \gamma_1 \;\; a_1 \;\; a_c]^T,
+    \bm{M}_{\text{mean}}(k) = (1-\tau_M)\, \bm{M}_{\text{mean}}(k-1) + \tau_M\,\bm{h}(k), \quad \bm{h} = [C_{T1}' \;\; \gamma_1 \;\; a_1 \;\; a_c]^T,
 \end{equation}}
-\claude{which are not identified, but calculated from the inputs. With the filter states $\bm{m}(k) = \bm{M}_{\text{mean}}(k-1)$, the products $\bm{M}_{g,\text{mean}} = g_2 \bm{\Sigma} \bm{M}_{\text{mean}}$ with $\bm{\Sigma} = [\bm{0}_{3\times1} \;\; \bm{I}_3]$, and the partitions $B_u = [B_{u,3} \;\; B_g \;\; B_M \;\; B_{Mg}]$ and $D_u = [D_{u,3} \;\; D_g \;\; D_M \;\; D_{Mg}]$ according to the four parts of $\bm{w}$ in Equation~\eqref{eq:wFeatWRC}, the model has the ten states $\bm{z} = [\bm{\varphi}^T \;\; \bm{m}^T]^T$ and the inputs $\bm{v} = [\bm{u}^T \;\; \bm{g}^T \;\; \bm{h}^T]^T \in \mathbb{R}^{10}$:}
+% CLAUDE (update): link to the filter of the turbine model
+% OLD: \claude{which are not identified, but calculated from the inputs. With the filter states
+\claude{with the filter coefficient $\tau_M$, i.e., the same first-order filter as for the turbine states in Equation~\eqref{eqPowerWTAIC_vector}, but with a much slower response. The moving means are not identified, but calculated from the inputs. With the filter states $\bm{m}(k) = \bm{M}_{\text{mean}}(k-1)$, the products $\bm{M}_{g,\text{mean}} = g_2 \bm{\Sigma} \bm{M}_{\text{mean}}$ with $\bm{\Sigma} = [\bm{0}_{3\times1} \;\; \bm{I}_3]$, and the partitions $B_u = [B_{u,3} \;\; B_g \;\; B_M \;\; B_{Mg}]$ and $D_u = [D_{u,3} \;\; D_g \;\; D_M \;\; D_{Mg}]$ according to the four parts of $\bm{w}$ in Equation~\eqref{eq:wFeatWRC}, the model has the ten states $\bm{z} = [\bm{\varphi}^T \;\; \bm{m}^T]^T$ and the inputs $\bm{v} = [\bm{u}^T \;\; \bm{g}^T \;\; \bm{h}^T]^T \in \mathbb{R}^{10}$:}
 {\color{blue}
 \begin{align*}
+    % CLAUDE (update): beta -> (1-\tau_M), 1/\tau -> \tau_M in the three rows below
     \begin{bmatrix} \bm{z}(k+1) \\ \bm{y}(k) \end{bmatrix} = \hat{K}_2(k) \begin{bmatrix} \bm{z}(k) \\ \bm{v}(k) \end{bmatrix}, \quad
     \hat{K}_{2}(k) = \left[\begin{array}{cc|ccc}
-        A_w & \beta \bar{B}_M(k) & B_{u,3} & B_g & \frac{1}{\tau}\bar{B}_M(k)\\
-        \bm{0}_{4\times6} & \beta \bm{I}_4 & \bm{0}_{4\times3} & \bm{0}_{4\times3} & \frac{1}{\tau}\bm{I}_4\\
+        A_w & (1-\tau_M) \bar{B}_M(k) & B_{u,3} & B_g & \tau_M\bar{B}_M(k)\\
+        \bm{0}_{4\times6} & (1-\tau_M) \bm{I}_4 & \bm{0}_{4\times3} & \bm{0}_{4\times3} & \tau_M\bm{I}_4\\
         \hline
-        C_w & \beta \bar{D}_M(k) & D_{u,3} & D_g & \frac{1}{\tau}\bar{D}_M(k)
+        C_w & (1-\tau_M) \bar{D}_M(k) & D_{u,3} & D_g & \tau_M\bar{D}_M(k)
     \end{array}\right] \in \mathbb{R}^{11\times20},
 \end{align*}}
-\claude{with $\bar{B}_M(k) = B_M + g_2(k) B_{Mg}\bm{\Sigma}$ and $\bar{D}_M(k) = D_M + g_2(k) D_{Mg}\bm{\Sigma}$. The control signals $C_{T1}'$ and $\gamma_1$ appear in both $\bm{u}$ and $\bm{h}$, as they also drive the filters. Due to the products with $g_2(k)$, the matrix $\hat{K}_2(k)$ depends on the thrust control signal $C_{T2}'(k)$, i.e., the model is quasi-LPV, and the inputs $\bm{g}$ and $\bm{h}$ are nonlinear functions of the control signals $\bm{u}$. The eigenvalues of the state matrix are those of $A_w$ and the filter pole $\beta = 0.99$, so that the largest absolute eigenvalue is 0.99.}
+\claude{with $\bar{B}_M(k) = B_M + g_2(k) B_{Mg}\bm{\Sigma}$ and $\bar{D}_M(k) = D_M + g_2(k) D_{Mg}\bm{\Sigma}$. The control signals $C_{T1}'$ and $\gamma_1$ appear in both $\bm{u}$ and $\bm{h}$, as they also drive the filters. Due to the products with $g_2(k)$, the matrix $\hat{K}_2(k)$ depends on the thrust control signal $C_{T2}'(k)$, i.e., the model is quasi-LPV, and the inputs $\bm{g}$ and $\bm{h}$ are nonlinear functions of the control signals $\bm{u}$. The eigenvalues of the state matrix are those of $A_w$ and the filter pole $1-\tau_M = 0.99$, so that the largest absolute eigenvalue is 0.99.}
 
 \claude{The MPC designs based on $\hat{K}_2$ are detailed in Section~\ref{qLMPCDesign}.}
 
