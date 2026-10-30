@@ -1064,23 +1064,30 @@ with
 \begin{align*}
 \quad A_w \in \mathbb{R}^{6\times6},\; B_u \in \mathbb{R}^{6\times13},\; C_w \in \mathbb{R}^{1\times6},\; D_u \in \mathbb{R}^{1\times13},
 \end{align*}}
-\claude{is obtained by least squares. As its states are the lifted effective wind speeds, the model provides both predictions of the effective wind speeds $V_{r1}$, $V_{r2}$ and of the farm power $P_{\text{WF}}$. The largest absolute eigenvalue of $A_w$ is 0.988, i.e., the identified model is stable. In \cite{dittmer2023koopman}, two Koopman matrices were identified, $\hat{K}_1$ with EDMD for the effective wind speeds and $\hat{K}_2$ with EIODMD for the farm power, with the control signals and the wind speed $V_1$ as inputs instead of the features.}
+\claude{is obtained by least squares. As its states are the lifted effective wind speeds, the model provides both predictions of the effective wind speeds $V_{r1}$, $V_{r2}$ and of the farm power $P_{\text{WF}}$. The largest absolute eigenvalue of $A_w$ is 0.988, i.e., the identified model is stable. In \cite{dittmer2023koopman}, two Koopman matrices were identified, $\hat{K}_1$ with EDMD for the effective wind speeds and $\hat{K}_{2,\text{old}}$ with EIODMD for the farm power, with the control signals and the wind speed $V_1$ as inputs instead of the features.}
 % CLAUDE (original line 906): original model of the publication with V1
 % OLD: In \cite{dittmer2023koopman} the wind speed $V_1$ was part of the input vector and the following dimensions applied in that study: Matrix $\hat{K}_{w2} \in \mathbb{R}^{7\times10}$ is reordered to separate the contributions of the system states via the matrices $A_w \in \mathbb{R}^{6\times6}$ and $C_w \in \mathbb{R}^{1\times6}$, control inputs via $B_u \in \mathbb{R}^{6\times3}$ and $D_u \in \mathbb{R}^{1\times3}$, and the measured disturbance input $V_1$ via $B_d \in \mathbb{R}^{6\times1}$ and $D_d \in \mathbb{R}^{1\times1}$. To account for the disturbance as a state in the linear MPC, the matrices are augmented, resulting in the state-space matrices $A_{\hat{K}2} \in \mathbb{R}^{7\times7}$, $B_{\hat{K}2} \in \mathbb{R}^{7\times3}$, $C_{\hat{K}2} \in \mathbb{R}^{1\times7}$, and $D_{\hat{K}2} \in \mathbb{R}^{1\times3}$. The relationship to the original matrices obtained from EIODMD is given by:
 
-In \cite{dittmer2023koopman}\claude{,} the wind speed $V_1$ was part of the input vector and the following dimensions applied in that study: Matrix $\hat{K}_{w2,\text{old}} \in \mathbb{R}^{7\times10}$ is reordered to separate the contributions of the system states via the matrices $A_{w,\text{old}} \in \mathbb{R}^{6\times6}$ and $C_w \in \mathbb{R}^{1\times6}$, control inputs via $B_{u,3} \in \mathbb{R}^{6\times3}$ and $D_u \in \mathbb{R}^{1\times3}$\claude{,} and the measured disturbance input $V_1$ via $B_d \in \mathbb{R}^{6\times1}$ and $D_d \in \mathbb{R}^{1\times1}$. To account for the disturbance as a state in the linear MPC, the matrices are augmented, resulting in the state-space matrices $A_{\hat{K}2} \in \mathbb{R}^{7\times7}$, $B_{\hat{K}2} \in \mathbb{R}^{7\times3}$, $C_{\hat{K}2} \in \mathbb{R}^{1\times7}$, and $D_{\hat{K}2} \in \mathbb{R}^{1\times3}$. The relationship to the original matrices obtained from EIODMD is given by:
+% CLAUDE (update): subscript "old" for all matrices of the publication; B_{u,3} -> B_{u,old}, as B_{u,3} denotes the first three columns of B_u of this thesis
+% OLD:In \cite{dittmer2023koopman}\claude{,} the wind speed $V_1$ was part of the input vector and the following dimensions applied in that study: Matrix $\hat{K}_{w2,\text{old}} \in \mathbb{R}^{7\times10}$ is reordered to separate the contributions of the system states via the matrices $A_{w,\text{old}} \in \mathbb{R}^{6\times6}$ and $C_w \in \mathbb{R}^{1\times6}$, control inputs via $B_{u,3} \in \mathbb{R}^{6\times3}$ and $D_u \in \mathbb{R}^{1\times3}$\claude{,} and the measured disturbance input $V_1$ via $B_d \in \mathbb{R}^{6\times1}$ and $D_d \in \mathbb{R}^{1\times1}$. To account for the disturbance as a state in the linear MPC, the matrices are augmented, resulting in the state-space matrices $A_{\hat{K}2} \in \mathbb{R}^{7\times7}$, $B_{\hat{K}2} \in \mathbb{R}^{7\times3}$, $C_{\hat{K}2} \in \mathbb{R}^{1\times7}$, and $D_{\hat{K}2} \in \mathbb{R}^{1\times3}$. The relationship to the original matrices obtained from EIODMD is given by:
+In \cite{dittmer2023koopman}\claude{,} the wind speed $V_1$ was part of the input vector and the following dimensions applied in that study: Matrix $\hat{K}_{w2,\text{old}} \in \mathbb{R}^{7\times10}$ is reordered to separate the contributions of the system states via the matrices $A_{w,\text{old}} \in \mathbb{R}^{6\times6}$ and $C_{w,\text{old}} \in \mathbb{R}^{1\times6}$, control inputs via $B_{u,\text{old}} \in \mathbb{R}^{6\times3}$ and $D_{u,\text{old}} \in \mathbb{R}^{1\times3}$\claude{,} and the measured disturbance input $V_1$ via $B_{d,\text{old}} \in \mathbb{R}^{6\times1}$ and $D_{d,\text{old}} \in \mathbb{R}^{1\times1}$. To account for the disturbance as a state in the linear MPC, the matrices are augmented, resulting in the state-space matrices $A_{\hat{K}2,\text{old}} \in \mathbb{R}^{7\times7}$, $B_{\hat{K}2,\text{old}} \in \mathbb{R}^{7\times3}$, $C_{\hat{K}2,\text{old}} \in \mathbb{R}^{1\times7}$, and $D_{\hat{K}2,\text{old}} \in \mathbb{R}^{1\times3}$. The relationship to the original matrices obtained from EIODMD is given by:
 
-\begin{align*} 
-    \hat{K}_{w2} = \left[\begin{array}{c|cc} 
-        A_w & B_d & B_u\\ 
-        \hline 
-        C_w & D_d & D_u 
+% CLAUDE (update): subscript "old"; partition into A_K2,old ... D_K2,old added
+\begin{align*}
+    \hat{K}_{w2,\text{old}} = \left[\begin{array}{c|cc}
+        A_{w,\text{old}} & B_{d,\text{old}} & B_{u,\text{old}}\\
+        \hline
+        C_{w,\text{old}} & D_{d,\text{old}} & D_{u,\text{old}}
     \end{array}\right] \implies
-    \hat{K}_{2} = \left[\begin{array}{cc|c} 
-        A_w & B_d & B_u\\ 
+    \hat{K}_{2,\text{old}} = \left[\begin{array}{cc|c}
+        A_{w,\text{old}} & B_{d,\text{old}} & B_{u,\text{old}}\\
         \bm{0}_{n_d\times6} & \bm{I}_{n_d} & \bm{0}_{n_d\times3}\\
-        \hline 
-        C_w & D_d & D_u 
+        \hline
+        C_{w,\text{old}} & D_{d,\text{old}} & D_{u,\text{old}}
+    \end{array}\right] = \left[\begin{array}{c|c}
+        A_{\hat{K}2,\text{old}} & B_{\hat{K}2,\text{old}}\\
+        \hline
+        C_{\hat{K}2,\text{old}} & D_{\hat{K}2,\text{old}}
     \end{array}\right].
 \end{align*}
 % CLAUDE (original line 921-933): no augmentation without V1; dimensions of the model of this thesis; one model for both designs
@@ -1180,7 +1187,7 @@ where the initial state $\bm{x}_0 \in \mathbb{R}^{3 n_T}$ is the state from the 
 
 % CLAUDE (original line 986): second approach; no augmented matrices without V1
 % OLD: In the EIODMD approach based on $\hat{K}_2$, the wind farm power $\bm{P}_{\text{WF}}$ is estimated directly. This results in a linear MPC, as effective wind speeds are no longer used as scheduling parameters. The stacked Toeplitz matrices $\bm{\Lambda}_{\hat{K}2}$ and $\bm{S}_{\hat{K}2}$ are constructed from the augmented matrices $\bm{A}_{\hat{K}2}, \bm{B}_{\hat{K}2}, \bm{C}_{\hat{K}2}, \bm{D}_{\hat{K}2}$ as:
-In the \claude{second} approach based on $\hat{K}_2$, the wind farm power $\bm{P}_{\text{WF}}$ is estimated directly. This results in a linear MPC, as effective wind speeds are no longer used as scheduling parameters. The stacked Toeplitz matrices $\bm{\Lambda}_{\hat{K}2}$ and $\bm{S}_{\hat{K}2}$ are constructed from the \claude{model} matrices $\bm{A}_{\hat{K}2}, \bm{B}_{\hat{K}2}, \bm{C}_{\hat{K}2}, \bm{D}_{\hat{K}2}$ as:
+In the \claude{second} approach based on $\hat{K}_2$, the wind farm power $\bm{P}_{\text{WF}}$ is estimated directly. This results in a linear MPC, as effective wind speeds are no longer used as scheduling parameters. The stacked Toeplitz matrices $\bm{\Lambda}_{\hat{K}2}$ and $\bm{S}_{\hat{K}2}$ are constructed from the \claude{model} matrices $\bm{A}_{\hat{K}2}, \bm{B}_{\hat{K}2}, \bm{C}_{\hat{K}2}, \bm{D}_{\hat{K}2}$ \claude{of $\hat{K}_2(k)$, partitioned as $\hat{K}_{2,\text{old}}$ above,} as:
 \begin{align*}
     \bm{\Lambda}_{\hat{K}2} &= \begin{bmatrix}
         \bm{C}_{\hat{K}2} \\
