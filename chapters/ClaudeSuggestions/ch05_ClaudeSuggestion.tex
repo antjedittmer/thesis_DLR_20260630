@@ -960,9 +960,11 @@ Figure~\ref{fig:BlockDiagramFarm} illustrates the underlying concept for the WRC
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.9\textwidth]{figures/figuresBlockDiagram_IFAC23/farmCtrl17_P_multVthesis_WRCAIC_EIODMD.pdf}
-% CLAUDE (original line 869): caption: V1 is not an input in this thesis, all designs use the EIODMD model
+% CLAUDE (original line 869): caption: V1 is not an input in this thesis, the control signals of all designs are computed with the EIODMD model
+% CLAUDE (update): EDMD model is evaluated but does not determine the control signals (KoopAIC = 0 in mainGeneratePlotThesis)
+% OLD (previous suggestion): \claude{In this thesis, the models are identified without the input $V_1$, which is only displayed, and all MPC designs use the EIODMD model (red).}
 % OLD:     \caption[Block diagram of WFSim for WRC-AIC]{Block diagram of WFSim for WRC-AIC with farm control inputs $P_{\text{ref}}$, $P_1$, $P_2$, and $V_1 = V_{1_m}$, control signals $C_{T1}^{\prime}$, $C_{T2}^{\prime}$, $\gamma_1$, and freestream wind $V_\infty$. Local wind speeds upwind and downwind of WT1 are $V_{1_1} \dots V_{1_{n_r}}$ and $V_{1\text{out}_1} \dots V_{1\text{out}_{n_r}}$. Wind speeds upwind of WT2 are $V_{2_1} \dots V_{2_{n_r}}$. The input to the EDMD model (blue) are $V_1, C_{T1}^{\prime}, C_{T2}^{\prime}$ with effective wind outputs $V_{r1}, V_{r2}$. The input to the EIODMD model (red) are $V_1, C_{T1}^{\prime}, C_{T2}^{\prime}, \gamma_1$ with farm power output $P_{\text{WF}} = P_1 + P_2$.}
-    \caption[Block diagram of WFSim for WRC-AIC]{Block diagram of WFSim for WRC-AIC with farm control inputs $P_{\text{ref}}$, $P_1$, $P_2$, and $V_1 = V_{1_m}$, control signals $C_{T1}^{\prime}$, $C_{T2}^{\prime}$, $\gamma_1$, and freestream wind $V_\infty$. Local wind speeds upwind and downwind of WT1 are $V_{1_1} \dots V_{1_{n_r}}$ and $V_{1\text{out}_1} \dots V_{1\text{out}_{n_r}}$. Wind speeds upwind of WT2 are $V_{2_1} \dots V_{2_{n_r}}$. The input to the EDMD model (blue) are $V_1, C_{T1}^{\prime}, C_{T2}^{\prime}$ with effective wind outputs $V_{r1}, V_{r2}$. The input to the EIODMD model (red) are $V_1, C_{T1}^{\prime}, C_{T2}^{\prime}, \gamma_1$ with farm power output $P_{\text{WF}} = P_1 + P_2$. \claude{In this thesis, the models are identified without the input $V_1$, which is only displayed, and all MPC designs use the EIODMD model (red).}}
+    \caption[Block diagram of WFSim for WRC-AIC]{Block diagram of WFSim for WRC-AIC with farm control inputs $P_{\text{ref}}$, $P_1$, $P_2$, and $V_1 = V_{1_m}$, control signals $C_{T1}^{\prime}$, $C_{T2}^{\prime}$, $\gamma_1$, and freestream wind $V_\infty$. Local wind speeds upwind and downwind of WT1 are $V_{1_1} \dots V_{1_{n_r}}$ and $V_{1\text{out}_1} \dots V_{1\text{out}_{n_r}}$. Wind speeds upwind of WT2 are $V_{2_1} \dots V_{2_{n_r}}$. The input to the EDMD model (blue) are $V_1, C_{T1}^{\prime}, C_{T2}^{\prime}$ with effective wind outputs $V_{r1}, V_{r2}$. The input to the EIODMD model (red) are $V_1, C_{T1}^{\prime}, C_{T2}^{\prime}, \gamma_1$ with farm power output $P_{\text{WF}} = P_1 + P_2$. \claude{In this thesis, the models are identified without the input $V_1$, which is only displayed. The control signals of all MPC designs are computed with the EIODMD model (red); the effective wind speeds predicted by the EDMD model (blue) of \cite{dittmer2023koopman} do not enter the computation of the control signals.}}
     \label{fig:BlockDiagramFarm}
 \end{figure}
 
@@ -1009,20 +1011,26 @@ Previous publications utilizing WFSim~\cite{boersma2017tutorial,doekemeijer2018o
 % OLD: \end{description}
 % OLD: %
 \claude{The farm power of an actuator disk depends nonlinearly on the thrust control signals and the yaw angle. Therefore, the input vector of the Koopman model consists of nonlinear features of the three control signals instead of the control signals themselves:}
+% CLAUDE (update): a_c depends on the yaw angle gamma_1 of WT1
+% OLD:         g_1 = \frac{C_{T1}'\cos^3\gamma_1}{(1 + C_{T1}'/4)^3}, \quad g_2 = \frac{C_{T2}'}{(1 + C_{T2}'/4)^3}, \quad a_1 = \frac{C_{T1}'/4}{1 + C_{T1}'/4}, \quad a_c = a_1\cos^2\gamma.
 {\color{blue}
     \begin{equation} \label{eq:InputFeatures}
-        g_1 = \frac{C_{T1}'\cos^3\gamma_1}{(1 + C_{T1}'/4)^3}, \quad g_2 = \frac{C_{T2}'}{(1 + C_{T2}'/4)^3}, \quad a_1 = \frac{C_{T1}'/4}{1 + C_{T1}'/4}, \quad a_c = a_1\cos^2\gamma.
+        g_1 = \frac{C_{T1}'\cos^3\gamma_1}{(1 + C_{T1}'/4)^3}, \quad g_2 = \frac{C_{T2}'}{(1 + C_{T2}'/4)^3}, \quad a_1 = \frac{C_{T1}'/4}{1 + C_{T1}'/4}, \quad a_c = a_1\cos^2\gamma_1.
 \end{equation}}
+% CLAUDE (update): typos; moving means of C_T1', gamma_1, a_1 and a_c (not of g_1, g_2), products with the instantaneous feature g_2; symbols M as in Equation (eq:wFeatWRC)
+% OLD:         \item The axial inductionof turbine $i$  is $a_i = (C_{Ti}'/4)/(1+C_{Ti}'/4)$.
+% OLD:  From the features in Equation~\ref{eq:InputFeatures} moving means are calculated. They are both included directly in the new input vector, as well as part of a product with the instantenous inputs at sample $k$
+% OLD:         \item The signals $M_{C}$, $M_{\gamma}$, $M_{a}$, and $M_{ac}$ are exponential moving means of $C_{T1}'$, $\gamma_1$, $a_1$, and $a_1\cos^2\gamma_1$ with a time constant of 100\,s. They represent the delayed effect of the induction and the wake deflection of the upstream turbine on the downstream turbine.
 {\color{blue}
     These are used to include wake dynamics into the Koopman model. The rationale behind these features is that the features $g_1$ and $g_2$ are proportional to the power coefficients of the two actuator disks:
     \begin{itemize}
-        \item The axial inductionof turbine $i$  is $a_i = (C_{Ti}'/4)/(1+C_{Ti}'/4)$.
+        \item The axial induction of turbine $i$ is $a_i = (C_{Ti}'/4)/(1+C_{Ti}'/4)$.
         \item The power of turbine $i$ in a uniform inflow $V$ is $\frac{1}{2}\rho_a A_r C_{Ti}' (1-a_i)^3 V^3 = \frac{1}{2}\rho_a A_r\, C_{Ti}'/(1+C_{Ti}'/4)^3\, V^3$.
         \item This is reduced by $\cos^3\gamma_1$ for the yawed turbine.
          \end{itemize}
- From the features in Equation~\ref{eq:InputFeatures} moving means are calculated. They are both included directly in the new input vector, as well as part of a product with the instantenous inputs at sample $k$
+ From $C_{T1}'$, $\gamma_1$, and the features $a_1$ and $a_c$ in Equation~\eqref{eq:InputFeatures}, moving means are calculated. They are included directly in the input vector as well as in products with the instantaneous feature $g_2$ at sample $k$:
      \begin{itemize}    
-        \item The signals $M_{C}$, $M_{\gamma}$, $M_{a}$, and $M_{ac}$ are exponential moving means of $C_{T1}'$, $\gamma_1$, $a_1$, and $a_1\cos^2\gamma_1$ with a time constant of 100\,s. They represent the delayed effect of the induction and the wake deflection of the upstream turbine on the downstream turbine.
+        \item The signals $M_{C}$, $M_{\gamma}$, $M_{a}$, and $M_{ac}$ are exponential moving means of $C_{T1}'$, $\gamma_1$, $a_1$, and $a_c$ with a time constant of $\tau = 100$\,s, see Equation~\eqref{eq:MovingMeans} below. They represent the delayed effect of the induction and the wake deflection of the upstream turbine on the downstream turbine.
         \item The products of $g_2$ with $M_{\gamma}$, $M_{a}$, and $M_{ac}$ represent the interaction of these effects with the thrust of the downstream turbine.
     \end{itemize}
 }
@@ -1031,7 +1039,8 @@ Previous publications utilizing WFSim~\cite{boersma2017tutorial,doekemeijer2018o
 {\color{blue}
 \begin{equation} \label{eq:wFeatWRC}
     \bm{w}(k) = [\underbrace{C_{T1}' \;\; C_{T2}' \;\; \gamma_1}_{\bm{u}^T} \;\; \underbrace{1 \;\; g_1 \;\; g_2}_{\bm{g}^T} \;\; \underbrace{M_{C} \;\; M_{\gamma} \;\; M_{a} \;\; M_{ac}}_{\bm{M}_{\text{mean}}^T} \;\; \underbrace{g_2 M_{\gamma} \;\; g_2 M_{a} \;\; g_2 M_{ac}}_{\bm{M}_{g,\text{mean}}^T}]^T \in \mathbb{R}^{13 \times 1},
-\end{equation}
+\end{equation}}
+% CLAUDE (update): closing brace of the color group added here (it was at the end of the paragraph on K_2 below). In the code (powerFeatures.m), the products are in the order g_2 M_a, g_2 M_gamma, g_2 M_ac; this only changes the order of the columns of B_u and D_u
 %  & 1 & g_1 & g_2 & M_{C} & M_{\gamma} & M_{a} & M_{ac} & g_2 M_{a} & g_2 M_{\gamma} & g_2 M_{ac}
 %  C_{T1}' & C_{T2}' & \gamma_1 & 1 & g_1 & g_2 & M_{C} & M_{\gamma} & M_{a} & M_{ac} & g_2 M_{a} & g_2 M_{\gamma} & g_2 M_{ac} \end{bmatrix}^T 
 \claude{where all signals are evaluated at sample $k$.}
@@ -1059,7 +1068,7 @@ with
 % CLAUDE (original line 906): original model of the publication with V1
 % OLD: In \cite{dittmer2023koopman} the wind speed $V_1$ was part of the input vector and the following dimensions applied in that study: Matrix $\hat{K}_{w2} \in \mathbb{R}^{7\times10}$ is reordered to separate the contributions of the system states via the matrices $A_w \in \mathbb{R}^{6\times6}$ and $C_w \in \mathbb{R}^{1\times6}$, control inputs via $B_u \in \mathbb{R}^{6\times3}$ and $D_u \in \mathbb{R}^{1\times3}$, and the measured disturbance input $V_1$ via $B_d \in \mathbb{R}^{6\times1}$ and $D_d \in \mathbb{R}^{1\times1}$. To account for the disturbance as a state in the linear MPC, the matrices are augmented, resulting in the state-space matrices $A_{\hat{K}2} \in \mathbb{R}^{7\times7}$, $B_{\hat{K}2} \in \mathbb{R}^{7\times3}$, $C_{\hat{K}2} \in \mathbb{R}^{1\times7}$, and $D_{\hat{K}2} \in \mathbb{R}^{1\times3}$. The relationship to the original matrices obtained from EIODMD is given by:
 
-In \cite{dittmer2023koopman}\claude{,} the wind speed $V_1$ was part of the input vector and the following dimensions applied in that study: Matrix $\hat{K}_{w2,\text{old}} \in \mathbb{R}^{7\times10}$ is reordered to separate the contributions of the system states via the matrices $A_{w,\text{old}} \in \mathbb{R}^{6\times6}$ and $C_w \in \mathbb{R}^{1\times6}$, control inputs via $B_{u,3} \in \mathbb{R}^{6\times3}$ and $D_u \in \mathbb{R}^{1\times3}$.  and the measured disturbance input $V_1$ via $B_d \in \mathbb{R}^{6\times1}$ and $D_d \in \mathbb{R}^{1\times1}$. To account for the disturbance as a state in the linear MPC, the matrices are augmented, resulting in the state-space matrices $A_{\hat{K}2} \in \mathbb{R}^{7\times7}$, $B_{\hat{K}2} \in \mathbb{R}^{7\times3}$, $C_{\hat{K}2} \in \mathbb{R}^{1\times7}$, and $D_{\hat{K}2} \in \mathbb{R}^{1\times3}$. The relationship to the original matrices obtained from EIODMD is given by:
+In \cite{dittmer2023koopman}\claude{,} the wind speed $V_1$ was part of the input vector and the following dimensions applied in that study: Matrix $\hat{K}_{w2,\text{old}} \in \mathbb{R}^{7\times10}$ is reordered to separate the contributions of the system states via the matrices $A_{w,\text{old}} \in \mathbb{R}^{6\times6}$ and $C_w \in \mathbb{R}^{1\times6}$, control inputs via $B_{u,3} \in \mathbb{R}^{6\times3}$ and $D_u \in \mathbb{R}^{1\times3}$\claude{,} and the measured disturbance input $V_1$ via $B_d \in \mathbb{R}^{6\times1}$ and $D_d \in \mathbb{R}^{1\times1}$. To account for the disturbance as a state in the linear MPC, the matrices are augmented, resulting in the state-space matrices $A_{\hat{K}2} \in \mathbb{R}^{7\times7}$, $B_{\hat{K}2} \in \mathbb{R}^{7\times3}$, $C_{\hat{K}2} \in \mathbb{R}^{1\times7}$, and $D_{\hat{K}2} \in \mathbb{R}^{1\times3}$. The relationship to the original matrices obtained from EIODMD is given by:
 
 \begin{align*} 
     \hat{K}_{w2} = \left[\begin{array}{c|cc} 
@@ -1088,10 +1097,25 @@ In \cite{dittmer2023koopman}\claude{,} the wind speed $V_1$ was part of the inpu
 % OLD: with the matrices $A_w$, $B = B_u$, $C_w$ amd $D_u$ having the dimensions as described above. 
 % OLD: 
 % OLD: The specific formulation and implementation of the qLMPC (based on $\hat{K}_1$) and linear Koopman MPC (based on $\hat{K}_2$) are detailed in Section~\ref{qLMPCDesign}.
-with $n_d = 1$. \claude{In this thesis, without the wind speed $V_1$ as an input, $n_d = 0$, $B_d$ and $D_d$ are empty, and no augmentation is required for this disturbance. However, four states are added for the moving means and that needs to be accounted for to be build $\hat{K}_2 \in \mathbb{R}^{11\times19}$} from $\hat{K}_{w2} \in \mathbb{R}^{11\times19}$}
-    
-    
-   %  the matrices $A_{\hat{K}2} = A_w$, $B_{\hat{K}2} = B_u$, $C_{\hat{K}2} = C_w$, and $D_{\hat{K}2} = D_u$ of the MPC are the blocks of  defined above.}
+% CLAUDE (update): sentence on the moving means completed: they are states of fixed first-order filters (not identified), model with 10 states; dimensions 11 x 20; quasi-LPV due to the products with g_2 (checked numerically against predictPowerFeat.m: identical predictions)
+% OLD: with $n_d = 1$. \claude{In this thesis, without the wind speed $V_1$ as an input, $n_d = 0$, $B_d$ and $D_d$ are empty, and no augmentation is required for this disturbance. However, four states are added for the moving means and that needs to be accounted for to be build $\hat{K}_2 \in \mathbb{R}^{11\times19}$} from $\hat{K}_{w2} \in \mathbb{R}^{11\times19}$}
+with $n_d = 1$. \claude{In this thesis, without the wind speed $V_1$ as an input, $n_d = 0$, $B_d$ and $D_d$ are empty, and no augmentation is required for this disturbance. However, the moving means are the states of first-order filters with the known dynamics}
+{\color{blue}
+\begin{equation} \label{eq:MovingMeans}
+    \bm{M}_{\text{mean}}(k) = \beta\, \bm{M}_{\text{mean}}(k-1) + \frac{1}{\tau}\bm{h}(k), \quad \beta = 1 - \frac{1}{\tau}, \quad \bm{h} = [C_{T1}' \;\; \gamma_1 \;\; a_1 \;\; a_c]^T,
+\end{equation}}
+\claude{which are not identified, but calculated from the inputs. With the filter states $\bm{m}(k) = \bm{M}_{\text{mean}}(k-1)$, the products $\bm{M}_{g,\text{mean}} = g_2 \bm{\Sigma} \bm{M}_{\text{mean}}$ with $\bm{\Sigma} = [\bm{0}_{3\times1} \;\; \bm{I}_3]$, and the partitions $B_u = [B_{u,3} \;\; B_g \;\; B_M \;\; B_{Mg}]$ and $D_u = [D_{u,3} \;\; D_g \;\; D_M \;\; D_{Mg}]$ according to the four parts of $\bm{w}$ in Equation~\eqref{eq:wFeatWRC}, the model has the ten states $\bm{z} = [\bm{\varphi}^T \;\; \bm{m}^T]^T$ and the inputs $\bm{v} = [\bm{u}^T \;\; \bm{g}^T \;\; \bm{h}^T]^T \in \mathbb{R}^{10}$:}
+{\color{blue}
+\begin{align*}
+    \begin{bmatrix} \bm{z}(k+1) \\ \bm{y}(k) \end{bmatrix} = \hat{K}_2(k) \begin{bmatrix} \bm{z}(k) \\ \bm{v}(k) \end{bmatrix}, \quad
+    \hat{K}_{2}(k) = \left[\begin{array}{cc|ccc}
+        A_w & \beta \bar{B}_M(k) & B_{u,3} & B_g & \frac{1}{\tau}\bar{B}_M(k)\\
+        \bm{0}_{4\times6} & \beta \bm{I}_4 & \bm{0}_{4\times3} & \bm{0}_{4\times3} & \frac{1}{\tau}\bm{I}_4\\
+        \hline
+        C_w & \beta \bar{D}_M(k) & D_{u,3} & D_g & \frac{1}{\tau}\bar{D}_M(k)
+    \end{array}\right] \in \mathbb{R}^{11\times20},
+\end{align*}}
+\claude{with $\bar{B}_M(k) = B_M + g_2(k) B_{Mg}\bm{\Sigma}$ and $\bar{D}_M(k) = D_M + g_2(k) D_{Mg}\bm{\Sigma}$. The control signals $C_{T1}'$ and $\gamma_1$ appear in both $\bm{u}$ and $\bm{h}$, as they also drive the filters. Due to the products with $g_2(k)$, the matrix $\hat{K}_2(k)$ depends on the thrust control signal $C_{T2}'(k)$, i.e., the model is quasi-LPV, and the inputs $\bm{g}$ and $\bm{h}$ are nonlinear functions of the control signals $\bm{u}$. The eigenvalues of the state matrix are those of $A_w$ and the filter pole $\beta = 0.99$, so that the largest absolute eigenvalue is 0.99.}
 
 \claude{The MPC designs based on $\hat{K}_2$ are detailed in Section~\ref{qLMPCDesign}.}
 
@@ -1174,7 +1198,9 @@ In the \claude{second} approach based on $\hat{K}_2$, the wind farm power $\bm{P
 \end{align*}
 % CLAUDE (original line 1002): linearization of the input features; initial state from the estimated effective wind speeds (MatsysPfeat, koopFeatState)
 % OLD: Since $\bm{P}_{\text{WF}}$ is the direct output of the EIODMD model, there is $\tilde{\bm{L}}_{\hat{K}2} = \bm{\Lambda}_{\hat{K}2}$ and $\tilde{\bm{S}}_{\hat{K}2} = \bm{S}_{\hat{K}2}$. Note that the inclusion of non-zero elements in the $\bm{D}_{\hat{K}2}$ matrix is a direct consequence of the simplified modeling approach used in WFSim. EIODMD is employed to map control signals directly to farm power without the intermediate scheduling parameter effective wind speed, which was used before. In this case, the relationship between the output power and thrust and yaw inputs is captured including a feedthrough term. This non-zero direct feedthrough reflects the absence of explicit turbine dynamics in the turbine power extraction model.
-Since $\bm{P}_{\text{WF}}$ is the direct output of the EIODMD model, there is $\tilde{\bm{L}}_{\hat{K}2} = \bm{\Lambda}_{\hat{K}2}$ and $\tilde{\bm{S}}_{\hat{K}2} = \bm{S}_{\hat{K}2}$. Note that the inclusion of non-zero elements in the $\bm{D}_{\hat{K}2}$ matrix is a direct consequence of the simplified modeling approach used in WFSim. EIODMD is employed to map control signals directly to farm power without the intermediate scheduling parameter effective wind speed, which was used before. In this case, the relationship between the output power and thrust and yaw inputs is captured including a feedthrough term. This non-zero direct feedthrough reflects the absence of explicit turbine dynamics in the turbine power extraction model. \claude{As the features in Equation~\eqref{eq:wFeatWRC} are nonlinear functions of the inputs, they are linearized at each sample around the current inputs, which are assumed to be held over the horizon. The initial state of the prediction is the lifting of the effective wind speeds $\tilde{\bm{V}}_r(k)$ estimated with Equation~\eqref{eq:VrFromPower}, and the moving means are continued with the applied inputs.}
+Since $\bm{P}_{\text{WF}}$ is the direct output of the EIODMD model, there is $\tilde{\bm{L}}_{\hat{K}2} = \bm{\Lambda}_{\hat{K}2}$ and $\tilde{\bm{S}}_{\hat{K}2} = \bm{S}_{\hat{K}2}$. Note that the inclusion of non-zero elements in the $\bm{D}_{\hat{K}2}$ matrix is a direct consequence of the simplified modeling approach used in WFSim. EIODMD is employed to map control signals directly to farm power without the intermediate scheduling parameter effective wind speed, which was used before. In this case, the relationship between the output power and thrust and yaw inputs is captured including a feedthrough term. This non-zero direct feedthrough reflects the absence of explicit turbine dynamics in the turbine power extraction model. % CLAUDE (update): quasi-linear MPC with the model of Equation (eq:MovingMeans); linearization by finite differences (MatsysPfeat.m)
+% OLD: \claude{As the features in Equation~\eqref{eq:wFeatWRC} are nonlinear functions of the inputs, they are linearized at each sample around the current inputs, which are assumed to be held over the horizon. The initial state of the prediction is the lifting of the effective wind speeds $\tilde{\bm{V}}_r(k)$ estimated with Equation~\eqref{eq:VrFromPower}, and the moving means are continued with the applied inputs.}
+\claude{As the features in Equation~\eqref{eq:wFeatWRC} are nonlinear functions of the inputs and $\hat{K}_2(k)$ depends on $g_2(k)$, the predicted farm power is linearized at each sample around the current inputs, which are assumed to be held over the horizon: $\tilde{\bm{L}}_{\hat{K}2}$ and $\tilde{\bm{S}}_{\hat{K}2}$ are calculated by finite differences of the prediction with respect to the inputs. Strictly speaking, the MPC is therefore quasi-linear, with the current inputs as scheduling parameters. The initial state of the prediction consists of the lifting of the effective wind speeds $\tilde{\bm{V}}_r(k)$ estimated with Equation~\eqref{eq:VrFromPower} and the filter states $\bm{m}(k)$, which are continued with the applied inputs.}
 
 The next section presents simulation results obtained in WFSim both in open-loop and in closed-loop, using an AIC MPC as a baseline controller as well as the two WRC-AIC controller designs presented above.
 %b_{KMPMC2,const} = [b_{const}, \delta u_M \mathbf{1}^{1\times N\cdotn_T}, -\delta u_m \mathbf{1}^{1\times N\cdot n_T}]^T  
@@ -1323,6 +1349,13 @@ In Figure~\ref{fig:CLbaseline}, with the thrust coefficient as the only actuator
 In Figure~\ref{fig:CLMPC2}, the tracking error is further reduced from \claude{72.9\,kW to 41.5\,kW} by including the yaw angle as a third control input. The actuator activity increases slightly compared to the \claude{first approach, from $17.4\cdot 10^{-3}$ to $20.1\cdot 10^{-3}$}, as the yaw angle changes more frequently. However, the \claude{second approach} results in smaller thrust coefficients\claude{, with mean values of 1.42 and 1.39 instead of 1.45 and 1.66, and a maximum yaw angle of 17.3\textdegree{} instead of 18\textdegree{}, although the mean yaw angle is larger, 14.7\textdegree{} instead of 11.3\textdegree{}}. This is desirable, as \claude{the smaller thrust} is expected to reduce the loads acting on the tower and blades.
 
 \claude{As for the AIC, these results are obtained with the effective wind speeds estimated from the turbine powers. With the effective wind speeds of the WFSim flow field, the TE is 132.7\,kW, 76.3\,kW, and 31.9\,kW for the three designs, with AA values of $9.2\cdot 10^{-3}$, $16.3\cdot 10^{-3}$, and $19.4\cdot 10^{-3}$. The estimate slightly improves the two designs with prescribed yaw but increases the TE of the second approach by about 30\%: with yaw misalignment and a partially waked downstream rotor, the estimated effective wind speeds are about 0.3\% too high, which corresponds to an offset of about 1\% in the predicted power.}
+
+% CLAUDE (update): new paragraph and table: model with six states and the three control signals as inputs (KoopFeatModel7, featureSetWRC = 'u', figures *_n6), table created by mainGeneratePlotThesis (writeWRCModelTable)
+\claude{To assess the effect of the input features and the moving means, the analysis is repeated with a Koopman model with only the six lifted states $\bm{\varphi}$ and the three control signals as inputs, i.e., $\bm{w} = \bm{u}$ and $\hat{K}_{w2} \in \mathbb{R}^{7\times9}$. Table~\ref{tab:WRCModelComparison} compares both models. The state matrix $A_w$ of the model without features has two eigenvalues at 1, the largest with an absolute value of 1.0002, and its open-loop simulations drift over the long datasets, resulting in VAF values of 0 for the identification dataset and between 17.7\% and 90.3\% for the verification datasets. In closed loop, where the prediction starts at every sample from the estimated effective wind speeds and only covers the horizon of 10 samples, the TE is almost unchanged for the two approaches with yaw, 72.9\,kW and 40.9\,kW, and increases from 124.3\,kW to 131.7\,kW for the baseline AIC.}
+
+{\color{blue}
+\input{figures/figures_IFAC23/tab_WRC_ModelComparison}
+}
 
 These results show that the Koopman-based WRC-AIC MPC effectively coordinates yaw and thrust to overcome the wake-induced limitations of AIC alone. The following section concludes the chapter by summarizing the key results and discussing the limitations and future research directions for Koopman-based wind farm control.
 

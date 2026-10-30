@@ -1,0 +1,16 @@
+% Created by writeWRCModelTable (mainGeneratePlotThesis) on 2026-10-30
+\begin{table}[h]
+    \centering
+    \caption[Input-only Koopman power models of the WRC-AIC]{\label{tab:WRCModelComparison} Input-only Koopman power models of the WRC-AIC: VAF of the effective wind speeds $V_{r1}$, $V_{r2}$ and the wind farm power $P_\text{WF}$ (simulated from the measured initial state, VAF values below 0 are set to 0), largest eigenvalue magnitude of $A$ and closed-loop tracking error TE and actuator activity AA.}
+    \resizebox{\textwidth}{!}{%
+    \begin{tabular}{@{}l*{7}{c}@{}}
+        \toprule
+         & \multicolumn{3}{c}{VAF $V_{r1}$ / $V_{r2}$ / $P_\text{WF}$ (\%)} & & \multicolumn{3}{c}{TE (kW) / AA $\cdot 10^{-3}$} \\
+        \cmidrule(lr){2-4}\cmidrule(lr){6-8}
+        Model & Id. \texttt{yaw\_ct\_levels} & Val. \texttt{yaw\_ct\_levels\_val} & Val. \texttt{yaw\_steps\_Ct\_comb} & $\max|\lambda(A)|$ & Baseline AIC & AIC static yaw & WRC-AIC \\
+        \midrule
+        6 states, 3 inputs & 0.0 / 0.0 / 0.0 & 90.3 / 17.7 / 60.6 & 89.6 / 77.8 / 68.3 & 1.0002 & 131.7 / 10.7 & 72.9 / 17.9 & 40.9 / 20.0 \\
+        10 states, 13 inputs & 94.6 / 94.3 / 96.0 & 93.3 / 93.3 / 96.2 & 61.7 / 96.7 / 87.7 & 0.9878 & 124.3 / 9.5 & 72.9 / 17.4 & 41.5 / 20.1 \\
+        \bottomrule
+    \end{tabular}}
+\end{table}
