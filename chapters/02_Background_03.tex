@@ -283,7 +283,7 @@ Given these high computational costs, simplified engineering wake models provide
 \subsubsection{Jensen Park Model for Turbines without Yaw Misalignment} \label{subsecJensen}
 The Jensen Park model, based on the conservation of mass and the actuator disk model, is used for turbines aligned with the main wind direction, i.e., turbines without yaw misalignment. First proposed in \cite{jensen1983note}, it is still widely used due to its simplicity, not only for AEP calculations but also in scientific studies. For example, \cite{barreiro2019data}, from which the equations below are taken, uses it to demonstrate the applicability of game theory to wind farm control. 
 
-According to \cite{jensen1983note}, the power $P_i$ of the $i^{\text{th}}$ turbine in a wind farm with $n_{\text{WT}}$ turbines is given by:
+According to \cite{jensen1983note}, the power $P_i$ of the $i$-th turbine in a wind farm with $n_{\text{WT}}$ turbines is given by:
 \begin{align}\label{eqPAIC}
 P_{i} (\bm{a}_i) &= \frac{1}{2} \rho_a A_{ri} c_{P}(a_{i}) V_{i}^3(\bm{a}_{i-1}),
 \end{align}
@@ -477,13 +477,12 @@ The wind farm layout and turbine parameters used in this study are consistent wi
 
 In the MPC implementation included with WFSim, it is assumed that the effective wind speeds at both turbines, $V_{r1}$ and $V_{r2}$, can be measured. These wind speeds, along with the power outputs $P_1$ and $P_2$, and the thrust forces $F_{T,r1}$ and $F_{T,r2}$, serve as feedback for the wind farm controller.
 
-The effective wind speed $V_{ri}$ at the $i^{\text{th}}$ turbine is calculated as the root mean square of the wind speeds across the $n_r$ rotor segments:
-
+The effective wind speed $V_{ri}$ at the $i$-th turbine is calculated as the mean of the wind speed components normal to the rotor across the $n_r$ rotor grid points:
 \begin{align} \label{eqEffWindSpdWT}
-V_{ri}(\gamma_{i}) &= \cos(\gamma_{i}) \sqrt{\frac{1}{n_r} \sum_{j = 1}^{n_r} V_{lj}^2},  
-\quad  V_{lj}^2 = v_{xlj}^2 + v_{ylj}^2,
+    V_{ri}(\gamma_{i}) = \frac{1}{n_r} \sum_{j = 1}^{n_r} \cos(\gamma_{i} + \phi_{ij})\, V_{ij},  
+    \quad  V_{ij} = \sqrt{v_{x,ij}^2 + v_{y,ij}^2}, \quad \phi_{ij} = \arctan\left(\frac{v_{y,ij}}{v_{x,ij}}\right),
 \end{align}
-where $v_{xlj}$ and $v_{ylj}$ are the wind speed components in the $x$ and $y$ directions, respectively, at the $(l,j)$ grid point in the simulated WFSim domain. The vectors of wind speeds at the grid points directly behind the two turbines are denoted by $\bm{V}_{o1}$ and $\bm{V}_{o2}$.
+where $v_{x,ij}$ and $v_{y,ij}$ are the wind speed components in the $x$ and $y$ directions, respectively, at the $j$-th grid point of the $i$-th rotor in the simulated WFSim domain.  The vectors of wind speeds at the grid points directly behind the two turbines are denoted by $\bm{V}_{o1}$ and $\bm{V}_{o2}$.
 
 Since the effective wind speed $V_{r2}$ is influenced by the wake of the first turbine, propagating through the wind speeds contained in $\bm{V}_{o1}$, the power and thrust output of the second turbine are also affected by the control input of the first turbine. 
 
@@ -495,7 +494,7 @@ F_{T,ri}(k+1) &= (1 - \tau) F_{T,ri}(k) + \tau \frac{1}{2} \rho_a A_r \left(V_{r
 \hat{C}_{Ti}^\prime(k+1) &= (1 - \tau) \hat{C}_{Ti}^\prime(k) + \tau C_{Ti}^\prime(k),
 \end{split}
 \end{align}
-with discrete sample time index $k$ and the constant $\tau$ as a discrete-time filter coefficient that determines the weighting between the current state and the new input at each time step. Larger values of  $\tau$ lead to faster updates. The state vector is defined as $\bm{x}_{\text{WT},i} = [P_i \;\; F_{T,ri} \;\; \hat{C}_{Ti}^\prime]^T$, where $P_i$ is the power and $F_{T,ri}$ is the thrust force of the $i^{\text{th}}$ turbine. The third state $\hat{C}_{Ti}^\prime$ is the filtered thrust control signal.
+with discrete sample time index $k$ and the constant $\tau$ as a discrete-time filter coefficient that determines the weighting between the current state and the new input at each time step. Larger values of  $\tau$ lead to faster updates. The state vector is defined as $\bm{x}_{\text{WT},i} = [P_i \;\; F_{T,ri} \;\; \hat{C}_{Ti}^\prime]^T$, where $P_i$ is the power and $F_{T,ri}$ is the thrust force of the $i$-th turbine. The third state $\hat{C}_{Ti}^\prime$ is the filtered thrust control signal.
 
 Equation~\eqref{eqPowerWT} is reformulated as
 \begin{align} \label{eqWTWFSim}
@@ -901,8 +900,8 @@ The states used to construct both models are the effective wind speeds acting on
 \end{align*}
 For EDMD, the inputs are the thrust control inputs. For EIODMD, the inputs ar the thrust control inputs as well as the yaw control input of the first turbine, since EIODMD is applied in a combined thrust and yaw control setting. Hence, the inputs are:
 \begin{align*}
-\bm{w}_{u} = [C^{\prime}_{T1} \quad C^{\prime}_{T2}]^T \in \mathbb{R}^3 \quad\text{and} \quad
-\bm{w} = [C^{\prime}_{T1} \quad C^{\prime}_{T2} \quad \gamma_1]^T \in \mathbb{R}^4.
+\bm{w}_{u} = [C^{\prime}_{T1} \quad C^{\prime}_{T2}]^T \in \mathbb{R}^2 \quad\text{and} \quad
+\bm{w} = [C^{\prime}_{T1} \quad C^{\prime}_{T2} \quad \gamma_1]^T \in \mathbb{R}^3.
 \end{align*}
 The output of the EDMD model consists of the two states \( V_{r1} \) and \( V_{r2} \), whereas the output of the EIODMD model is the total wind farm power, i.e., the sum of the power outputs of both turbines.
 
