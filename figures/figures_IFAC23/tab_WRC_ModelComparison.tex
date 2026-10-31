@@ -1,7 +1,7 @@
-% Created by writeWRCModelTable (mainGeneratePlotThesis) on 2026-10-30
+% Created by writeWRCModelTable (mainGeneratePlotThesis) on 2026-10-31
 \begin{table}[h]
     \centering
-    \caption[Input-only Koopman power models of the WRC-AIC]{\label{tab:WRCModelComparison} Input-only Koopman power models of the WRC-AIC: VAF of the effective wind speeds $V_{r1}$, $V_{r2}$ and the wind farm power $P_\text{WF}$ (simulated from the measured initial state, VAF values below 0 are set to 0), largest eigenvalue magnitude of $A$ and closed-loop tracking error TE and actuator activity AA.}
+    \caption[Input-only Koopman power models of the WRC-AIC]{\label{tab:WRCModelComparison} Input-only Koopman power models of the WRC-AIC: VAF of the effective wind speeds $V_{r1}$, $V_{r2}$ and the wind farm power $P_\text{WF}$ (simulated from the measured initial state, VAF values below 0 are set to 0), largest eigenvalue magnitude of $A$ and closed-loop tracking error TE and actuator activity AA from 500\,s on (as in Figures~\ref{fig:CLbaseline} to~\ref{fig:CLMPC2}) and, in brackets, from sample 240 on.}
     \resizebox{\textwidth}{!}{%
     \begin{tabular}{@{}l*{7}{c}@{}}
         \toprule
@@ -9,8 +9,9 @@
         \cmidrule(lr){2-4}\cmidrule(lr){6-8}
         Model & Id. \texttt{yaw\_ct\_levels} & Val. \texttt{yaw\_ct\_levels\_val} & Val. \texttt{yaw\_steps\_Ct\_comb} & $\max|\lambda(A)|$ & Baseline AIC & AIC static yaw & WRC-AIC \\
         \midrule
-        6 states, 3 inputs & 0.0 / 0.0 / 0.0 & 90.3 / 17.7 / 60.6 & 89.6 / 77.8 / 68.3 & 1.0002 & 131.7 / 10.7 & 72.9 / 17.9 & 40.9 / 20.0 \\
-        10 states, 13 inputs & 94.6 / 94.3 / 96.0 & 93.3 / 93.3 / 96.2 & 61.7 / 96.7 / 87.7 & 0.9878 & 124.3 / 9.5 & 72.9 / 17.4 & 41.5 / 20.1 \\
+        6 states, 3 inputs & 0.0 / 0.0 / 0.0 & 90.3 / 17.7 / 60.6 & 89.6 / 77.8 / 68.3 & 1.0002 & 131.7 / 10.1 (116.5 / 10.7) & 72.9 / 19.9 (73.6 / 17.9) & 40.9 / 19.1 (36.7 / 20.0) \\
+        10 states, 13 inputs & 94.6 / 94.3 / 96.0 & 93.3 / 93.3 / 96.2 & 61.7 / 96.7 / 87.7 & 0.9878 & 124.3 / 8.3 (98.6 / 9.5) & 72.9 / 19.1 (61.1 / 17.4) & 41.5 / 19.2 (38.7 / 20.1) \\
+        13 states, 3 inputs (control affine) & 95.6 / 94.5 / 96.3 & 94.4 / 93.6 / 96.5 & 65.2 / 96.5 / 88.2 & 0.9884 & 116.9 / 6.5 (92.6 / 6.5) & 63.6 / 17.5 (53.8 / 14.5) & 27.8 / 15.8 (29.4 / 15.8) \\
         \bottomrule
     \end{tabular}}
 \end{table}
