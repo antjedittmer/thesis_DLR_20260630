@@ -1119,38 +1119,32 @@ over a prediction horizon of $n_h$ sample steps. The weighting matrices are base
 allowing differentiation of the penalty on changes in the different control inputs.
 
 Correspondingly, the future error trajectory is $\bm{E}_k = \bm{P}_{\text{ref},k} - \bm{P}_{\text{WF},k}$, which is based on the total wind farm power. The change in control inputs is calculated as in Equation~\eqref{eq:UandDUAIC}.
-
-For the two turbines considered and the default WFSim setting $n_h = 10$, the dimension of the control trajectory differs between the two approaches:
-\begin{itemize}
-% CLAUDE (original line 968): first approach: prescribed yaw
-% OLD:     \item qLMPC approach ($\hat{K}_1$): The yaw angle $\gamma_1$ is optimized offline and kept as a static parameter during the control interval. Thus, only the two thrust signals are active control inputs, i.e., $n_u = 2$. This results in a trajectory $\Delta \bm{U}_{K1} \in \mathbb{R}^{20}$, as 2 inputs are optimized over 10 prediction trajectory steps.
-    \item \claude{First approach (prescribed yaw)}: The yaw angle $\gamma_1$ is optimized offline and kept as a static parameter during the control interval. Thus, only the two thrust signals are active control inputs, i.e., $n_u = 2$. This results in a trajectory $\Delta \bm{U}_{K1} \in \mathbb{R}^{20}$, as 2 inputs are optimized over 10 prediction trajectory steps.
-% CLAUDE (original line 969): second approach: optimized yaw
-% OLD:     \item Linear MPC approach $\hat{K}_2$): The yaw angle $\gamma_1$ is included as a third active control input, resulting in $n_u = 3$. This yields a trajectory $\Delta \bm{U}_{K2} \in \mathbb{R}^{30}$ with 3 inputs set for 10 steps, with the control trajectory defined as:
-    \item \claude{Second approach (optimized yaw)}: The yaw angle $\gamma_1$ is included as a third active control input, resulting in $n_u = 3$. This yields a trajectory $\Delta \bm{U}_{K2} \in \mathbb{R}^{30}$ with 3 inputs set for 10 steps, with the control trajectory defined as:
-    \begin{align*} 
-        \bm{U}_{K2}(k) &= \begin{bmatrix} 
-            C_{T1}^\prime(k) & C_{T2}^\prime(k) & \gamma_1(k) & \dots & \gamma_1(k+n_h-1) 
-        \end{bmatrix}^T \in \mathbb{R}^{30 \times 1}.
-    \end{align*}
-\end{itemize}
-
-For both designs, the cost function summands can be written as:
+%
+For the two-turbine wind farm controlled with three control inputs and the default WFSim setting $n_h = 10$, the control trajectory is defined as the vector
+\begin{align*} 
+    \bm{U}_{K2}(k) &= \begin{bmatrix} 
+        C_{T1}^\prime(k) & C_{T2}^\prime(k) & \gamma_1(k) & \dots & \gamma_1(k+n_h-1) 
+    \end{bmatrix}^T \in \mathbb{R}^{n_hu \times 1}.
+\end{align*}
+with $n_hu = n_h\cdot n_u = 30$. The cost function summands can be written with $\bm{U} = \bm{U}_{K2}$ as:
 \begin{align*} 
     J_Q (\bm{U}) &= \big(\bm{P}_{\text{ref}} - (\tilde{\bm{L}} \bm{x}_0 + \tilde{\bm{S}} \bm{U})\big)^T \bm{Q} \big(\bm{P}_{\text{ref}} - (\tilde{\bm{L}} \bm{x}_0 + \tilde{\bm{S}} \bm{U})\big),\\
     J_R (\bm{U}) &= \Delta \bm{U}^T \bm{R} \Delta \bm{U},
 \end{align*}
-where the initial state $\bm{x}_0 \in \mathbb{R}^{3 n_T}$ is the state from the last sample, and the matrices $\tilde{\bm{L}} \in \mathbb{R}^{n_h \times 3 n_T}$ and $\tilde{\bm{S}} \in \mathbb{R}^{n_h \times n_h n_u}$ are used to calculate the expected future trajectory of the wind farm power $\bm{P}_{\text{WF}}$.
+where the initial state $\bm{x}_0 \in \mathbb{R}^{3 n_T}$ is the state from the last sample, and the matrices $\tilde{\bm{L}} \in \mathbb{R}^{n_h \times 3 n_T}$ and $\tilde{\bm{S}} \in \mathbb{R}^{n_h \times n_{hu}}$ are used to calculate the expected future trajectory of the wind farm power $\bm{P}_{\text{WF}}$.
 
 % CLAUDE (original line 984): first approach as implemented (OptYaw = 2: yaw trajectory toward the Gaussian optimum prescribed, power predicted with K_2); baseline AIC (OptYaw = 0)
 % OLD: In the EDMD approach using $\hat{K}_1$, the original WFSim qLPV farm model is employed. The optimal yaw $\gamma_1^*$ is computed using the Gaussian wake model from~\cite{bastankhah2016experimental}, ensuring results are comparable to~\cite{boersma2019constrained}. The matrices $\tilde{\bm{L}}_{\hat{K}1}$ and $\tilde{\bm{S}}_{\hat{K}1}$ are calculated from $\bm{A}_{\text{WF}}$ and $\bm{B}_{\text{WF}}(\bm{V}_r)$.
-\claude{In the first approach, the optimal yaw $\gamma_1^*$ is computed using the Gaussian wake model from~\cite{bastankhah2016experimental}, ensuring results are comparable to~\cite{boersma2019constrained}. Whenever the power reference exceeds the greedy power, the yaw angle is moved toward $\gamma_1^* = 18^\circ$, otherwise toward $0^\circ$, with the first-order filter of the turbine model and a rate limit of 1\textdegree/s. The resulting yaw trajectory is prescribed over the prediction horizon, and only the thrust signals are optimized. In \cite{dittmer2023koopman}, the thrust signals of this approach were optimized with the qLMPC of Section~\ref{sec:AdaptiveWindFarmqLMPCforAIC}, i.e., with the matrices $\tilde{\bm{L}}_{\hat{K}1}$ and $\tilde{\bm{S}}_{\hat{K}1}$ calculated from $\bm{A}_{\text{WF}}$ and $\bm{B}_{\text{WF}}(\bm{V}_r)$ with the effective wind speeds predicted by $\hat{K}_1$. In this thesis, the farm power is predicted with $\hat{K}_2$ as in the second approach, so that the two approaches differ only in the treatment of the yaw angle. The baseline AIC uses the same MPC with the yaw angle fixed at $0^\circ$.}
-% CLAUDE (update): implementation of the prescribed yaw (qLPVMPCcontroller_dU_quadprog.m: mpc.yawFix, quadprog_sol.m: equal bounds)
-\claude{In the implementation, all three designs solve the same QP with the three decision variables $C_{T1}^\prime$, $C_{T2}^\prime$, and $\gamma_1$ per prediction step, and the farm power is predicted with the same model $\hat{K}_2$, linearized around the current inputs. The designs differ only in the bounds of the yaw angle: in the second approach, $\gamma_1$ is bounded by $0^\circ$ and $22^\circ$ and optimized together with the thrust signals. For the baseline AIC and the first approach, the lower and upper bounds of $\gamma_1$ are set at every prediction step to the prescribed yaw trajectory described above, with the target $0^\circ$ for the baseline AIC and $\gamma_1^*$ or $0^\circ$ for the first approach. The yaw angle is therefore not a disturbance state but remains an input of the prediction model: the QP has no freedom in $\gamma_1$ and is equivalent to the problem with $n_u = 2$ above, but the thrust signals are optimized with the predicted effect of the prescribed yaw on the farm power, including its effect on the moving means. The applied yaw angle is the first value of the prescribed trajectory.}
+In the first WRC-AIC approach, the optimal yaw angle $\gamma_1^*$ is computed using the Gaussian wake model from~\cite{bastankhah2016experimental}, ensuring comparability with~\cite{boersma2019constrained}. Whenever the power reference exceeds the greedy power, the yaw angle is moved toward $\gamma_1^*$; otherwise, it is moved toward 0\textdegree. During the transition from 0\textdegree~to $\gamma_1^*$, the reference yaw is smoothed with the first-order filter of the turbine model and a rate limit of 1\textdegree/s. The resulting yaw trajectory is prescribed over the prediction horizon, and only the thrust signals are optimized. In \cite{dittmer2023koopman}, the thrust signals for the baseline AIC and the AIC with static optimal yaw were calculated via the qLMPC AIC algorithm described in Section~\ref{sec:AdaptiveWindFarmqLMPCforAIC}, using the intermediate step of predicting the effective wind speeds and calculating the wind farm power from them. In this thesis, the farm power is instead predicted using $\hat{K}_2$ for all three MPC schemes, such that the baseline AIC and the two WRC-AIC approaches differ only in their treatment of the yaw angle. The baseline AIC uses the same MPC formulation, with the yaw angle fixed at $0^\circ$. The designs differ only in the bounds imposed on the yaw angle:
+\begin{itemize}
+    \item For the baseline AIC and the first WRC-AIC approach, the lower and upper bounds of $\gamma_1$ are set to an equal target at every prediction step, thereby prescribing a constant yaw trajectory as described above. The target is $0^\circ$ for the baseline AIC and either $0^\circ$ or $\gamma_1^*$ for the first WRC-AIC approach. This was differently addressed in \cite{dittmer2023koopman}, where the constant yaw angle was handled as a state, resulting in $n_{hu} = 20$ for two turbines and a prediction trajectory of $h_h = 10$. 
+    \item In the second WRC-AIC approach, $\gamma_1$ is bounded between $0^\circ$ and $22^\circ$ and optimized jointly with the thrust signals.
+\end{itemize}
+Thus, the yaw angle is not treated as a disturbance state but remains an input to the prediction model. For the baseline AIC and the WRC-AIC approach using the constant yaw angle  $\gamma_1^*$, the fixed bounds leave the QP no freedom to optimize $\gamma_1$, making it equivalent to the formulation with $n_u = 2$ described above. Nevertheless, the predicted effect of the prescribed, constant yaw trajectory on farm power, including its effect on the moving means, is accounted for when optimizing the thrust signals.
 
 % CLAUDE (original line 986): second approach; no augmented matrices without V1
 % OLD: In the EIODMD approach based on $\hat{K}_2$, the wind farm power $\bm{P}_{\text{WF}}$ is estimated directly. This results in a linear MPC, as effective wind speeds are no longer used as scheduling parameters. The stacked Toeplitz matrices $\bm{\Lambda}_{\hat{K}2}$ and $\bm{S}_{\hat{K}2}$ are constructed from the augmented matrices $\bm{A}_{\hat{K}2}, \bm{B}_{\hat{K}2}, \bm{C}_{\hat{K}2}, \bm{D}_{\hat{K}2}$ as:
-In the \claude{second} approach based on $\hat{K}_2$, the wind farm power $\bm{P}_{\text{WF}}$ is estimated directly. This results in a linear MPC, as effective wind speeds are no longer used as scheduling parameters. The stacked Toeplitz matrices $\bm{\Lambda}_{\hat{K}2}$ and $\bm{S}_{\hat{K}2}$ are constructed from the \claude{model} matrices $\bm{A}_{\hat{K}2}, \bm{B}_{\hat{K}2}, \bm{C}_{\hat{K}2}, \bm{D}_{\hat{K}2}$ \claude{of $\hat{K}_2(k)$, partitioned as $\hat{K}_{2,\text{old}}$ above,} as:
+In the joint optimization of the thrust and yaw controls based on $\hat{K}_2$, the wind farm power $\bm{P}_{\text{WF}}$ is estimated directly. This results in a linear MPC, as effective wind speeds are no longer used as scheduling parameters. The stacked Toeplitz matrices $\bm{\Lambda}_{\hat{K}2}$ and $\bm{S}_{\hat{K}2}$ are constructed from the \claude{model} matrices $\bm{A}_{\hat{K}2}, \bm{B}_{\hat{K}2}, \bm{C}_{\hat{K}2}, \bm{D}_{\hat{K}2}$ \claude{of $\hat{K}_2(k)$, partitioned as $\hat{K}_{2,\text{old}}$ above,} as:
 \begin{align*}
     \bm{\Lambda}_{\hat{K}2} &= \begin{bmatrix}
         \bm{C}_{\hat{K}2} \\
@@ -1195,44 +1189,38 @@ The next section presents simulation results obtained in WFSim both in open-loop
 %with rate limits $u_{r,M}$ and $u_{r,m}$ 
 
 \subsection{Results} \label{SimResults}
-% CLAUDE (original line 1027): one Koopman model
-% OLD: Open-loop simulations are used to create signals that can be used to design the Koopman EDMD and IOEDMD models. Furthermore, an additional open loop simulation is run to investigate the potential power increase from WRC and to confirm the consistency between the results from the 2D NSE and the Gaussian wake model. Subsequently, closed-loop simulations are performed to evaluate power reference tracking performance.
-Open-loop simulations are used to create signals that can be used to \claude{identify the Koopman model $\hat{K}_2$}. Furthermore, an additional open loop simulation is run to investigate the potential power increase from WRC and to confirm the consistency between the results from the 2D NSE and the Gaussian wake model. Subsequently, closed-loop simulations are performed to evaluate power reference tracking performance.
+Open-loop simulations are used to create signals that can be used to identify the Koopman model $\hat{K}_2$. Furthermore, an additional open loop simulation is run to investigate the potential power increase from WRC and to confirm the consistency between the results from the 2D NSE and the Gaussian wake model. Subsequently, closed-loop simulations are performed to evaluate power reference tracking performance.
 
 
 \subsubsection{Open-Loop Results}
-% CLAUDE (original line 1031-1033): new datasets (runCtLevelsOL) and VAF values of the diagnostic plots (plotPowerStatesDiag); one model with states V_r and output P_WF
-% OLD: As in Section~\ref{sec:AdaptiveWindFarmqLMPCforAIC}, two datasets that differ from the one used for system identification in the original publication \cite{dittmer2023koopman} are designed. Both the identification dataset with $n_0 = 29,999$ samples and the verification data sets with 9.999 samples comprise combination of the two thrust controls and yaw control at different levels. 
-% OLD: 
-% OLD:  Figure~\ref{fig:WRCAICOL_EDMD} shows the results for the EDMD and the EIODMD identification. For the identification dataset, depicted in Figure~\ref{fig:WRCAICOL_EDMD}(a) and~(c), and for the verification dataset, presented in Figure~\ref{fig:WRCAICOL_EDMD}(b) and~(d), VAF values of more than 90\% are achieved for both datasets for the two effective wind speeds. 
-\claude{As in Section~\ref{sec:AdaptiveWindFarmqLMPCforAIC}, new datasets that differ from the one used for system identification in the original publication \cite{dittmer2023koopman} are designed: the identification dataset with $n_o = 29,999$ samples and the verification dataset with $n_o = 9,999$ samples comprise random combinations of levels of the two thrust control signals and the yaw angle, see Section~\ref{WakeModel}.}
+As in Section~\ref{sec:AdaptiveWindFarmqLMPCforAIC}, new datasets that differ from the one used for system identification in the original publication \cite{dittmer2023koopman} are designed: the identification dataset with $n_o = 29,999$ samples and the verification dataset with $n_o = 9,999$ samples comprise random combinations of levels of the two thrust control signals and the yaw angle, see Section~\ref{WakeModel}.
 
-\claude{Figure~\ref{fig:WRCAICOL_EDMD} shows the effective wind speeds, i.e., the first two states of $\hat{K}_2$, in (a) and (b), and the farm power, its output, in (c) and (d), for the new identification dataset in (a) and (c) and the verification dataset in (b) and (d). VAF values of more than 90\% are achieved for both datasets: 94.6\%, 94.3\%, and 96.0\% for $V_{r1}$, $V_{r2}$, and $P_{\text{WF}}$ in the identification dataset, and 93.3\%, 93.3\%, and 96.2\% in the verification dataset. For the identification dataset of \cite{dittmer2023koopman}, the VAF values are 93.0\%, 98.0\%, and 94.8\%. For the two verification datasets of \cite{dittmer2023koopman}, with yaw steps at constant maximum thrust and with combined thrust and yaw steps, the VAF of the farm power is 77.0\% and 87.7\%, respectively. In the yaw steps dataset, the VAF of $V_{r1}$ is only 13.4\%, as $V_{r1}$ varies by only about 0.2\,m/s, while the VAF of $V_{r2}$ is 98.6\%.}
+Figure~\ref{fig:WRCAICOL_EDMD} shows the new identification dataset in panels~(a) and~(c) and the new verification dataset in panels~(b) and~(d). Estimates of the effective wind speeds are shown in panels~(a) and~(b), while estimates of the farm power are shown in panels~(c) and~(d).
 \begin{figure}[htbp]
     \centering
 % CLAUDE (original line 1036): subfigure: effective wind speeds of the model
 % OLD:     \subfloat[Identification dataset EDMD.]{
-    \subfloat[\claude{Identification dataset, $V_{r1}$, $V_{r2}$.}]{
+    \subfloat[Identification dataset with estimated $V_{r1}$ and $V_{r2}$.]{
         \includegraphics[width=0.485\textwidth]{figures/figures_IFAC23/03aFig_WRC_Id_Vr.eps}
         %\label{fig:WFSimgamma0}
     }
     \hfill
 % CLAUDE (original line 1041): subfigure: effective wind speeds of the model
 % OLD:     \subfloat[Verification dataset EDMD.]{
-    \subfloat[\claude{Verification dataset, $V_{r1}$, $V_{r2}$.}]{
+    \subfloat[Verification dataset with estimated $V_{r1}$ and $V_{r2}$.]{
         \includegraphics[width=0.485\textwidth]{figures/figures_IFAC23/03aFig_WRC_Val_Vr.eps}
        % \label{fig:PowerPerYaw}
     }\\
 % CLAUDE (original line 1045): subfigure: farm power of the model
 % OLD:       \subfloat[Identification dataset EIODMD.]{
-      \subfloat[\claude{Identification dataset, $P_{\text{WF}}$.}]{
+      \subfloat[Identification dataset with estimated $P_{\text{WF}}$.]{
         \includegraphics[width=0.485\textwidth]{figures/figures_IFAC23/03aFig_WRC_Id_P.eps}
         %\label{fig:WFSimgamma0}
     }
     \hfill
 % CLAUDE (original line 1050): subfigure: farm power of the model
 % OLD:     \subfloat[Verification dataset  EIODMD.]{
-    \subfloat[\claude{Verification dataset, $P_{\text{WF}}$.}]{
+    \subfloat[Verification dataset with estimated $P_{\text{WF}}$.]{
         \includegraphics[width=0.485\textwidth]{figures/figures_IFAC23/03aFig_WRC_Val_P.eps}
         % \label{fig:PowerPerYaw}
     }
@@ -1240,10 +1228,10 @@ Open-loop simulations are used to create signals that can be used to \claude{ide
 % OLD:     \caption[Open-loop validation of the Gaussian wake model against WFSim.]{Identification and verification datasets for the Koopman matrices $\bm{\hat{K}}_1$ and  $\bm{\hat{K}}_1$. Subplots (top to bottom): Subplots (top to bottom): thrust $C_T^\prime$; constant wind speed $V_\infty$ (black) and $V_1$ (blue); real vs.estimated effective wind $V_{r1}, V_{r2}$. WT1/WT2 signals are blue/red; black dashed lines denote estimates.}
 % CLAUDE (update): estimates of the 6-state model as grey dashed lines
 % OLD: \caption[Identification and verification of the Koopman model of the WRC-AIC]{\claude{Identification (a, c) and verification (b, d) datasets of the Koopman model $\hat{K}_2$ of the WRC-AIC: effective wind speeds $V_{r1}, V_{r2}$ (states, a and b) and farm power $P_{\text{WF}}$ (output, c and d). Subplots (top to bottom): thrust $C_T^\prime$; yaw $\gamma_1$; real vs. estimated $V_{r1}, V_{r2}$ (a, b) or $P_{\text{WF}}$ (c, d). WT1/WT2 signals are blue/red; black dashed lines denote estimates.}}
-    \caption[Identification and verification of the Koopman model of the WRC-AIC]{\claude{Identification (a, c) and verification (b, d) datasets of the Koopman model $\hat{K}_2$ of the WRC-AIC: effective wind speeds $V_{r1}, V_{r2}$ (states, a and b) and farm power $P_{\text{WF}}$ (output, c and d). Subplots (top to bottom): thrust $C_T^\prime$; yaw $\gamma_1$; real vs. estimated $V_{r1}, V_{r2}$ (a, b) or $P_{\text{WF}}$ (c, d). WT1/WT2 signals are blue/red; black dashed lines denote the estimates of $\hat{K}_2$ with the six lifted states and the four filter states ($n_\varphi = 10$), grey dashed lines those of the model with only the six lifted states and the three control signals as inputs ($n_\varphi = 6$, Table~\ref{tab:WRCModelComparison}). The titles give the VAF of both models.}}
+    \caption[Identification and verification datasets of the Koopman model of the WRC-AIC]{Identification (a, c) and verification (b, d) datasets of the Koopman model $\hat{K}_2$ of the WRC-AIC: effective wind speeds $V_{r1}, V_{r2}$ (states, a and b) and farm power $P_{\text{WF}}$ (output, c and d). Subplots (top to bottom): thrust $C_T^\prime$; yaw $\gamma_1$; real vs. estimated $V_{r1}, V_{r2}$ (a, b) or $P_{\text{WF}}$ (c, d). WT1/WT2 signals are blue/red; black dashed lines denote the estimates of $\hat{K}_2$ with the six lifted states and the four filter states ($n_\varphi = 10$), grey dashed lines those of the model with six lifted states and three control signals as inputs ($n_\varphi = 6$, Table~\ref{tab:WRCModelComparison}). The titles give the VAF of both models.}
     \label{fig:WRCAICOL_EDMD}
 \end{figure}
-
+ Note that the effective wind speed estimates are not used in the presented WRC-AIC design. However, they are included to demonstrate that, with the carefully designed new datasets, power predictions are as good as or even better than those of the effective wind speeds. Thus, the need for physics-based wind turbine models is eliminated in the presented design. The plots also illustrate the advantage of using the new set of lifted states. As before, the signals of the first and second turbines are depicted in blue and red, respectively, and the wind farm power is also shown in blue. Estimates obtained with the new ten-state Koopman model are shown as black dashed lines, while those obtained with the old model are shown as grey dashed lines. With the new Koopman matrix, VAF values above 93\% are achieved for both datasets and all estimates: 94.6\%, 94.3\%, and 96.0\% for $V_{r1}$, $V_{r2}$, and $P_{\text{WF}}$, respectively, in the identification dataset, and 93.3\%, 93.3\%, and 96.2\% in the verification dataset. The black dashed lines closely follow the blue and red reference signals. However, when the new datasets are used with the old Koopman matrix from~\cite{dittmer2023koopman}, which includes only six states, considerable discrepancies develop over time between the reference signals and the estimates. This is attributed to the design of the six-state model, which includes the effective wind speeds and their quadratic and cubic terms but no temporal states to capture the evolution of the moving means, unlike the ten-state model. These additional states are included in the ten-state model. This also explains why, somewhat counterintuitively, the VAF values for the shorter verification datasets are higher than those of the identification sets. Nevertheless, apart from the least challenging case, the effective wind speed of the first turbine, for which an acceptable VAF of 90\% is achieved, the verification VAF values remain low: 18\% for the effective wind speed of the second turbine and 61\% for the wind farm power.
 
 Apart from the above described datasets, open-loop WFSim simulation results to quantify the effect of wake misalignment are obtained for a step-sweep of the yaw angle $\gamma_1$ from 0\textdegree{} to 35\textdegree{} with consecutive increases of 5\textdegree{} every 500 samples, resulting in a total of 4000 samples. During this sweep, the thrust control signals are set to their maximum value of 2 and the freestream wind is held constant at 8\,m/s. Figure~\ref{fig:OpenLoopResultsCombined} shows the resulting longitudinal wind field and the power output of the turbines and farm.
 \begin{figure}[htb]
