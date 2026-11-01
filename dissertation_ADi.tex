@@ -59,6 +59,11 @@
 %    \setlength{\belowdisplayshortskip}{2ex}%
 %}
 
+\renewcommand{\topfraction}{0.9}       % Allow top floats to take up to 90% of the page
+\renewcommand{\bottomfraction}{0.9}    % Allow bottom floats up to 90%
+\renewcommand{\textfraction}{0.1}      % Minimum fraction of page that must be text
+\renewcommand{\floatpagefraction}{0.85}% Fraction needed for a float-only page
+
 % Define header
 \fancyhead[LE,RO]{\thepage}  % page number on the outer side
 \fancyhead[RE]{\leftmark}    % chapter title on even pages
