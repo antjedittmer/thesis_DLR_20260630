@@ -203,7 +203,7 @@ Accurately describing the complex turbulence evolution caused by wakes using clo
 In this section, an MPC design that is independent of knowledge of these effective wind speeds and able  of the adaptive algorithm to learn dynamics that were not present in the initial training data. The data generation process for open-loop training and closed-loop controller testing is described. This is followed by a discussion of the data handling procedures required to derive an Extended Dynamic Mode Decomposition (EDMD) model, along with a review of the resulting wind farm model and the MPC algorithm itself. Finally, simulation results for both open-loop wind estimation and closed-loop adaptive control are presented. 
 
 \subsection{Simulation Setup for Thrust Control}
-Figure~\ref{fig:WFSimFlowAIC} visualizes the data flow of the qLMPC scheme for the two-turbine wind farm. The upstream turbine is denoted WT1 and the downstream turbine WT2. A key distinction from the original WFSim implementation is that the effective wind speeds of the turbines are not fed back directly to the controller. Instead, their trajectories over the prediction horizon are predicted using the EDMD-based model introduced in~\cite{sharan2022Koopman}, and the current effective wind speeds, which initialize these predictions, are estimated from the measured turbine powers, see Equation~\eqref{eq:VrFromPower} below. While the freestream wind speed was held constant in that study, in \cite{dittmer2022data} the longitudinal component $V_\infty = v_{x,\infty}$ is varied, while the lateral component $v_{y,\infty}$ remains zero.
+Figure~\ref{fig:WFSimFlowAIC} visualizes the data flow of the qLMPC scheme for the two-turbine wind farm. The upstream turbine is denoted WT1 and the downstream turbine WT2. A  distinction from the original WFSim implementation is that the effective wind speeds of the turbines are not fed back directly to the controller. Instead, their trajectories over the prediction horizon are predicted using the EDMD-based model introduced in~\cite{sharan2022Koopman}, and the current effective wind speeds, which initialize these predictions, are estimated from the measured turbine powers, see Equation~\eqref{eq:VrFromPower} below. While the freestream wind speed was held constant in that study, in \cite{dittmer2022data} the longitudinal component $V_\infty = v_{x,\infty}$ is varied, while the lateral component $v_{y,\infty}$ remains zero.
 %
 \begin{figure}[htp]
     \centering
@@ -252,7 +252,7 @@ where $c_{P,i}(\gamma_i)$ is the power scaling factor of WFSim including the yaw
 
 
 \subsection{Koopman-Based Identification of qLPV Models}
-To derive a Koopman-based linear model for predicting the effective wind speeds, open-loop simulations are first performed to generate training data. Before applying EDMD, this data is lifted using nonlinear functions, following the fundamental principles of Koopman operator theory. This section summarizes the model identification procedure using EDMD and its adaptation for data-driven adaptive control. While the Koopman operator and its matrix representation are described in detail in Sections~\ref{KoopmanOperator} and~\ref{KoopmanIdentification}, key concepts are revisited here to establish the connection to the qLPV model utilized in the wind farm MPC algorithm.
+To derive a Koopman-based linear model for predicting the effective wind speeds, open-loop simulations are first performed to generate training data. Before applying EDMD, this data is lifted using nonlinear functions, following the fundamental principles of Koopman operator theory. This section summarizes the model identification procedure using EDMD and its adaptation for data-driven adaptive control. While the Koopman operator and its matrix representation are described in detail in Sections~\ref{KoopmanOperator} and~\ref{KoopmanIdentification},  concepts are revisited here to establish the connection to the qLPV model utilized in the wind farm MPC algorithm.
 
 \subsubsection{Koopman Matrix Creation}
 
@@ -835,6 +835,7 @@ Open-loop WFSim simulations are used to generate data for system identification,
  Both datasets are used from sample 240 on, after the wake is established, and are appended for the identification. These signals ensure data excitation across all relevant frequencies and control input combinations.
 
 %
+\subsubsection{Lifting Functions for Combined Yaw and Thrust Control}\label{sec:lifting functions for Combined Yaw and Thrust Control}
 The farm power of an actuator disk depends nonlinearly on the thrust control signals and the yaw angle. To keep the Koopman model control affine, i.e., linear in the control signals $\bm{u} = [C_{T1}' \;\; C_{T2}' \;\; \gamma_1]^T$, the nonlinear functions are not applied to the control signals themselves but to the filtered control signals $\hat{\bm{u}} = [\hat{C}_{T1}' \;\; \hat{C}_{T2}' \;\; \hat{\gamma}_1]^T$, which are additional states of the model:
 
 \begin{equation} \label{eq:FiltInputs}
@@ -858,16 +859,28 @@ From $\hat{C}_{T1}'$, $\hat{\gamma}_1$, and the features $a_1$ and $a_c$ in Equa
     \item The signals $M_{C}$, $M_{\gamma}$, $M_{a}$, and $M_{ac}$ are exponential moving means of $\hat{C}_{T1}'$, $\hat{\gamma}_1$, $a_1$, and $a_c$ with a time constant of 100\,s, i.e., the filter coefficient $\tau_M = 0.01$, see Equation~\eqref{eq:MovingMeans} below. They represent the delayed effect of the induction and the wake deflection of the upstream turbine on the downstream turbine.
     \item The products of $g_2$ with $M_{a}$, $M_{\gamma}$, and $M_{ac}$ represent the interaction of these effects with the thrust of the downstream turbine.
 \end{itemize}
-%
-The feature vector is
-\begin{equation} \label{eq:wFeatWRC}
-    \bm{w}(k) = [\underbrace{\hat{C}_{T1}' \;\; \hat{C}_{T2}' \;\; \hat{\gamma}_1}_{\hat{\bm{u}}^T} \;\; \underbrace{1 \;\; g_1 \;\; g_2}_{\bm{g}^T} \;\; \underbrace{M_{C} \;\; M_{\gamma} \;\; M_{a} \;\; M_{ac}}_{\bm{M}_{\text{mean}}^T} \;\; \underbrace{g_2 M_{a} \;\; g_2 M_{\gamma} \;\; g_2 M_{ac}}_{\bm{M}_{g,\text{mean}}^T}]^T \in \mathbb{R}^{13 \times 1},
+
+The model in this thesis is augmented with the filtered control signals of Equation~\eqref{eq:FiltInputs} and the four moving means, which are the states of first-order filters with the known dynamics
+
+\begin{equation} \label{eq:MovingMeans}
+    \bm{M}_{\text{mean}}(k+1) = (1 - \tau_M)\, \bm{M}_{\text{mean}}(k) + \tau_M\,\bm{h}(k), \quad \bm{h} = [\hat{C}_{T1}' \;\; \hat{\gamma}_1 \;\; a_1 \;\; a_c]^T,
 \end{equation}
-where all signals are evaluated at sample $k$, with $\hat{\gamma}_1$ in degrees; the constant 1 adds an offset to the model. As $\bm{w}(k)$ depends only on the filtered control signals and the moving means, i.e., on states, and the control signals $\bm{u}(k)$ enter the model linearly, the model is control affine.
-The lifted states and the outputs for EIODMD are
+with the filter coefficient $\tau_M = 0.01$.
+
+%
+The lifted state vector uses the feature vector
+\begin{equation} \label{eq:wFeatWRC}
+    %\bm{w}(k) = [\hat{\bm{u}}^T\;\; \hat{\bm{g}}^T, 
+    \bm{w}(k) = [\underbrace{C_{T1}' \;\; C_{T2}' \;\; \gamma_1}_{\bm{u}^T} \;\; \underbrace{g_1 \;\; g_2\;\; a_1\;\; a_c}_{\bm{g}^T} \;\; \underbrace{M_{C} \;\; M_{\gamma} \;\; M_{a} \;\; M_{ac}}_{\bm{M}_{\text{mean}}^T} \;\; \underbrace{g_2 M_{a} \;\; g_2 M_{\gamma} \;\; g_2 M_{ac}}_{\bm{M}_{g,\text{mean}}^T}]^T \in \mathbb{R}^{14 \times 1},
+\end{equation}
+which together with the lifted state used for EDMD
+\begin{equation}
+    \bm{\varphi}_{\text{EDMD}} = [\bm{x}^T \;\; (\bm{x}^2)^T \;\; (\bm{x}^3)^T]^T \in \mathbb{R}^{6}, \quad \text{with} \quad \bm{x} = [V_{r1} \;\; V_{r2}]^T,
+\end{equation}
+is used to form a new, extended lifted state: the lifted states and the outputs for EIODMD are
 %
 \begin{equation}
-    \bm{\varphi}(k) = [\bm{x}^T \;\; (\bm{x}^2)^T \;\; (\bm{x}^3)^T]^T \in \mathbb{R}^{6}, \quad \bm{x} = [V_{r1} \;\; V_{r2}]^T, \quad \text{and} \quad \bm{y}(k) = P_{\text{WF}}(k).
+    \bm{\varphi}_{\text{IOEDMD}}= [\hat{\bm{w}}^T \quad \bm{V_r}^T \quad d_{\text{bias}}]^T \in \mathbb{R}^{21}, \quad \text{and} \quad \bm{y}(k) = P_{\text{WF}}(k).
 \end{equation}
 %
 The snapshot matrices for EIODMD are assembled from these signals, the features, and the control signals:
@@ -884,34 +897,9 @@ with
 \begin{align*}
     \quad A_w \in \mathbb{R}^{6\times6},\; B_w \in \mathbb{R}^{6\times13},\; B_u \in \mathbb{R}^{6\times3},\; C_w \in \mathbb{R}^{1\times6},\; D_w \in \mathbb{R}^{1\times13},\; D_u \in \mathbb{R}^{1\times3},
 \end{align*}
-is obtained by least squares. As its states are the lifted effective wind speeds, the model provides both predictions of the effective wind speeds $V_{r1}$, $V_{r2}$ and of the farm power $P_{\text{WF}}$. The largest absolute eigenvalue of $A_w$ is 0.988, i.e., the identified model is stable. In \cite{dittmer2023koopman}, two Koopman matrices were identified, $\hat{K}_1$ with EDMD for the effective wind speeds and $\hat{K}_{2,\text{old}}$ with EIODMD for the farm power, with the control signals and the wind speed $V_1$ as inputs instead of the features.
+is obtained by least squares. As its states are the lifted effective wind speeds, the model provides both predictions of the effective wind speeds $V_{r1}$, $V_{r2}$ and of the farm power $P_{\text{WF}}$. The largest absolute eigenvalue of $A_w$ is 0.988, i.e., the identified model is stable. 
 
-In \cite{dittmer2023koopman}, the wind speed $V_1$ was part of the input vector and the following dimensions applied in that study: Matrix $\hat{K}_{w2,\text{old}} \in \mathbb{R}^{7\times10}$ is reordered to separate the contributions of the system states via the matrices $A_{w,\text{old}} \in \mathbb{R}^{6\times6}$ and $C_{w,\text{old}} \in \mathbb{R}^{1\times6}$, control inputs via $B_{u,\text{old}} \in \mathbb{R}^{6\times3}$ and $D_{u,\text{old}} \in \mathbb{R}^{1\times3}$, and the measured disturbance input $V_1$ via $B_{d,\text{old}} \in \mathbb{R}^{6\times1}$ and $D_{d,\text{old}} \in \mathbb{R}^{1\times1}$. To account for the disturbance as a state in the linear MPC, the matrices are augmented, resulting in the state-space matrices $A_{\hat{K}2,\text{old}} \in \mathbb{R}^{7\times7}$, $B_{\hat{K}2,\text{old}} \in \mathbb{R}^{7\times3}$, $C_{\hat{K}2,\text{old}} \in \mathbb{R}^{1\times7}$, and $D_{\hat{K}2,\text{old}} \in \mathbb{R}^{1\times3}$. The relationship to the original matrices obtained from EIODMD is given by:
-
-\begin{align*}
-    \hat{K}_{w2,\text{old}} &= \left[\begin{array}{c|cc}
-        A_{w,\text{old}} & B_{d,\text{old}} & B_{u,\text{old}}\\
-        \hline
-        C_{w,\text{old}} & D_{d,\text{old}} & D_{u,\text{old}}
-    \end{array}\right]  \\
-    \implies \hat{K}_{2,\text{old}} &= \left[\begin{array}{cc|c}
-        A_{w,\text{old}} & B_{d,\text{old}} & B_{u,\text{old}}\\
-        \bm{0}_{n_d\times6} & \bm{I}_{n_d} & \bm{0}_{n_d\times3}\\
-        \hline
-        C_{w,\text{old}} & D_{d,\text{old}} & D_{u,\text{old}}
-    \end{array}\right] = \left[\begin{array}{c|c}
-        A_{\hat{K}2,\text{old}} & B_{\hat{K}2,\text{old}}\\
-        \hline
-        C_{\hat{K}2,\text{old}} & D_{\hat{K}2,\text{old}}
-    \end{array}\right].
-\end{align*}
-% 
-with $n_d = 1$. In this thesis, without the wind speed $V_1$ as an input, $n_d = 0$, $B_d$ and $D_d$ are empty, and no augmentation is required for this disturbance. However, the model is augmented with the filtered control signals of Equation~\eqref{eq:FiltInputs} and the four moving means, which are the states of first-order filters with the known dynamics
-
-\begin{equation} \label{eq:MovingMeans}
-    \bm{M}_{\text{mean}}(k+1) = (1 - \tau_M)\, \bm{M}_{\text{mean}}(k) + \tau_M\,\bm{h}(k), \quad \bm{h} = [\hat{C}_{T1}' \;\; \hat{\gamma}_1 \;\; a_1 \;\; a_c]^T,
-\end{equation}
-with the filter coefficient $\tau_M = 0.01$. The filter states are not identified, but calculated from the control signals. With the state vector $\bm{z} = [\bm{\varphi}^T \;\; \hat{\bm{u}}^T \;\; \bm{M}_{\text{mean}}^T]^T \in \mathbb{R}^{13}$, the model is
+ The filter states are not identified, but calculated from the control signals. With the state vector $\bm{z} = [\bm{\varphi}^T \;\; \hat{\bm{u}}^T \;\; \bm{M}_{\text{mean}}^T]^T \in \mathbb{R}^{13}$, the model is
 
 \begin{align} \label{eq:ControlAffineModel}
     \bm{z}(k+1) &= \underbrace{\begin{bmatrix} A_w \bm{\varphi}(k) + B_w \bm{w}(k) \\ (1-\tau)\,\hat{\bm{u}}(k) \\ (1-\tau_M)\,\bm{M}_{\text{mean}}(k) + \tau_M \bm{h}(k) \end{bmatrix}}_{\bm{f}(\bm{z}(k))} + \underbrace{\begin{bmatrix} B_u \\ \tau \bm{I}_3 \\ \bm{0}_{4\times3} \end{bmatrix}}_{B_z} \bm{u}(k), \\
@@ -1099,31 +1087,62 @@ Figure~\ref{fig:ClosedLoopComparison} compares the closed-loop performance of th
 \label{fig:ClosedLoopComparison}
 \end{figure}
 
-$P_{\text{WF,est}}$ is the farm power predicted by the MPC with $\hat{K}_2$ for the optimal inputs of the respective sample, i.e., the first element of $\tilde{\bm{L}}_{\hat{K}2}\bm{x}_0 + \tilde{\bm{S}}_{\hat{K}2}\bm{U}$, shown at the sample of the resulting farm power. The effective wind speeds are not estimated, as they are not used by the controller. The titles give TE, $1000\cdot$AA, and the VAF of $P_{\text{WF,est}}$ for the plotted interval from $k = 500$ on. The weighting parameters are for all algorithms set to $Q = 10^{-4}$ and $R = 10^{-6}$. The additional weights on the thrust controls and calculated for a range of 0.2 to 1, is $R_{u1}=R_{u2}=1$ and $R_{u3}=0.1$.
-
-The controllers are tasked with tracking a dynamic power reference signal, defined as:
+The predicted farm power $P_{\text{WF,est}}$ is the estimate from $\hat{K}_2$ for the optimal inputs of the respective sample. It is the first element of the prediction trajectory, shown at the sample of the resulting farm power. The effective wind speeds are not estimated, as they are not used by the controller. The titles give tracking error (TE), the actuator activity multiplied by the thousand for easier readability ($1000\cdot$AA), and the VAF value of $P_{\text{WF,est}}$ for the plotted interval from $k = 500$ on. The weighting parameters are for all algorithms set to $Q = 10^{-4}$ and $R = 10^{-6}$. The additional weights on the thrust controls and calculated for a range of 0.2 to 1, is $R_{u1}=R_{u2}=1$ and $R_{u3}=0.1$. Both TE and AA are computed as mean values over the evaluation period, with the AA including the respective weighting factors and a small penalty of $10^{-3}$ on the yaw angle. This penalty is not included in the QP for now, but is meant to indicate that less yaw misaligment is preferred.
+%
+The controllers are tasked with tracking a power reference signal, defined as:
 \begin{align*}
 P_{\text{ref},k} = \big(a_{\text{const}} + a_{\delta} \, \delta P_k \big) P_{\text{greedy}},
 \end{align*}
-where $\delta P_k$ is a random sequence as in \cite{sharan2022Koopman}, and $P_{\text{greedy}}$ represents the maximum power production of the farm when both turbines operate at maximum thrust ($C_T' = 2$) and zero yaw ($\gamma = 0^\circ$). While the original parameters in \cite{sharan2022Koopman} were set to $a_{\text{const}} = 0.8$ and $a_{\delta} = 0.35$, the present work uses $a_{\text{const}} = 0.9$ and $a_{\delta} = 0.25$, and the vector $\delta P$ has been resampled to update only every second time step. These modifications yield a reference trajectory that exceeds the greedy power for longer durations, thereby increasing the importance of wake steering for successful tracking. TE and AA are evaluated from $k = 500$ to the end of the simulation at $k = 1200$, the interval shown in Figure~\ref{fig:ClosedLoopComparison}, and from $k = 240$, i.e., after the start-up of the wake, so that initialization artifacts do not affect the performance metrics. The second interval additionally contains the samples from 240 to 500, in which the reference is below the greedy power. In the following, the values from $k = 240$ are given in brackets.
+where $\delta P_k$ is a random sequence as in \cite{sharan2022Koopman}, and $P_{\text{greedy}}$ represents the maximum power production of the farm when both turbines operate at maximum thrust ($C_T' = 2$) and zero yaw ($\gamma = 0^\circ$). While the parameters in \cite{sharan2022Koopman} were set to $a_{\text{const}} = 0.8$ and $a_{\delta} = 0.35$, the present work uses $a_{\text{const}} = 0.9$ and $a_{\delta} = 0.25$, and the vector $\delta P$ has been resampled to update only every second time step. These modifications yield a reference trajectory that exceeds the greedy power for longer durations, thereby increasing the importance of wake steering for successful tracking. TE and AA are evaluated from $k = 500$ to the end of the simulation at $k = 1200$, the interval shown in Figure~\ref{fig:ClosedLoopComparison}, and from $k = 240$, i.e., after the start-up of the wake, so that initialization artifacts do not affect the performance metrics. The second interval additionally contains the samples from 240 to 500, in which the reference is below the greedy power. In the following, the values from $k = 240$ are given in brackets.
 
-The closed-loop performance is evaluated using the tracking error (TE) and actuator activity (AA) metrics introduced in Section~\ref{section:AICWindFarmControl}. These metrics correspond to the weighted terms of the cost function in Equation~\eqref{eq:NMPCcostAIC}, with the scalar weights $Q = 10^{-4}$ and $R = 10^{-6}$. For the combined control case, the input-specific weighting factors are set to $R_{u1} = R_{u2} = 1$ for the thrust control increments $\Delta C_{T1}^\prime$ and $\Delta C_{T2}^\prime$, and $R_{u3} = 0.1$ for the yaw increment $\Delta \gamma_1$. Both TE and AA are computed as mean values over the evaluation period, with the AA including the respective weighting factors and a small penalty of $10^{-3}$ on the yaw angle.
+Figure~\ref{fig:CLbaseline} shows the performance of the baseline AIC scheme with the yaw angle fixed at zero. Figure~\ref{fig:CLMPC1} shows the results of the first WRC-AIC Koopman MPC algorithm with prescribed yaw, which sets the yaw angle to the optimum of the Gaussian wake model whenever the reference exceeds the greedy power. For the considered case, the optimum of the Gaussian model was found to be roughly $\gamma_1^* = 18^\circ$. Finally, Figure~\ref{fig:CLMPC2} shows the results of the second WRC-AIC Koopman MPC algorithm, which optimizes thrust and yaw simultaneously. The first plot in each subfigure shows the wind farm power $P_{\text{WF}}$, the power reference $P_{\text{ref}}$, and the greedy power $P_{\text{greedy}}$.
 
-Figure~\ref{fig:CLbaseline} shows the performance of the baseline controller with the yaw angle fixed at zero. Figure~\ref{fig:CLMPC1} shows the results of the first Koopman MPC algorithm ($n_u=2$) with prescribed yaw, which sets the yaw angle to the optimum of the Gaussian wake model whenever the reference exceeds the greedy power. Here, $\gamma_1^* = 18^\circ$ is the exact optimum of the Gaussian model, while the open-loop sweep in Figure~\ref{fig:PowerPerYaw} resolves the maximum only to 5\textdegree{}. Finally, Figure~\ref{fig:CLMPC2} shows the results of the second Koopman MPC algorithm ($n_u=3$), based on the same Koopman model $\hat{K}_2$, which optimizes thrust and yaw simultaneously. The first plot in each subfigure shows the wind farm power $P_{\text{WF}}$, the power reference $P_{\text{ref}}$, and the greedy power $P_{\text{greedy}}$.
+In Figure~\ref{fig:CLbaseline}, with the thrust coefficient as the only actuator, the farm power initially exceeds the greedy power when the reference demands it. However, it falls back to the greedy power once the increased wind speed deficit from the first turbine's higher thrust reaches the second turbine. In Figure~\ref{fig:CLMPC1}, the yaw angle is increased when the reference exceeds the greedy power, which reduces the tracking error by a factor of 1.8, from 116.9\,kW to 63.6\,kW, for the time samples from 500 to 1200. 
+In Figure~\ref{fig:CLMPC2}, the tracking error is further reduced to 27.8\,kW by including the yaw angle as a third control input. 
 
-In Figure~\ref{fig:CLbaseline}, with the thrust coefficient as the only actuator, the farm power initially exceeds the greedy power when the reference demands it. However, it falls back to the greedy power once the increased wind speed deficit from the first turbine's higher thrust reaches the second turbine. In Figure~\ref{fig:CLMPC1}, the yaw angle is increased when the reference exceeds the greedy power, which reduces the tracking error by a factor of 1.8, from 116.9\,kW to 63.6\,kW (92.6\,kW to 53.8\,kW).
+Similar to the results for the adaptive AIC it can be observed that the improved tracking performance comes at the cost of higher actuator activity. For the simulation period depicted in the plots, both WRC-AIC have an acutuator activity that is more than twice as high as the one for the baseline. This is expected, as the yaw rate is included, as well as the yaw angle with a small penalty. The latter was done because yaw misalignment adds additional strain on the turbine. However, it should be noted that this leads to the second WRC-AIC approach outperforming the first WRC-AIC approach at static yaw: The approach with static yaw has less changes in thrust during the simulation period of sample 500 to 1200 than the combined WRC-AIC scheme. However, it operates at a higher yaw angle.
 
-In Figure~\ref{fig:CLMPC2}, the tracking error is further reduced from 63.6\,kW to 27.8\,kW (53.8\,kW to 29.4\,kW) by including the yaw angle as a third control input. The actuator activity is lower than for the first approach from $k = 500$, $15.8\cdot 10^{-3}$ instead of $17.5\cdot 10^{-3}$, and slightly higher from $k = 240$, $15.8\cdot 10^{-3}$ instead of $14.5\cdot 10^{-3}$, as the yaw angle already changes before $k = 500$. However, the second approach results in smaller thrust coefficients, with mean values of 1.47 and 1.43 instead of 1.49 and 1.62 from $k = 500$, and a maximum yaw angle of 17.1\textdegree{} instead of 18\textdegree{}, although the mean yaw angle is larger, 14.2\textdegree{} instead of 11.3\textdegree{}. This is desirable, as the smaller thrust is expected to reduce the loads acting on the tower and blades.
-
-As for the AIC, these results are obtained with the effective wind speeds estimated from the turbine powers. With the effective wind speeds of the WFSim flow field, the TE is 120.0\,kW, 59.1\,kW, and 13.4\,kW (94.2\,kW, 49.8\,kW, and 12.7\,kW) for the three designs, with AA values of $6.6\cdot 10^{-3}$, $16.2\cdot 10^{-3}$, and $15.5\cdot 10^{-3}$ ($6.5\cdot 10^{-3}$, $13.5\cdot 10^{-3}$, and $15.6\cdot 10^{-3}$). The estimate slightly improves the baseline AIC but increases the TE of the first approach by about 8\% and doubles that of the second approach: with yaw misalignment and a partially waked downstream rotor, the estimated effective wind speeds are about 0.3\% too high, which corresponds to an offset of about 1\% in the predicted power.
-
-To assess the effect of the input features and the moving means, the analysis is repeated with a Koopman model with only the six lifted states $\bm{\varphi}$ and the three control signals as inputs, i.e., $\bm{w} = \bm{u}$ and $\hat{K}_{w2} \in \mathbb{R}^{7\times9}$. Table~\ref{tab:WRCModelComparison} compares this model with the control-affine model and with the model that uses the features of the control signals $\bm{u}(k)$ as inputs (10 states, 13 inputs), which is not control affine. The state matrix $A_w$ of the model without features has two eigenvalues at 1, the largest with an absolute value of 1.0002, and its open-loop simulations drift over the long datasets, resulting in VAF values of 0 for the identification dataset and between 17.7\% and 90.3\% for the verification datasets. In closed loop, where the prediction starts at every sample from the estimated effective wind speeds and only covers the horizon of 10 samples, the TE of the model without features is 131.7\,kW, 72.9\,kW, and 40.9\,kW (116.5\,kW, 73.6\,kW, and 36.7\,kW), i.e., higher than with the control-affine model in all three designs. The model with the features of the control signals as inputs reaches a similar VAF as the control-affine model, but a higher TE of 124.3\,kW, 72.9\,kW, and 41.5\,kW (98.6\,kW, 61.1\,kW, and 38.7\,kW) and a higher AA. Its MPC treats the decision variables as the applied control signals, although they are applied with the filter of Equation~\eqref{eq:FiltInputs}, whereas the control-affine model includes this filter.
+To assess the effect of the input features and the moving means, the analysis is repeated with a Koopman model with only the six lifted states used in \cite{dittmer2023koopman}, i.e., the effective wind speeds, their squares and cubes.
 
 
-\input{figures/figures_IFAC23/tab_WRC_ModelComparison}
+ Table~\ref{tab:WRCModelComparison} provides a summary of the discussed WRC-AIC algorithms: It  compares the two model with the control-affine model and with the model that uses the features of the control signals $\bm{u}(k)$ as inputs (10 states, 13 inputs), which is not control affine. The state matrix $A_w$ of the model without features has two eigenvalues at 1, the largest with an absolute value of 1.0002, and its open-loop simulations drift over the long datasets, resulting in VAF values of 0 for the identification dataset and between 17.7\% and 90.3\% for the verification datasets. In closed loop, where the prediction starts at every sample from the estimated effective wind speeds and only covers the horizon of 10 samples, the TE of the model without features is 131.7\,kW, 72.9\,kW, and 40.9\,kW (116.5\,kW, 73.6\,kW, and 36.7\,kW), i.e., higher than with the control-affine model in all three designs. The model with the features of the control signals as inputs reaches a similar VAF as the control-affine model, but a higher TE of 124.3\,kW, 72.9\,kW, and 41.5\,kW (98.6\,kW, 61.1\,kW, and 38.7\,kW) and a higher AA. Its MPC treats the decision variables as the applied control signals, although they are applied with the filter of Equation~\eqref{eq:FiltInputs}, whereas the control-affine model includes this filter.
+
+% Created by writeWRCModelTable (mainGeneratePlotThesis) on 2026-10-31
+% Created by writeWRCModelTable (mainGeneratePlotThesis) on 2026-10-31
+% Created by writeWRCModelTable (mainGeneratePlotThesis) on 2026-10-31
+% Created by writeWRCModelTable (mainGeneratePlotThesis) on 2026-10-31
+\begin{table}[htbp]
+    \centering
+    \caption[Input-only Koopman power models of the WRC-AIC]{Input-only Koopman power models of the WRC-AIC: VAF values of the effective wind speeds $V_{r1}$, $V_{r2}$ and farm power $P_{\text{WF}}$ for the identification and verification data, largest eigenvalue magnitude of $A$, and closed-loop tracking error TE and actuator activity AA from 500\,s onward (as in Figure~\ref{fig:ClosedLoopComparison}) and, in brackets, from sample 240 onward.}
+    \label{tab:WRCModelComparison}
+    \begin{tabular}{p{3.2cm} l l}
+        \toprule
+        Model & Criterion & Value \\
+        \midrule
+        \multirow{6}{=}{6 states, 3 inputs}
+        & VAF $V_{r1}$ / $V_{r2}$ / $P_{\text{WF}}$ (\%), Id.  & 0.0 / 0.0 / 0.0 \\
+        & VAF $V_{r1}$ / $V_{r2}$ / $P_{\text{WF}}$ (\%), Val. & 90.3 / 17.7 / 60.6 \\
+        & $\max|\lambda(A)|$                                   & 1.0002 \\
+        & TE (kW) / AA ($10^{-3}$), baseline AIC              & 131.7 / 10.1 \; (116.5 / 10.7) \\
+        & TE (kW) / AA ($10^{-3}$), AIC static yaw            & 72.9 / 19.9 \; (73.6 / 17.9) \\
+        & TE (kW) / AA ($10^{-3}$), WRC-AIC                   & 40.9 / 19.1 \; (36.7 / 20.0) \\
+        \midrule
+        \multirow{6}{=}{13 states, 3 inputs (control affine)}
+        & VAF $V_{r1}$ / $V_{r2}$ / $P_{\text{WF}}$ (\%), Id.  & 95.6 / 94.5 / 96.3 \\
+        & VAF $V_{r1}$ / $V_{r2}$ / $P_{\text{WF}}$ (\%), Val. & 94.4 / 93.6 / 96.5 \\
+        & $\max|\lambda(A)|$                                   & 0.9884 \\
+        & TE (kW) / AA ($10^{-3}$), baseline AIC              & 116.9 / 6.5 \; (92.6 / 6.5) \\
+        & TE (kW) / AA ($10^{-3}$), AIC static yaw            & 63.6 / 17.5 \; (53.8 / 14.5) \\
+        & TE (kW) / AA ($10^{-3}$), WRC-AIC                   & 27.8 / 15.8 \; (29.4 / 15.8) \\
+        \bottomrule
+    \end{tabular}
+\end{table}
 
 
-These results show that the Koopman-based WRC-AIC MPC effectively coordinates yaw and thrust to overcome the wake-induced limitations of AIC alone. The following section concludes the chapter by summarizing the key results and discussing the limitations and future research directions for Koopman-based wind farm control.
+%\input{figures/figures_IFAC23/tab_WRC_ModelComparison}
+
+
+These results show that the Koopman-based WRC-AIC MPC effectively coordinates yaw and thrust to overcome the wake-induced limitations of AIC alone. The following section concludes the chapter by summarizing the main results and discussing the limitations and future research directions for Koopman-based wind farm control.
 
 
 \section{Conclusions}
