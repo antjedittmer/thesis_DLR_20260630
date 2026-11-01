@@ -835,8 +835,8 @@ Open-loop WFSim simulations are used to generate data for system identification,
  Both datasets are used from sample 240 on, after the wake is established, and are appended for the identification. These signals ensure data excitation across all relevant frequencies and control input combinations.
 
 %
-\subsubsection{Lifting Functions for Combined Yaw and Thrust Control}\label{sec:lifting functions for Combined Yaw and Thrust Control}
-The farm power of an actuator disk depends nonlinearly on the thrust control signals and the yaw angle. To keep the Koopman model control affine, i.e., linear in the control signals $\bm{u} = [C_{T1}' \;\; C_{T2}' \;\; \gamma_1]^T$, the nonlinear functions are not applied to the control signals themselves but to the filtered control signals $\hat{\bm{u}} = [\hat{C}_{T1}' \;\; \hat{C}_{T2}' \;\; \hat{\gamma}_1]^T$, which are additional states of the model:
+\subsection{Lifting Functions for Combined Yaw and Thrust Control}\label{sec:lifting functions for Combined Yaw and Thrust Control}
+The power of an actuator disk depends nonlinearly on the thrust control signal and the yaw angle. To keep the Koopman model linear in the control signals $\bm{u} = [C_{T1}' \;\; C_{T2}' \;\; \gamma_1]^T$, the nonlinear functions are not applied to the control signals themselves but to the filtered control signals $\hat{\bm{u}} = [\hat{C}_{T1}' \;\; \hat{C}_{T2}' \;\; \hat{\gamma}_1]^T$, which are additional states of the model:
 
 \begin{equation} \label{eq:FiltInputs}
     \hat{\bm{u}}(k+1) = (1-\tau)\,\hat{\bm{u}}(k) + \tau\,\bm{u}(k),
@@ -851,62 +851,50 @@ are calculated.
 These are used to include wake dynamics into the Koopman model. The rationale behind these features is that the features $g_1$ and $g_2$ are proportional to the power coefficients of the two actuator disks:
 \begin{itemize}
     \item The axial induction of turbine $i$ is $a_i = (C_{Ti}'/4)/(1+C_{Ti}'/4)$.
-    \item The power of turbine $i$ in a uniform inflow $V$ is $\frac{1}{2}\rho_a A_r C_{Ti}' (1-a_i)^3 V^3 = \frac{1}{2}\rho_a A_r\, C_{Ti}'/(1+C_{Ti}'/4)^3\, V^3$.
+    \item The power of turbine $i$ in a uniform freestream inflow $V$ is $\frac{1}{2}\rho_a A_r C_{Ti}' (1-a_i)^3 V^3 = \frac{1}{2}\rho_a A_r\, C_{Ti}'/(1+C_{Ti}'/4)^3\, V^3$.
     \item This is reduced by $\cos^3\gamma_1$ for the yawed turbine.
 \end{itemize}
 From $\hat{C}_{T1}'$, $\hat{\gamma}_1$, and the features $a_1$ and $a_c$ in Equation~\eqref{eq:InputFeatures}, moving means are calculated. They are included directly in the feature vector as well as in products with the feature $g_2$ at sample $k$:
 \begin{itemize}
-    \item The signals $M_{C}$, $M_{\gamma}$, $M_{a}$, and $M_{ac}$ are exponential moving means of $\hat{C}_{T1}'$, $\hat{\gamma}_1$, $a_1$, and $a_c$ with a time constant of 100\,s, i.e., the filter coefficient $\tau_M = 0.01$, see Equation~\eqref{eq:MovingMeans} below. They represent the delayed effect of the induction and the wake deflection of the upstream turbine on the downstream turbine.
+    \item The signals $M_{C}$, $M_{\gamma}$, $M_{a}$, and $M_{ac}$ are exponential moving means of $\hat{C}_{T1}'$, $\hat{\gamma}_1$ (in degrees), $a_1$, and $a_c$ with a time constant of 100\,s, i.e., the filter coefficient $\tau_M = 0.01$:
+    \begin{equation} \label{eq:MovingMeans}
+        \bm{M}_{\text{mean}}(k+1) = (1 - \tau_M)\, \bm{M}_{\text{mean}}(k) + \tau_M\,\bm{h}(k), \quad \bm{h} = [\hat{C}_{T1}' \;\; \hat{\gamma}_1 \;\; a_1 \;\; a_c]^T.
+    \end{equation}
+    They represent the delayed effect of the induction and the wake deflection of the upstream turbine on the downstream turbine.
     \item The products of $g_2$ with $M_{a}$, $M_{\gamma}$, and $M_{ac}$ represent the interaction of these effects with the thrust of the downstream turbine.
 \end{itemize}
-
-The model in this thesis is augmented with the filtered control signals of Equation~\eqref{eq:FiltInputs} and the four moving means, which are the states of first-order filters with the known dynamics
-
-\begin{equation} \label{eq:MovingMeans}
-    \bm{M}_{\text{mean}}(k+1) = (1 - \tau_M)\, \bm{M}_{\text{mean}}(k) + \tau_M\,\bm{h}(k), \quad \bm{h} = [\hat{C}_{T1}' \;\; \hat{\gamma}_1 \;\; a_1 \;\; a_c]^T,
-\end{equation}
-with the filter coefficient $\tau_M = 0.01$.
-
 %
-The lifted state vector uses the feature vector
+The feature vector
 \begin{equation} \label{eq:wFeatWRC}
-    %\bm{w}(k) = [\hat{\bm{u}}^T\;\; \hat{\bm{g}}^T, 
-    \bm{w}(k) = [\underbrace{C_{T1}' \;\; C_{T2}' \;\; \gamma_1}_{\bm{u}^T} \;\; \underbrace{g_1 \;\; g_2\;\; a_1\;\; a_c}_{\bm{g}^T} \;\; \underbrace{M_{C} \;\; M_{\gamma} \;\; M_{a} \;\; M_{ac}}_{\bm{M}_{\text{mean}}^T} \;\; \underbrace{g_2 M_{a} \;\; g_2 M_{\gamma} \;\; g_2 M_{ac}}_{\bm{M}_{g,\text{mean}}^T}]^T \in \mathbb{R}^{14 \times 1},
+    \bm{w}(k) = [\underbrace{\hat{C}_{T1}' \;\; \hat{C}_{T2}' \;\; \hat{\gamma}_1}_{\hat{\bm{u}}^T} \;\; \underbrace{g_1 \;\; g_2\;\; a_1\;\; a_c}_{\bm{g}^T} \;\; \underbrace{M_{C} \;\; M_{\gamma} \;\; M_{a} \;\; M_{ac}}_{\bm{M}_{\text{mean}}^T} \;\; \underbrace{g_2 M_{a} \;\; g_2 M_{\gamma} \;\; g_2 M_{ac}}_{\bm{M}_{g,\text{mean}}^T}]^T \in \mathbb{R}^{14},
 \end{equation}
-which together with the lifted state used for EDMD
+together with the lifted state used for EDMD,
 \begin{equation}
     \bm{\varphi}_{\text{EDMD}} = [\bm{x}^T \;\; (\bm{x}^2)^T \;\; (\bm{x}^3)^T]^T \in \mathbb{R}^{6}, \quad \text{with} \quad \bm{x} = [V_{r1} \;\; V_{r2}]^T,
 \end{equation}
-is used to form a new, extended lifted state: the lifted states and the outputs for EIODMD are
+forms a new, extended lifted state. The lifted state and the output for EIODMD are
 %
 \begin{equation}
-    \bm{\varphi}_{\text{IOEDMD}}= [\hat{\bm{w}}^T \quad \bm{V_r}^T \quad d_{\text{bias}}]^T \in \mathbb{R}^{21}, \quad \text{and} \quad \bm{y}(k) = P_{\text{WF}}(k).
+    \bm{\varphi}_{\text{EIODMD}}= [\bm{w}^T \quad  \bm{\varphi}_{\text{EDMD}}^T \quad d_{\text{bias}}]^T \in \mathbb{R}^{21}, \quad \text{and} \quad \bm{y}(k) = P_{\text{WF}}(k).
 \end{equation}
 %
-The snapshot matrices for EIODMD are assembled from these signals, the features, and the control signals:
+The bias state $d_{\text{bias}} = 1$ adds a constant offset to the state and output equations, corresponding to the intercept in linear regression. For simplicity, the new lifted state is named $\bm{\varphi} = \bm{\varphi}_{\text{EIODMD}}$ in this chapter. The snapshot matrices for EIODMD are assembled from these lifted states, the farm power, and the control signals:
 \begin{align}
-    \bm{X}_{\text{EIODMD}} &= \bigl[ [\bm{\varphi}(k)^T \quad \bm{w}(k)^T \quad \bm{u}(k)^T]^T \bigr]_{k=1}^{n_o-1}, \\
+    \bm{X}_{\text{EIODMD}} &= \bigl[ [\bm{\varphi}(k)^T \quad \bm{u}(k)^T]^T \bigr]_{k=1}^{n_o-1}, \\
     \bm{X}_{\text{EIODMD},+} &= \bigl[ [\bm{\varphi}(k+1)^T \quad \bm{y}(k)^T]^T \bigr]_{k=1}^{n_o-1}.
 \end{align}
-The Koopman matrix obtained in system identification is
-
-\begin{align*}
-    \hat{K}_{w2} = \left[\begin{array}{c|cc} A_w & B_w & B_u\\ \hline C_w & D_w & D_u \end{array}\right] = \bm{X}_{\text{EIODMD},+}\,\bm{X}_{\text{EIODMD}}^{\dagger} \in \mathbb{R}^{7\times22},
-\end{align*}
+The Koopman matrix
+\begin{align}\label{eq:Koop2}
+    \hat{K}_{2} = \left[\begin{array}{c|c} A_{\hat{K}}  & B_{\hat{K}}\\ \hline C_{\hat{K}}  & D_{\hat{K}} \end{array}\right] = \bm{X}_{\text{EIODMD},+}\,\bm{X}_{\text{EIODMD}}^{\dagger} \in \mathbb{R}^{22\times24},
+\end{align}
 with
 \begin{align*}
-    \quad A_w \in \mathbb{R}^{6\times6},\; B_w \in \mathbb{R}^{6\times13},\; B_u \in \mathbb{R}^{6\times3},\; C_w \in \mathbb{R}^{1\times6},\; D_w \in \mathbb{R}^{1\times13},\; D_u \in \mathbb{R}^{1\times3},
+    A_{\hat{K}} \in \mathbb{R}^{21\times21},\; B_{\hat{K}}\in \mathbb{R}^{21\times3},\; C_{\hat{K}} \in \mathbb{R}^{1\times21},\;\; D_{\hat{K}}\in \mathbb{R}^{1\times3},
 \end{align*}
-is obtained by least squares. As its states are the lifted effective wind speeds, the model provides both predictions of the effective wind speeds $V_{r1}$, $V_{r2}$ and of the farm power $P_{\text{WF}}$. The largest absolute eigenvalue of $A_w$ is 0.988, i.e., the identified model is stable. 
+is obtained by least squares. The rows of the filtered control signals and the moving means are exactly linear in the lifted state and the control signals, so that least squares recovers their known filter dynamics. The propagation of the nonlinear features $\bm{g}$ and the products $\bm{M}_{g,\text{mean}}$ is, in contrast, approximated linearly. As its states include the lifted effective wind speeds, the model provides predictions of the effective wind speeds $V_{r1}$ and $V_{r2}$ as well as of the farm power $P_{\text{WF}}$. The row of the bias state in $A_{\hat{K}}$ consists of zeros except for the value 1 in its 21st element, and the corresponding row of $B_{\hat{K}}$ is zero. Hence, the bias state stays at one and contributes the eigenvalue 1, which only represents the constant offset. The largest magnitude of the remaining eigenvalues of $A_{\hat{K}}$ is 0.988, i.e., the identified model is stable.
+The matrices of Equation~\eqref{eq:Koop2} are used in the QP solved at each sample of the MPC as follows.
 
- The filter states are not identified, but calculated from the control signals. With the state vector $\bm{z} = [\bm{\varphi}^T \;\; \hat{\bm{u}}^T \;\; \bm{M}_{\text{mean}}^T]^T \in \mathbb{R}^{13}$, the model is
 
-\begin{align} \label{eq:ControlAffineModel}
-    \bm{z}(k+1) &= \underbrace{\begin{bmatrix} A_w \bm{\varphi}(k) + B_w \bm{w}(k) \\ (1-\tau)\,\hat{\bm{u}}(k) \\ (1-\tau_M)\,\bm{M}_{\text{mean}}(k) + \tau_M \bm{h}(k) \end{bmatrix}}_{\bm{f}(\bm{z}(k))} + \underbrace{\begin{bmatrix} B_u \\ \tau \bm{I}_3 \\ \bm{0}_{4\times3} \end{bmatrix}}_{B_z} \bm{u}(k), \\
-    y(k) &= \underbrace{C_w \bm{\varphi}(k) + D_w \bm{w}(k)}_{h_y(\bm{z}(k))} + D_u\, \bm{u}(k),
-\end{align}
-as $\bm{w}(k)$ and $\bm{h}(k)$ are functions of $\hat{\bm{u}}(k)$ and $\bm{M}_{\text{mean}}(k)$ only. The model is control affine, with the 13 states $\bm{z}$ and the three control signals $\bm{u}$ as the only inputs; the nonlinearity is restricted to the state functions $\bm{f}$ and $h_y$. With the features of the control signals $\bm{u}(k)$ instead of the filtered control signals as inputs, the model would not be control affine: the control signals would enter nonlinearly, also through products with $g_2(k)$. In the closed-loop simulations of Section~\ref{SimResults}, the control-affine model results in lower tracking errors and actuator activities than such a model, see Table~\ref{tab:WRCModelComparison}.
-The MPC designs based on $\hat{K}_2$ are detailed in Section~\ref{qLMPCDesign}.
 
 %
 
@@ -959,27 +947,28 @@ In the first WRC-AIC approach, the optimal yaw angle $\gamma_1^*$ is computed us
 \end{itemize}
 Thus, the yaw angle is not treated as a disturbance state but remains an input to the prediction model. For the baseline AIC and the WRC-AIC approach using the constant yaw angle  $\gamma_1^*$, the fixed bounds leave the QP no freedom to optimize $\gamma_1$, making it equivalent to the formulation with $n_u = 2$ described above. Nevertheless, the predicted effect of the prescribed, constant yaw trajectory on farm power, including its effect on the moving means, is accounted for when optimizing the thrust signals.
 
-In the joint optimization of the thrust and yaw controls, the wind farm power $\bm{P}_{\text{WF}}$ is predicted directly with the Koopman model, without the effective wind speeds as scheduling parameters of the WFSim farm model. In \cite{dittmer2023koopman}, this model was linear in the control signals, and the stacked Toeplitz matrices $\bm{\Lambda}_{\hat{K}2}$ and $\bm{S}_{\hat{K}2}$ were constructed from the augmented matrices $\bm{A}_{\hat{K}2,\text{old}}, \bm{B}_{\hat{K}2,\text{old}}, \bm{C}_{\hat{K}2,\text{old}}, \bm{D}_{\hat{K}2,\text{old}}$ as:
+In the joint optimization of the thrust and yaw controls, the wind farm power $\bm{P}_{\text{WF}}$ is predicted directly with the Koopman model, without the effective wind speeds as scheduling parameters of the WFSim farm model. This is a linear model, and the stacked Toeplitz matrices $\bm{\Lambda}_{\hat{K}2}$ and $\bm{S}_{\hat{K}2}$ are constructed from the matrices $\bm{A}_{\hat{K}2}, \bm{B}_{\hat{K}2}, \bm{C}_{\hat{K}2}, \bm{D}_{\hat{K}2}$, presented in Equation~\eqref{eq:Koop2} as:
 \begin{align*}
     \bm{\Lambda}_{\hat{K}2} &= \begin{bmatrix}
-        \bm{C}_{\hat{K}2,\text{old}} \\
-        \bm{C}_{\hat{K}2,\text{old}} \bm{A}_{\hat{K}2,\text{old}} \\
+        \bm{C}_{\hat{K}2} \\
+        \bm{C}_{\hat{K}2} \bm{A}_{\hat{K}2} \\
         \vdots \\
-        \bm{C}_{\hat{K}2,\text{old}} \bm{A}_{\hat{K}2,\text{old}}^{n_h-1}
+        \bm{C}_{\hat{K}2} \bm{A}_{\hat{K}2}^{n_h-1}
     \end{bmatrix}, \quad
     \bm{S}_{\hat{K}2} =
     \begin{bmatrix}
-        \bm{D}_{\hat{K}2,\text{old}} & \bm{0} & \dots & \bm{0}\\
-        \bm{C}_{\hat{K}2,\text{old}} \bm{B}_{\hat{K}2,\text{old}} & \bm{D}_{\hat{K}2,\text{old}} & \dots & \bm{0}\\
+        \bm{D}_{\hat{K}2} & \bm{0} & \dots & \bm{0}\\
+        \bm{C}_{\hat{K}2} \bm{B}_{\hat{K}2} & \bm{D}_{\hat{K}2} & \dots & \bm{0}\\
         \vdots & \vdots & \ddots & \vdots \\
-        \bm{C}_{\hat{K}2,\text{old}} \bm{A}_{\hat{K}2,\text{old}}^{n_h-2} \bm{B}_{\hat{K}2,\text{old}} & \dots & \dots & \bm{D}_{\hat{K}2,\text{old}}
+        \bm{C}_{\hat{K}2} \bm{A}_{\hat{K}2}^{n_h-2} \bm{B}_{\hat{K}2} & \dots & \dots & \bm{D}_{\hat{K}2}
     \end{bmatrix}.
 \end{align*}
 
 
-Since $\bm{P}_{\text{WF}}$ was the direct output of the EIODMD model, there was $\tilde{\bm{L}}_{\hat{K}2} = \bm{\Lambda}_{\hat{K}2}$ and $\tilde{\bm{S}}_{\hat{K}2} = \bm{S}_{\hat{K}2}$. Note that the inclusion of non-zero elements in the $\bm{D}_{\hat{K}2,\text{old}}$ matrix is a direct consequence of the simplified modeling approach used in WFSim. EIODMD is employed to map control signals directly to farm power without the intermediate scheduling parameter effective wind speed, which was used before. In this case, the relationship between the output power and thrust and yaw inputs is captured including a feedthrough term. This non-zero direct feedthrough reflects the absence of explicit turbine dynamics in the turbine power extraction model.
+Since $\bm{P}_{\text{WF}}$ was the direct output of the EIODMD model, there was $\tilde{\bm{L}}_{\hat{K}2} = \bm{\Lambda}_{\hat{K}2}$ and $\tilde{\bm{S}}_{\hat{K}2} = \bm{S}_{\hat{K}2}$. Note that the inclusion of non-zero elements in the $\bm{D}_{\hat{K}2}$ matrix is a direct consequence of the simplified modeling approach used in WFSim. EIODMD is employed to map control signals directly to farm power without the intermediate scheduling parameter effective wind speed, which was used before. In this case, the relationship between the output power and thrust and yaw inputs is captured including a feedthrough term. This non-zero direct feedthrough reflects the absence of explicit turbine dynamics in the turbine power extraction model.
 
-In this thesis, although the model is control affine, the predicted farm power is a nonlinear function of the control signals over the horizon, as the filtered control signals of the following samples enter the nonlinear features. It is therefore linearized at each sample around the current control signals, which are assumed to be held over the horizon: $\tilde{\bm{L}}_{\hat{K}2}$ and $\tilde{\bm{S}}_{\hat{K}2}$ are calculated by finite differences of the prediction with respect to the control signals. With $\tilde{\bm{L}}_{\hat{K}2}\bm{x}_0 = \bm{P}_{\text{WF}}(\bm{U}_0) - \tilde{\bm{S}}_{\hat{K}2}\bm{U}_0$, the linearization point $\bm{U}_0$, and $\bm{x}_0 = 1$, the QP has the same form as before. As the linearization point, i.e., the previously applied control signals, is a state of the incremental formulation with $\Delta\bm{U}$, the resulting linear time-varying MPC can be interpreted, in analogy to the qLMPC of Chapter~\ref{sec:Application to Wind Turbine Control4}, as quasi-LPV with the previously applied control signals as scheduling parameters. In contrast to the velocity-based qLMPC, however, the prediction is a first-order Taylor approximation, and the linearization point is not updated with the predicted input trajectory. The first element of the optimal trajectory $\bm{U}$ is applied with the filter of Equation~\eqref{eq:FiltInputs}, i.e., as the filter state $\hat{\bm{u}}(k+1)$, as in the model. The initial state of the prediction consists of the lifting of the effective wind speeds $\tilde{\bm{V}}_r(k)$ estimated with Equation~\eqref{eq:VrFromPower}, the filtered control signals $\hat{\bm{u}}(k)$, i.e., the control signals applied in the previous sample, and the moving means $\bm{M}_{\text{mean}}(k)$, which are continued with the applied control signals.
+% This can be removed, right?
+%In this thesis, although the model is control affine, the predicted farm power is a nonlinear function of the control signals over the horizon, as the filtered control signals of the following samples enter the nonlinear features. It is therefore linearized at each sample around the current control signals, which are assumed to be held over the horizon: $\tilde{\bm{L}}_{\hat{K}2}$ and $\tilde{\bm{S}}_{\hat{K}2}$ are calculated by finite differences of the prediction with respect to the control signals. With $\tilde{\bm{L}}_{\hat{K}2}\bm{x}_0 = \bm{P}_{\text{WF}}(\bm{U}_0) - \tilde{\bm{S}}_{\hat{K}2}\bm{U}_0$, the linearization point $\bm{U}_0$, and $\bm{x}_0 = 1$, the QP has the same form as before. As the linearization point, i.e., the previously applied control signals, is a state of the incremental formulation with $\Delta\bm{U}$, the resulting linear time-varying MPC can be interpreted, in analogy to the qLMPC of Chapter~\ref{sec:Application to Wind Turbine Control4}, as quasi-LPV with the previously applied control signals as scheduling parameters. In contrast to the velocity-based qLMPC, however, the prediction is a first-order Taylor approximation, and the linearization point is not updated with the predicted input trajectory. The first element of the optimal trajectory $\bm{U}$ is applied with the filter of Equation~\eqref{eq:FiltInputs}, i.e., as the filter state $\hat{\bm{u}}(k+1)$, as in the model. The initial state of the prediction consists of the lifting of the effective wind speeds $\tilde{\bm{V}}_r(k)$ estimated with Equation~\eqref{eq:VrFromPower}, the filtered control signals $\hat{\bm{u}}(k)$, i.e., the control signals applied in the previous sample, and the moving means $\bm{M}_{\text{mean}}(k)$, which are continued with the applied control signals.
 
 
 The next section presents simulation results obtained in WFSim both in open-loop and in closed-loop, using an AIC MPC as a baseline controller as well as the two WRC-AIC controller designs presented above.
