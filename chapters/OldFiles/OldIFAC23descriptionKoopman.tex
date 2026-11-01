@@ -1,0 +1,23 @@
+In \cite{dittmer2023koopman}, two Koopman matrices were identified, $\hat{K}_1$ with EDMD for the effective wind speeds and $\hat{K}_{2,\text{old}}$ with EIODMD for the farm power, with the control signals and the wind speed $V_1$ as inputs instead of the features.
+
+In \cite{dittmer2023koopman}, the wind speed $V_1$ was part of the input vector and the following dimensions applied in that study: Matrix $\hat{K}_{w2,\text{old}} \in \mathbb{R}^{7\times10}$ is reordered to separate the contributions of the system states via the matrices $A_{w,\text{old}} \in \mathbb{R}^{6\times6}$ and $C_{w,\text{old}} \in \mathbb{R}^{1\times6}$, control inputs via $B_{u,\text{old}} \in \mathbb{R}^{6\times3}$ and $D_{u,\text{old}} \in \mathbb{R}^{1\times3}$, and the measured disturbance input $V_1$ via $B_{d,\text{old}} \in \mathbb{R}^{6\times1}$ and $D_{d,\text{old}} \in \mathbb{R}^{1\times1}$. To account for the disturbance as a state in the linear MPC, the matrices are augmented, resulting in the state-space matrices $A_{\hat{K}2,\text{old}} \in \mathbb{R}^{7\times7}$, $B_{\hat{K}2,\text{old}} \in \mathbb{R}^{7\times3}$, $C_{\hat{K}2,\text{old}} \in \mathbb{R}^{1\times7}$, and $D_{\hat{K}2,\text{old}} \in \mathbb{R}^{1\times3}$. The relationship to the original matrices obtained from EIODMD is given by:
+
+\begin{align*}
+    \hat{K}_{w2,\text{old}} &= \left[\begin{array}{c|cc}
+        A_{w,\text{old}} & B_{d,\text{old}} & B_{u,\text{old}}\\
+        \hline
+        C_{w,\text{old}} & D_{d,\text{old}} & D_{u,\text{old}}
+    \end{array}\right]  \\
+    \implies \hat{K}_{2,\text{old}} &= \left[\begin{array}{cc|c}
+        A_{w,\text{old}} & B_{d,\text{old}} & B_{u,\text{old}}\\
+        \bm{0}_{n_d\times6} & \bm{I}_{n_d} & \bm{0}_{n_d\times3}\\
+        \hline
+        C_{w,\text{old}} & D_{d,\text{old}} & D_{u,\text{old}}
+    \end{array}\right] = \left[\begin{array}{c|c}
+        A_{\hat{K}2,\text{old}} & B_{\hat{K}2,\text{old}}\\
+        \hline
+        C_{\hat{K}2,\text{old}} & D_{\hat{K}2,\text{old}}
+    \end{array}\right].
+\end{align*}
+% 
+with $n_d = 1$. In this thesis, without the wind speed $V_1$ as an input, $n_d = 0$, $B_d$ and $D_d$ are empty, and no augmentation is required for this disturbance. 
