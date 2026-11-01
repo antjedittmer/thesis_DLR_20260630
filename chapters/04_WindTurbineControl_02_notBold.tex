@@ -37,7 +37,10 @@ here is demonstrated across Regions II and III, using one training dataset and t
 verification datasets.
 %
 Section~\ref{subsec:ComparisonWindTurbineControlDesigns} compares qLMPC, IPC, and AALC, discussing the potential of the different schemes and showing the trade-offs between DEL reduction and actuator activity relative to the PI CPC
-baseline. The results for the qLMPC controller have been published in \cite{dittmer2021velocity}, and the AALC control strategy in \cite{dittmer2024combined}.
+baseline. 
+The results for the qLMPC applied to the qLPV model presented in Chapter~\ref{sec:WindTurbineqLPVModels} have been published in \cite{dittmer2021velocity}. They are extended here with results of the qLMPC applied to FAST and with modifications to the algorithm that improve its performance when applied to FAST. The AALC strategy has been published in \cite{dittmer2024combined}. It is extended here by a detailed discussion of the optimization of an IPC algorithm without TEFs, fine-tuned in the simulation environment of the AALC. The AALC parameters are re-optimized leveraging the IPC parameters optimized before.
+
+%The results for the qLMPC controller have been published in \cite{dittmer2021velocity}, and the AALC control strategy in \cite{dittmer2024combined}.
 
 \section{qLMPC Design and Application}\label{sec:quasiLPVMPCDesign}
 Wind turbine controller design in the above-rated region focuses on smooth power control and in the below-rated region on power optimization, as described in \cite{Bianchi2007}. The proposed MIMO qLMPC uses two control inputs, the collective blade pitch angle $\beta_{0,\text{ref}}$ and the generator torque reference $T_{g,\text{ref}}$. The baseline controller consists of two SISO controllers, one for generator torque and one for blade pitch control, see Section~\ref{sec:WindTurbineControl}. These can be replaced by a MIMO qLMPC controller, see Figure~\ref{fig:BlockMPC}. 

@@ -3,7 +3,7 @@
 Wind turbines are grouped into farms to efficiently use locations suitable for wind energy harvesting. Within a wind farm, as many turbines as economically viable are installed, with their number limited by wake interactions. A higher turbine density per area reduces the cost of grid connection per turbine and lowers operation and maintenance costs. However, closely spaced turbines experience wake interactions, causing power losses due to reduced energy availability and increased mechanical loads on downstream turbines.
 In \cite{houck2022review} wind farm control methods are surveyed, including Axial Induction Control (AIC), Wake Redirection Control (WRC), their combination, and active wake control. These methods have shown advantages in simulations of varying fidelity, and WRC has also demonstrated benefits in field tests. MPC schemes have been proposed in various studies, such as \cite{spudic2014distMPC_https://doi.org/10.1002/oca.2136, zhao2016coordinated, bay2018active, vali2019adjoint}. Unlike individual turbine dynamics, wake interactions in a wind farm cannot be accurately captured by low-order ODEs. Therefore, the approach applied to wind turbine control in Chapter~\ref{sec:Application to Wind Turbine Control4}, i.e., deriving nonlinear differential equations, creating a qLPV model, and using it for qLMPC control, is not applicable to wind farms. But MPC can be utilized by leveraging data-driven models. Recently, Koopman operator-based methods have proven successful \cite{castillo2020wind, cassamo2021model}. By applying Koopman lifting functions to open-loop simulation data and performing Dynamic Mode Decomposition (DMD), state-space models suitable for MPC algorithms can be obtained. AIC strategies have been developed to handle stationary \cite{sharan2022Koopman} and non-stationary inflow conditions \cite{dittmer2022data}, and a combined WRC-AIC scheme has shown potential for tracking high power demands \cite{dittmer2023koopman}.
 %
-Section \ref{sec:WindFarmSimulationWFSim} revisits the design of WFSim, the wind farm simulation tool used in this thesis, describing the modifications and enhancements necessary to model wind speed variations and to represent thrust and power output for turbines with intentional yaw misalignment. Section \ref{sec:AdaptiveWindFarmqLMPCforAIC} presents an adaptive AIC algorithm capable of handling changes in freestream wind speed. Section \ref{sec:WindFarmLinearMPCforWRC-AIC} first demonstrates wind farm power increases achieved with WRC, followed by a combined WRC-AIC algorithm for grid reference tracking under high power demands. The adaptive AIC scheme, originally published in \cite{dittmer2022data}, and the combined WRC-AIC algorithm, presented in \cite{dittmer2023koopman}, have both been modified to employ predictive models based on control inputs and current power measurements. These modifications eliminate the need for wind measurements during closed-loop simulations of wind farm operation.
+Section \ref{sec:WindFarmSimulationWFSim} revisits the design of WFSim, the wind farm simulation tool used in this thesis, describing the modifications and enhancements necessary to model wind speed variations and to represent thrust and power output for turbines with intentional yaw misalignment. Section \ref{sec:AdaptiveWindFarmqLMPCforAIC} presents an adaptive AIC algorithm capable of handling changes in freestream wind speed. Section \ref{sec:WindFarmLinearMPCforWRC-AIC} first demonstrates wind farm power increases achieved with WRC, followed by a combined WRC-AIC algorithm for grid reference tracking under high power demands. The adaptive AIC scheme, originally published in \cite{dittmer2022data}, and the combined WRC-AIC algorithm, presented in \cite{dittmer2023koopman}, have both been modified to employ predictive models based on control inputs and current power measurements. These modifications eliminate the need for wind measurements for the Koopman MPC during closed-loop simulations of wind farm operation. Furthermore, the lifting functions of the WRC-AIC have been extended to account for the nonlinear influence of the thrust and yaw inputs.
 
 \section{Wind Farm Simulation with WFSim} \label{sec:WindFarmSimulationWFSim}
 The wind farm simulation environment WFSim \cite{boersma2017tutorial} is employed both for generating open-loop data and for closed-loop controller testing. A short introduction to WFSim is provided in Section~\ref{sec:WakeModels}, which outlines the background on wind farm models and control. The 2D Navier–Stokes equations (NSE) are described in Section~\ref{Subsection:WindFarmSimulationModels}, and the actuator-disk turbine model is introduced in Section~\ref{Subsection:Windfarmcontrol}. WFSim allows the user to either choose from pre-existing layout definitions and sets of control signals, which may be used in open loop, or introduce new sets. A pre-existing layout of a two-turbine farm was selected, but several excitation signal sets were specifically designed for the studies on which this thesis is based as foundations for Koopman system identification. Similar to the easily interchangeable layout and control signal settings, the environment facilitates the integration of custom controller designs. While the flow and pressure calculations are utilized as intended, the applications in this thesis require significant modifications to the internal signal flow of the original MATLAB code.
@@ -208,7 +208,7 @@ Figure~\ref{fig:WFSimFlowAIC} visualizes the data flow of the qLMPC scheme for t
 \begin{figure}[htp]
     \centering
     \includegraphics[width=1\textwidth,trim={0 0cm 0cm 0.3cm},clip]{figures/figuresBlockDiagram_IFAC23/farmCtrl16_P_multVthesis_EDMD.pdf}
-    \caption[Block diagram of WFSim for AIC]{Block diagram of WFSim for AIC with farm control input signals $P_{\text{ref}}$, $P_1$, $P_2$, thrust control signals $C_{T1}^{\prime}$ and $C_{T2}^{\prime}$, freestream wind $V_\infty$ and wind $V_1 = V_{1_m}$. Wind speeds directly in front and behind the $i$-th turbine are $V_{i_1}$ to $V_{i_{n_r}}$ and $V_{i\text{out}_1}$ to $V_{i\text{out}_{n_r}}$. The input to the EDMD model (dashed blue box in the closed-loop diagram and blue box below the diagram) are $C_{T1}^{\prime}$ and $C_{T2}^{\prime}$ and its output are the effective wind speeds $V_{r1}$ and $V_{r2}$.}
+    \caption[Block diagram of WFSim for AIC]{Block diagram of WFSim for AIC with farm control input signals $P_{\text{ref}}$, $P_1$, $P_2$, thrust control signals $C_{T1}^{\prime}$ and $C_{T2}^{\prime}$, freestream wind $V_\infty$ and wind $V_1 = V_{1_m}$. Wind speeds directly in front and behind the $i$-th turbine are $V_{i_1}$ to $V_{i_{n_r}}$ and $V_{i\text{out}_1}$ to $V_{i\text{out}_{n_r}}$. The input to the EDMD model (dashed blue box in the closed-loop diagram and blue box below it) are $C_{T1}^{\prime}$ and $C_{T2}^{\prime}$, its output are the effective wind speeds $V_{r1}$ and $V_{r2}$.}
     \label{fig:WFSimFlowAIC}
 \end{figure}
 %
@@ -806,28 +806,33 @@ The test case corresponds to the same wind farm setup consisting of two turbines
 As before, WFSim is used to obtain open-loop data and for closed-loop controller testing. This section provides an overview of the WFSim environment and describes the specific test cases utilized for Koopman system identification in this context.
 
 Figure~\ref{fig:BlockDiagramFarm} illustrates the underlying concept for the WRC-AIC strategies applied to the two-turbine wind farm. Note that the primary difference from the setup in Section~\ref{sec:AdaptiveWindFarmqLMPCforAIC} is that the yaw control signal of the upstream turbine WT1, $\gamma_1$, is now an active control variable.
-
+%
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.9\textwidth]{figures/figuresBlockDiagram_IFAC23/farmCtrl17_P_multVthesis_WRCAIC_EIODMD.pdf}
-    \caption[Block diagram of WFSim for WRC-AIC]{Block diagram of WFSim for WRC-AIC with farm control inputs $P_{\text{ref}}$, $P_1$, $P_2$, and $V_1 = V_{1_m}$, control signals $C_{T1}^{\prime}$, $C_{T2}^{\prime}$, $\gamma_1$, and freestream wind $V_\infty$. Local wind speeds upwind and downwind of WT1 are $V_{1_1} \dots V_{1_{n_r}}$ and $V_{1\text{out}_1} \dots V_{1\text{out}_{n_r}}$. Wind speeds upwind of WT2 are $V_{2_1} \dots V_{2_{n_r}}$. The input to the EDMD model (blue) are $V_1, C_{T1}^{\prime}, C_{T2}^{\prime}$ with effective wind outputs $V_{r1}, V_{r2}$. The input to the EIODMD model (red) are $V_1, C_{T1}^{\prime}, C_{T2}^{\prime}, \gamma_1$ with farm power output $P_{\text{WF}} = P_1 + P_2$. In this thesis, the models are identified without the input $V_1$, which is only displayed. The control signals of all MPC designs are computed with the EIODMD model (red); the effective wind speeds predicted by the EDMD model (blue) of \cite{dittmer2023koopman} do not enter the computation of the control signals.}
+    \caption[Block diagram of WFSim for WRC-AIC]{Block diagram of WFSim for WRC-AIC with farm control inputs $P_{\text{ref}}$, $P_1$, $P_2$, control signals $C_{T1}^{\prime}$, $C_{T2}^{\prime}$, $\gamma_1$, freestream wind $V_\infty$, and wind $V_1 = V_{1_m}$. Wind speeds directly in front and behind the $i$-th turbine are $V_{i_1}$ to $V_{i_{n_r}}$ and $V_{i\text{out}_1}$ to $V_{i\text{out}_{n_r}}$. The input to the EDMD model (blue) are $C_{T1}^{\prime}$ and  $C_{T2}^{\prime}$, its outputs are the effective wind outputs $V_{r1}$ and $V_{r2}$. The input to the EIODMD model (red) are $C_{T1}^{\prime}, C_{T2}^{\prime}$, and $\gamma_1$, its output is the farm power $P_{\text{WF}} = P_1 + P_2$.}
     \label{fig:BlockDiagramFarm}
 \end{figure}
-
-The signals are defined as in previous sections, with the exceptions that the freestream wind speed is kept constant and $\gamma_1$ is commanded by the farm controller. This results in the following signal configuration:
-\begin{description}
+%
+The signals are defined as in previous sections. Notable differences are that the freestream wind speed is kept constant and $\gamma_1$ is commanded by the farm controller. This results in the following simulation setup and signals:
+\begin{itemize}
     \item[-] The freestream wind $V_\infty$ is constant at $8$\,m/s and aligned perpendicular to the turbines for all simulations in this section.
     \item[-] The farm power reference $P_{\text{ref}}$.
     \item[-] The measured wind $V_1$ at WT1, which was a controller input in \cite{dittmer2022data} and \cite{dittmer2023koopman}; in this thesis, it is only recorded and displayed.
-    \item[-] The thrust control signal $C_{T1}^{\prime}$ and yaw $\gamma_1$ of WT1, with the latter being a variable here, while it was fixed at $0$\,deg in Section~\ref{sec:AdaptiveWindFarmqLMPCforAIC}.
+    \item[-] The thrust control signal $C_{T1}^{\prime}$ and yaw $\gamma_1$ of WT1, with the latter being a variable here, while it was fixed at 0\textdegree~in Section~\ref{sec:AdaptiveWindFarmqLMPCforAIC}.
     \item[-] The effective wind speed $V_{r1}$ (mean wind speed over the rotor disk) and power $P_1$ of WT1, with $V_{r1}$ estimated from $P_1$ with Equation~\eqref{eq:VrFromPower} in closed loop.
     \item[-] Corresponding input and output signals for turbine WT2.
-\end{description}
+\end{itemize}
 The farm layout and turbine parameters follow Table~\ref{table:WfSim}. As for the AIC, the controllers use the effective wind speeds $\tilde{V}_{ri}$ estimated from the powers $P_i$ with Equation~\eqref{eq:VrFromPower}, i.e., with the known, yaw-dependent power coefficient.
 
 Previous publications utilizing WFSim~\cite{boersma2017tutorial,doekemeijer2018online, sharan2022Koopman, dittmer2022data} focused on thrust control $C_T^{\prime}$ for AIC, resulting in $n_u = n_{\text{WT}}$ control inputs. However, WFSim also supports yaw control $\gamma$ for wake redirection. In a two-turbine scenario, this could result in $2n_{\text{WT}}$ inputs; however, for this proof of concept, only the yaw of the first turbine is varied. Since the second turbine has no downstream neighbors, its optimal orientation remains $\gamma_2 = 0$\textdegree{}, resulting in $n_u = 3$ control inputs for this study.
 
-Two open-loop WFSim simulations are used for the identification, where one sample $k$ corresponds to $1$\,s. The first one, from \cite{dittmer2023koopman}, has $n_o = 31,499$ samples. Up to sample 28,000, the thrust signals $C_{T1}^{\prime}$ and $C_{T2}^{\prime}$ are constructed from white noise (mean 1.7, variance 0.3, lower and upper limits 0.1 and 2.0, respectively) held constant for $5$\,samples, and the yaw signal $\gamma_1$ is stepped by $5$\textdegree{} every $4000$\,samples from $0$\textdegree{} to $30$\textdegree{} and augmented with zero-mean band-limited noise (variance $0.5$\textdegree{}); afterwards, the thrust signals are set to 2 and the yaw angle is reduced in steps of 5\textdegree{} every 500 samples back to 0\textdegree{}. The second simulation, designed for this thesis, has $n_o = 29,999$ samples: the thrust signals of both turbines and the yaw angle of WT1 jump independently between random levels, as for the AIC in Section~\ref{sec:AdaptiveWindFarmqLMPCforAIC}, with thrust levels between 0.5 and 2, yaw levels between 0\textdegree{} and 30\textdegree{}, hold times of 150 to 300\,s, small additive noise (standard deviations 0.05 and 0.5\textdegree{}), and rate limits of 0.05\,s$^{-1}$ and 1\textdegree/s. Both datasets are used from sample 240 on, after the wake is established, and are appended for the identification. These signals ensure data excitation across all relevant frequencies and control input combinations.
+Open-loop WFSim simulations are used to generate data for system identification, where, as before, one sample $k$ corresponds to $1$\,s. As in Section~\ref{sec:AdaptiveWindFarmqLMPCforAIC}, new signals were created for that purpose:
+\begin{itemize}
+    \item In \cite{dittmer2023koopman}, a signal with $n_o = 31,499$ samples was created. Up to sample 28,000, the thrust signals $C_{T1}^{\prime}$ and $C_{T2}^{\prime}$ are constructed from white noise (mean 1.7, variance 0.3, lower and upper limits 0.1 and 2.0, respectively) held constant for $5$\,samples, and the yaw signal $\gamma_1$ is stepped by $5$\textdegree{} every $4000$\,samples from $0$\textdegree{} to $30$\textdegree{} and augmented with zero-mean band-limited noise (variance $0.5$\textdegree{}); afterwards, the thrust signals are set to 2 and the yaw angle is reduced in steps of 5\textdegree{} every 500 samples back to 0\textdegree{}. 
+    \item The signal designed for this thesis has $n_o = 29,999$ samples: the thrust signals of both turbines and the yaw angle of WT1 jump independently between random levels, as for the AIC in Section~\ref{sec:AdaptiveWindFarmqLMPCforAIC}, with thrust levels between 0.5 and 2, yaw levels between 0\textdegree{} and 30\textdegree{}, hold times of 150 to 300\,s, small additive noise (standard deviations 0.05 and 0.5\textdegree{}), and rate limits of 0.05\,s$^{-1}$ and 1\textdegree/s.
+\end{itemize}
+ Both datasets are used from sample 240 on, after the wake is established, and are appended for the identification. These signals ensure data excitation across all relevant frequencies and control input combinations.
 
 %
 The farm power of an actuator disk depends nonlinearly on the thrust control signals and the yaw angle. To keep the Koopman model control affine, i.e., linear in the control signals $\bm{u} = [C_{T1}' \;\; C_{T2}' \;\; \gamma_1]^T$, the nonlinear functions are not applied to the control signals themselves but to the filtered control signals $\hat{\bm{u}} = [\hat{C}_{T1}' \;\; \hat{C}_{T2}' \;\; \hat{\gamma}_1]^T$, which are additional states of the model:
@@ -841,7 +846,7 @@ with the filter coefficient $\tau$ of the turbine model in Equation~\eqref{eqPow
     g_1 = \frac{\hat{C}_{T1}'\cos^3\hat{\gamma}_1}{(1 + \hat{C}_{T1}'/4)^3}, \quad g_2 = \frac{\hat{C}_{T2}'}{(1 + \hat{C}_{T2}'/4)^3}, \quad a_1 = \frac{\hat{C}_{T1}'/4}{1 + \hat{C}_{T1}'/4}, \quad a_c = a_1\cos^2\hat{\gamma}_1
 \end{equation}
 are calculated.
-
+%
 These are used to include wake dynamics into the Koopman model. The rationale behind these features is that the features $g_1$ and $g_2$ are proportional to the power coefficients of the two actuator disks:
 \begin{itemize}
     \item The axial induction of turbine $i$ is $a_i = (C_{Ti}'/4)/(1+C_{Ti}'/4)$.
@@ -853,20 +858,18 @@ From $\hat{C}_{T1}'$, $\hat{\gamma}_1$, and the features $a_1$ and $a_c$ in Equa
     \item The signals $M_{C}$, $M_{\gamma}$, $M_{a}$, and $M_{ac}$ are exponential moving means of $\hat{C}_{T1}'$, $\hat{\gamma}_1$, $a_1$, and $a_c$ with a time constant of 100\,s, i.e., the filter coefficient $\tau_M = 0.01$, see Equation~\eqref{eq:MovingMeans} below. They represent the delayed effect of the induction and the wake deflection of the upstream turbine on the downstream turbine.
     \item The products of $g_2$ with $M_{a}$, $M_{\gamma}$, and $M_{ac}$ represent the interaction of these effects with the thrust of the downstream turbine.
 \end{itemize}
-
 %
 The feature vector is
-
 \begin{equation} \label{eq:wFeatWRC}
     \bm{w}(k) = [\underbrace{\hat{C}_{T1}' \;\; \hat{C}_{T2}' \;\; \hat{\gamma}_1}_{\hat{\bm{u}}^T} \;\; \underbrace{1 \;\; g_1 \;\; g_2}_{\bm{g}^T} \;\; \underbrace{M_{C} \;\; M_{\gamma} \;\; M_{a} \;\; M_{ac}}_{\bm{M}_{\text{mean}}^T} \;\; \underbrace{g_2 M_{a} \;\; g_2 M_{\gamma} \;\; g_2 M_{ac}}_{\bm{M}_{g,\text{mean}}^T}]^T \in \mathbb{R}^{13 \times 1},
 \end{equation}
 where all signals are evaluated at sample $k$, with $\hat{\gamma}_1$ in degrees; the constant 1 adds an offset to the model. As $\bm{w}(k)$ depends only on the filtered control signals and the moving means, i.e., on states, and the control signals $\bm{u}(k)$ enter the model linearly, the model is control affine.
 The lifted states and the outputs for EIODMD are
-
+%
 \begin{equation}
     \bm{\varphi}(k) = [\bm{x}^T \;\; (\bm{x}^2)^T \;\; (\bm{x}^3)^T]^T \in \mathbb{R}^{6}, \quad \bm{x} = [V_{r1} \;\; V_{r2}]^T, \quad \text{and} \quad \bm{y}(k) = P_{\text{WF}}(k).
 \end{equation}
-
+%
 The snapshot matrices for EIODMD are assembled from these signals, the features, and the control signals:
 \begin{align}
     \bm{X}_{\text{EIODMD}} &= \bigl[ [\bm{\varphi}(k)^T \quad \bm{w}(k)^T \quad \bm{u}(k)^T]^T \bigr]_{k=1}^{n_o-1}, \\
@@ -1173,12 +1176,12 @@ The results highlight several important findings. Physics-informed lifting funct
 to effectively capture both the relationship between control inputs and effective wind speeds and
 the mapping from control inputs to power outputs. Furthermore, it was demonstrated that
 Koopman-based estimation models can be updated online in real time, enabling adaptive control
-under non-stationary wind conditions. The inclusion of WRC led to a notable increase in total
-farm power output---exceeding 5\%. Specifically, the Bastankhah analytical wake model predicted
+under non-stationary wind conditions. The inclusion of WRC led to an increase in total
+farm power output exceeding 5\% for all simulations used: the Bastankhah analytical wake model predicted
 an improvement of approximately 6\%, while the WFSim simulation indicated an increase of
 around 10\%. These results are consistent with trends reported in related literature. Both the
-Bastankhah and the Navier--Stokes-equation-based WFSim models showed good agreement in
+Bastankhah and the NSE-based WFSim models showed good agreement in
 terms of wake expansion and power prediction. The combination of increased power yield and
-precise model representation resulted in accurate power reference tracking, even for reference
+a good representation of the wind farm dynamics with the data-driven Koopman model resulted in accurate power reference tracking, even for reference
 signals exceeding the greedy power. This outcome underscores the potential of Koopman-based
 WRC-AIC control strategies to enhance wind farm efficiency and support grid stability through power delivery more closely following the demanded power.
