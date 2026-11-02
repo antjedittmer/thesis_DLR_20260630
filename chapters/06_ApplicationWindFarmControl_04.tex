@@ -1021,10 +1021,10 @@ Figure~\ref{fig:WRCAICOL_EDMD} shows the new identification dataset in panels~(a
     \includegraphics[width=0.485\textwidth]{figures/figures_IFAC23/03aFig_WRC_Val_P.eps}
     % \label{fig:PowerPerYaw}
 }
-\caption[Identification and verification datasets of the Koopman model for the WRC-AIC algorithm]{Identification (a, c) and verification (b, d) datasets of the Koopman model $\hat{K}_2$ for the WRC-AIC algorithm: estimated effective wind speeds $V_{r1}$ and $V_{r2}$ ( a and b) and farm power $P_{\text{WF}}$ (c and d). Subplots (top to bottom): thrust $C_T^\prime$; yaw $\gamma_1$; real vs. estimated $V_{r1}, V_{r2}$ (a, b) or $P_{\text{WF}}$ (c, d). WT1/WT2 signals are blue/red; black and grey dashed lines denote the estimates of the control-affine model $\hat{K}_2$ with six lifted states, three filtered control signals, and four moving means ($n_\varphi = 13$) and of the model with six lifted states and three control signals as inputs ($n_\varphi = 6$).}
+\caption[Identification and verification datasets of the Koopman model for the WRC-AIC algorithm]{Identification (a, c) and verification (b, d) datasets of the Koopman model $\hat{K}_2$ for the WRC-AIC algorithm: estimated effective wind speeds $V_{r1}$ and $V_{r2}$ ( a and b) and farm power $P_{\text{WF}}$ (c and d). Subplots (top to bottom): thrust $C_T^\prime$; yaw $\gamma_1$; real vs. estimated $V_{r1}, V_{r2}$ (a, b) or $P_{\text{WF}}$ (c, d). WT1/WT2 signals are blue/red; black and grey dashed lines denote the estimates of the 21-state ($n_\varphi = 21$) and six-state model ($n_\varphi = 6$).}
 \label{fig:WRCAICOL_EDMD}
 \end{figure}
-Note that the effective wind speed estimates are not used in the presented WRC-AIC design. However, they are included to demonstrate that, with the carefully designed new datasets, power predictions are as good as or even better than those of the effective wind speeds. Thus, the need for physics-based wind turbine models is eliminated in the presented design. The plots also illustrate the advantage of using the new set of lifted states. As before, the signals of the first and second turbines are depicted in blue and red, respectively, and the wind farm power is also shown in blue. Estimates obtained with the new control-affine Koopman model with 13 states are shown as black dashed lines, while those obtained with the old model are shown as grey dashed lines. With the new Koopman matrix, VAF values above 93\% are achieved for both datasets and all estimates: 95.6\%, 94.5\%, and 96.3\% for $V_{r1}$, $V_{r2}$, and $P_{\text{WF}}$, respectively, in the identification dataset, and 94.4\%, 93.6\%, and 96.5\% in the verification dataset. The black dashed lines closely follow the blue and red reference signals. However, when the new datasets are used with the old Koopman matrix from~\cite{dittmer2023koopman}, which includes only six states, considerable discrepancies develop over time between the reference signals and the estimates. This is attributed to the design of the six-state model, which includes the effective wind speeds and their quadratic and cubic terms but no temporal states to capture the evolution of the moving means, unlike the 13-state model, which includes the filtered control signals and the moving means as additional states. This also explains why, somewhat counterintuitively, the VAF values for the shorter verification datasets are higher than those of the identification sets. Nevertheless, apart from the least challenging case, the effective wind speed of the first turbine, for which an acceptable VAF of 90.3\% is achieved, the verification VAF values remain low: 17.7\% for the effective wind speed of the second turbine and 60.6\% for the wind farm power. The VAF values for this comparison are summarized in Table~\ref{tab:WRCModelComparison}, which also includes the closed-loop results and is therefore placed in the section presenting the simulation results obtained with the MPC algorithms in closed loop.
+Note that the effective wind speed estimates are not used in the presented WRC-AIC design. However, they are included to demonstrate that, with the carefully designed new datasets, power predictions are as good as or even better than those of the effective wind speeds. Thus, the need for physics-based wind turbine models is eliminated in the presented design. The plots also illustrate the advantage of using the new set of lifted states. As before, the signals of the first and second turbines are depicted in blue and red, respectively, and the wind farm power is also shown in blue. Estimates obtained with the new control-affine Koopman model with 13 states are shown as black dashed lines, while those obtained with the old model are shown as grey dashed lines. With the new Koopman matrix, VAF values above 85\% are achieved for both datasets and all estimates. The black dashed lines closely follow the blue and red reference signals. However, when the new datasets are used with the old Koopman matrix from~\cite{dittmer2023koopman}, which includes only six states, considerable discrepancies develop over time between the reference signals and the estimates. This is attributed to the design of the six-state model, which includes the effective wind speeds and their quadratic and cubic terms but no temporal states to capture the evolution of the moving means, unlike the 21-state model, which includes the filtered control signals and the moving means as additional states. This also explains why, somewhat counterintuitively, the VAF values for the shorter verification datasets are higher than those of the identification sets. Nevertheless, apart from the least challenging case, the effective wind speed of the first turbine, for which a VAF value of 90.3\% is achieved, the verification VAF values remain low: 17.7\% for the effective wind speed of the second turbine and 60.6\% for the wind farm power. The VAF values for this comparison are summarized in Table~\ref{tab:WRCModelComparison}, which also includes the closed-loop results and is therefore placed in the section presenting the simulation results obtained with the MPC algorithms in closed loop.
 
 Apart from the above described datasets, open-loop WFSim simulation results to quantify the effect of wake misalignment are obtained for a step-sweep of the yaw angle $\gamma_1$ from 0\textdegree{} to 35\textdegree{} with consecutive increases of 5\textdegree{} every 500 samples, resulting in a total of 4000 samples. During this sweep, the thrust control signals are set to their maximum value of 2 and the freestream wind is held constant at 8\,m/s. Figure~\ref{fig:OpenLoopResultsCombined} shows the resulting longitudinal wind field and the power output of the turbines and farm.
 \begin{figure}[htb]
@@ -1086,47 +1086,44 @@ where $\delta P_k$ is a random sequence as in \cite{sharan2022Koopman}, and $P_{
 
 Figure~\ref{fig:CLbaseline} shows the performance of the baseline AIC scheme with the yaw angle fixed at zero. Figure~\ref{fig:CLMPC1} shows the results of the first WRC-AIC Koopman MPC algorithm with prescribed yaw, which sets the yaw angle to the optimum of the Gaussian wake model whenever the reference exceeds the greedy power. For the considered case, the optimum of the Gaussian model was found to be roughly $\gamma_1^* = 18^\circ$. Finally, Figure~\ref{fig:CLMPC2} shows the results of the second WRC-AIC Koopman MPC algorithm, which optimizes thrust and yaw simultaneously. The first plot in each subfigure shows the wind farm power $P_{\text{WF}}$, the power reference $P_{\text{ref}}$, and the greedy power $P_{\text{greedy}}$.
 
-In Figure~\ref{fig:CLbaseline}, with the thrust coefficient as the only actuator, the farm power initially exceeds the greedy power when the reference demands it. However, it falls back to the greedy power once the increased wind speed deficit from the first turbine's higher thrust reaches the second turbine. In Figure~\ref{fig:CLMPC1}, the yaw angle is increased when the reference exceeds the greedy power, which reduces the tracking error by a factor of 1.8, from 116.9\,kW to 63.6\,kW, for the time samples from 500 to 1200. 
-In Figure~\ref{fig:CLMPC2}, the tracking error is further reduced to 27.8\,kW by including the yaw angle as a third control input. 
+In Figure~\ref{fig:CLbaseline}, with the thrust coefficient as the only actuator, the farm power initially exceeds the greedy power when the reference demands it. However, it falls back to the greedy power once the increased wind speed deficit from the first turbine's higher thrust reaches the second turbine. In Figure~\ref{fig:CLMPC1}, the yaw angle is increased when the reference exceeds the greedy power, which reduces the tracking error by a factor of 1.8, from 118\,kW to 65.3\,kW, for the time samples from 500 to 1200. 
+In Figure~\ref{fig:CLMPC2}, the tracking error is further reduced to 27.8\,kW by including the yaw angle as a third control input. The advantages of using the yaw in addition to the 
 
-Similar to the results for the adaptive AIC it can be observed that the improved tracking performance comes at the cost of higher actuator activity. For the simulation period depicted in the plots, both WRC-AIC have an acutuator activity that is more than twice as high as the one for the baseline. This is expected, as the yaw rate is included, as well as the yaw angle with a small penalty. The latter was done because yaw misalignment adds additional strain on the turbine. However, it should be noted that this leads to the second WRC-AIC approach outperforming the first WRC-AIC approach at static yaw: The approach with static yaw has less changes in thrust during the simulation period of sample 500 to 1200 than the combined WRC-AIC scheme. However, it operates at a higher yaw angle.
+Similar to the results for the adaptive AIC it can be observed that the improved tracking performance comes at the cost of higher actuator activity. For the simulation period depicted in the plots, both WRC-AIC have an acutuator activity that is more than twice as high as the one for the baseline. This is expected, as the yaw rate is included, as well as the yaw angle with a small penalty. The latter was done because yaw misalignment adds additional strain on the turbine. However, it should be noted that this leads to the second WRC-AIC approach outperforming the first WRC-AIC approach at static yaw: The approach with static yaw has less changes in thrust during the simulation period of sample 500 to 1200 than the combined WRC-AIC scheme. However, it operates at a higher yaw angle. This is why the decision was made to include this additional penalty, which resulted in the joint WRC-AIC approach to outperform the AIC with static, optimal angle also regarding this criterion.
 
 To assess the effect of the input features and the moving means, the analysis is repeated with a Koopman model with only the six lifted states used in \cite{dittmer2023koopman}, i.e., the effective wind speeds, their squares and cubes.
 
 
-Table~\ref{tab:WRCModelComparison} provides a summary of the discussed WRC-AIC algorithms: It  compares the two model with the control-affine model and with the model that uses the features of the control signals $\bm{u}(k)$ as inputs (10 states, 13 inputs), which is not control affine. The state matrix $A_w$ of the model without features has two eigenvalues at 1, the largest with an absolute value of 1.0002, and its open-loop simulations drift over the long datasets, resulting in VAF values of 0 for the identification dataset and between 17.7\% and 90.3\% for the verification datasets. In closed loop, where the prediction starts at every sample from the estimated effective wind speeds and only covers the horizon of 10 samples, the TE of the model without features is 131.7\,kW, 72.9\,kW, and 40.9\,kW (116.5\,kW, 73.6\,kW, and 36.7\,kW), i.e., higher than with the control-affine model in all three designs. The model with the features of the control signals as inputs reaches a similar VAF as the control-affine model, but a higher TE of 124.3\,kW, 72.9\,kW, and 41.5\,kW (98.6\,kW, 61.1\,kW, and 38.7\,kW) and a higher AA. Its MPC treats the decision variables as the applied control signals, although they are applied with the filter of Equation~\eqref{eq:FiltInputs}, whereas the control-affine model includes this filter.
+Table~\ref{tab:WRCModelComparison} provides a summary of the discussed WRC-AIC algorithms: It compares the two model with the control-affine model and with the model that uses the features of the control signals $\bm{u}(k)$ as inputs (10 states, 13 inputs), which is not control affine. The state matrix $A_w$ of the model without features has two eigenvalues at 1, the largest with an absolute value of 1.0002, and its open-loop simulations drift over the long datasets, resulting in VAF values of 0 for the identification dataset and between 17.7\% and 90.3\% for the verification datasets. In closed loop, where the prediction starts at every sample from the estimated effective wind speeds and only covers the horizon of 10 samples, the TE of the model with six lifted states performs hence reasonably well. However, it can be seen that 
 
-% Created by writeWRCModelTable (mainGeneratePlotThesis) on 2026-10-31
-% Created by writeWRCModelTable (mainGeneratePlotThesis) on 2026-10-31
-% Created by writeWRCModelTable (mainGeneratePlotThesis) on 2026-10-31
+
 % Created by writeWRCModelTable (mainGeneratePlotThesis) on 2026-10-31
 \begin{table}[htbp]
-\centering
-\caption[Input-only Koopman power models of the WRC-AIC]{Input-only Koopman power models of the WRC-AIC: VAF values of the effective wind speeds $V_{r1}$, $V_{r2}$ and farm power $P_{\text{WF}}$ for the identification and verification data, largest eigenvalue magnitude of $A$, and closed-loop tracking error TE and actuator activity AA from 500\,s onward (as in Figure~\ref{fig:ClosedLoopComparison}) and, in brackets, from sample 240 onward.}
-\label{tab:WRCModelComparison}
-\begin{tabular}{p{3.2cm} l l}
-    \toprule
-    Model & Criterion & Value \\
-    \midrule
-    \multirow{6}{=}{6 states, 3 inputs}
-    & VAF $V_{r1}$ / $V_{r2}$ / $P_{\text{WF}}$ (\%), Id.  & 0.0 / 0.0 / 0.0 \\
-    & VAF $V_{r1}$ / $V_{r2}$ / $P_{\text{WF}}$ (\%), Val. & 90.3 / 17.7 / 60.6 \\
-    & $\max|\lambda(A)|$                                   & 1.0002 \\
-    & TE (kW) / AA ($10^{-3}$), baseline AIC              & 131.7 / 10.1 \; (116.5 / 10.7) \\
-    & TE (kW) / AA ($10^{-3}$), AIC static yaw            & 72.9 / 19.9 \; (73.6 / 17.9) \\
-    & TE (kW) / AA ($10^{-3}$), WRC-AIC                   & 40.9 / 19.1 \; (36.7 / 20.0) \\
-    \midrule
-    \multirow{6}{=}{13 states, 3 inputs (control affine)}
-    & VAF $V_{r1}$ / $V_{r2}$ / $P_{\text{WF}}$ (\%), Id.  & 95.6 / 94.5 / 96.3 \\
-    & VAF $V_{r1}$ / $V_{r2}$ / $P_{\text{WF}}$ (\%), Val. & 94.4 / 93.6 / 96.5 \\
-    & $\max|\lambda(A)|$                                   & 0.9884 \\
-    & TE (kW) / AA ($10^{-3}$), baseline AIC              & 116.9 / 6.5 \; (92.6 / 6.5) \\
-    & TE (kW) / AA ($10^{-3}$), AIC static yaw            & 63.6 / 17.5 \; (53.8 / 14.5) \\
-    & TE (kW) / AA ($10^{-3}$), WRC-AIC                   & 27.8 / 15.8 \; (29.4 / 15.8) \\
-    \bottomrule
-\end{tabular}
+    \centering
+    \caption[Input-only Koopman power models of the WRC-AIC]{Input-only Koopman power models of the WRC-AIC: VAF values of the effective wind speeds $V_{r1}$, $V_{r2}$ and farm power $P_{\text{WF}}$ for the identification and verification data, largest eigenvalue magnitude of $A$, and closed-loop tracking error TE and actuator activity AA from 500\,s onward (as in Figure~\ref{fig:ClosedLoopComparison}) and, in brackets, from sample 240 onward.}
+    \label{tab:WRCModelComparison}
+    \begin{tabular}{p{3.2cm} l l}
+        \toprule
+        Model & Criterion & Value \\
+        \midrule
+        \multirow{6}{=}{6 states}
+        & VAF $V_{r1}$ / $V_{r2}$ / $P_{\text{WF}}$ (\%), Id.  & 0.0 / 0.0 / 0.0 \\
+        & VAF $V_{r1}$ / $V_{r2}$ / $P_{\text{WF}}$ (\%), Val. & 90.3 / 17.7 / 60.6 \\
+        & $\max|\lambda(A)|$                                   & 1.0002 \\
+        & TE (kW) / AA ($10^{-3}$), baseline AIC               & 127.8 / 10.5 \; (111.3 / 10.5) \\
+        & TE (kW) / AA ($10^{-3}$), AIC static yaw            & 72.0 / 20.3 \; (70.5 / 17.7) \\
+        & TE (kW) / AA ($10^{-3}$), WRC-AIC                   & 36.9 / 20.8 \; (32.6 / 21.1) \\
+        \midrule
+        \multirow{6}{=}{21 states}
+        & VAF $V_{r1}$ / $V_{r2}$ / $P_{\text{WF}}$ (\%), Id.  & 96.1 / 91.7 / 86.7 \\
+        & VAF $V_{r1}$ / $V_{r2}$ / $P_{\text{WF}}$ (\%), Val. & 93.4 / 85.3 / 85.5 \\
+        & $\max|\lambda(A)|$                                   & 0.9985 \\
+        & TE (kW) / AA ($10^{-3}$), baseline AIC               & 118.0 / 6.2 \; (93.0 / 5.7) \\
+        & TE (kW) / AA ($10^{-3}$), AIC static yaw            & 65.3 / 16.9 \; (54.5 / 13.5) \\
+        & TE (kW) / AA ($10^{-3}$), WRC-AIC                   & 27.8 / 15.6 \; (29.7 / 15.0) \\
+        \bottomrule
+    \end{tabular}
 \end{table}
-
 
 %\input{figures/figures_IFAC23/tab_WRC_ModelComparison}
 
@@ -1173,9 +1170,9 @@ actuator activity for adaptive AIC (wind speed change) and AIC vs two WRC scheme
     & Adaptive AIC                &  17.2 & $7.6$ \\
     \midrule
     \multirow{3}{*}{WRC-AIC}
-    & Baseline AIC ($\gamma_1 = 0^\circ$)              & 116.9 (92.6) & $6.5$ ($6.5$) \\
-    & AIC + Gaussian yaw ($\gamma_1^* = 18^\circ$)     &  63.6 (53.8) & $17.5$ ($14.5$) \\
-    & WRC-AIC EIODMD ($n_u = 3$)                       &  27.8 (29.4) & $15.8$ ($15.8$) \\
+    & Baseline AIC ($\gamma_1 = 0^\circ$)              &  118.0 / 6.2 \\
+    & AIC + Gaussian yaw ($\gamma_1^* = 18^\circ$)     &  65.3 / 16.9 \\
+    & WRC-AIC EIODMD ($n_u = 3$)                       & 27.8 / 15.6 \\
     \bottomrule
 \end{tabular}
 \end{table}
