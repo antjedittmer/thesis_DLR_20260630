@@ -1024,7 +1024,7 @@ Figure~\ref{fig:WRCAICOL_EDMD} shows the new identification dataset in panels~(a
 \caption[Identification and verification datasets of the Koopman model for the WRC-AIC algorithm]{Identification (a, c) and verification (b, d) datasets of the Koopman model $\hat{K}_2$ for the WRC-AIC algorithm: estimated effective wind speeds $V_{r1}$ and $V_{r2}$ ( a and b) and farm power $P_{\text{WF}}$ (c and d). Subplots (top to bottom): thrust $C_T^\prime$; yaw $\gamma_1$; real vs. estimated $V_{r1}, V_{r2}$ (a, b) or $P_{\text{WF}}$ (c, d). WT1/WT2 signals are blue/red; black and grey dashed lines denote the estimates of the 21-state ($n_\varphi = 21$) and six-state model ($n_\varphi = 6$).}
 \label{fig:WRCAICOL_EDMD}
 \end{figure}
-Note that the effective wind speed estimates are not used in the presented WRC-AIC design. However, they are included to demonstrate that, with the carefully designed new datasets, power predictions are as good as or even better than those of the effective wind speeds. Thus, the need for physics-based wind turbine models is eliminated in the presented design. The plots also illustrate the advantage of using the new set of lifted states. As before, the signals of the first and second turbines are depicted in blue and red, respectively, and the wind farm power is also shown in blue. Estimates obtained with the new control-affine Koopman model with 13 states are shown as black dashed lines, while those obtained with the old model are shown as grey dashed lines. With the new Koopman matrix, VAF values above 85\% are achieved for both datasets and all estimates. The black dashed lines closely follow the blue and red reference signals. However, when the new datasets are used with the old Koopman matrix from~\cite{dittmer2023koopman}, which includes only six states, considerable discrepancies develop over time between the reference signals and the estimates. This is attributed to the design of the six-state model, which includes the effective wind speeds and their quadratic and cubic terms but no temporal states to capture the evolution of the moving means, unlike the 21-state model, which includes the filtered control signals and the moving means as additional states. This also explains why, somewhat counterintuitively, the VAF values for the shorter verification datasets are higher than those of the identification sets. Nevertheless, apart from the least challenging case, the effective wind speed of the first turbine, for which a VAF value of 90.3\% is achieved, the verification VAF values remain low: 17.7\% for the effective wind speed of the second turbine and 60.6\% for the wind farm power. The VAF values for this comparison are summarized in Table~\ref{tab:WRCModelComparison}, which also includes the closed-loop results and is therefore placed in the section presenting the simulation results obtained with the MPC algorithms in closed loop.
+Note that the effective wind speed estimates are not used in the presented WRC-AIC design. However, they are included to demonstrate that, with the carefully designed new datasets, power predictions are as good as or even better than those of the effective wind speeds. Thus, the need for physics-based wind turbine models is eliminated in the presented design. The plots also illustrate the advantage of using the new set of lifted states. As before, the signals of the first and second turbines are depicted in blue and red, respectively, and the wind farm power is also shown in blue. Estimates obtained with the new control-affine Koopman model with 21 states are shown as black dashed lines, while those obtained with the old model are shown as grey dashed lines. With the new Koopman matrix, VAF values above 85\% are achieved for both datasets and all estimates. The black dashed lines closely follow the blue and red reference signals. However, when the new datasets are used with the old Koopman matrix from~\cite{dittmer2023koopman}, which includes only six states, considerable discrepancies develop over time between the reference signals and the estimates. This is attributed to the design of the six-state model, which includes the effective wind speeds and their quadratic and cubic terms but no temporal states to capture the evolution of the moving means, unlike the 21-state model, which includes the filtered control signals and the moving means as additional states. This also explains why, somewhat counterintuitively, the VAF values for the shorter verification datasets are higher than those of the identification sets. Nevertheless, apart from the least challenging case, the effective wind speed of the first turbine, for which a VAF value of 90.3\% is achieved, the verification VAF values remain low: 17.7\% for the effective wind speed of the second turbine and 60.6\% for the wind farm power. The VAF values for this comparison are summarized in Table~\ref{tab:WRCModelComparison}, which also includes the closed-loop results and is therefore placed in the section presenting the simulation results obtained with the MPC algorithms in closed loop.
 
 Apart from the above described datasets, open-loop WFSim simulation results to quantify the effect of wake misalignment are obtained for a step-sweep of the yaw angle $\gamma_1$ from 0\textdegree{} to 35\textdegree{} with consecutive increases of 5\textdegree{} every 500 samples, resulting in a total of 4000 samples. During this sweep, the thrust control signals are set to their maximum value of 2 and the freestream wind is held constant at 8\,m/s. Figure~\ref{fig:OpenLoopResultsCombined} shows the resulting longitudinal wind field and the power output of the turbines and farm.
 \begin{figure}[htb]
@@ -1132,61 +1132,36 @@ These results show that the Koopman-based WRC-AIC MPC effectively coordinates ya
 
 
 \section{Conclusions}
-This chapter presented and analyzed three applications of DMD using Koopman lifted functions
-for wind farm control. The first part discussed the modifications required in the WFSim simulation
-environment to enable adaptive control testing and to investigate the influence of intentional yaw
-misalignment through a yaw-angle-dependent power coefficient. This was followed by the design,
-implementation, and evaluation of an adaptive AIC controller, and subsequently, two WRC-AIC
-controllers combining wake redirection and axial induction control.
+This chapter presented and analyzed EDMD and IOEDMD applications using two sets of Koopman lifted functions for wind farm control. The focus of both studies was to improve tracking error, defined as the mean difference between grid demand and farm power output, under more challenging conditions than could be tested with the default settings in WFSim. The objective function optimized in both the adaptive AIC and the WRC-AIC schemes is a weighted sum of the squared tracking error and the change in actuator signals. The default weight values from WFSim were adopted: $Q = 10^{-4}$ for the tracking error and $R = 10^{-6}$ for the change in actuation (hereafter referred to as actuator activity). 
 
-Table~\ref{tab:WindFarmSummary} summarizes the quantitative evaluation criteria of the
-closed-loop simulation runs. The focus of this study was to improve the tracking error, i.e., the
-mean difference between the grid demand and the farm power output. The weighted square of
-this error is also the first summand of the MPC optimization function. However, the weighting
-function also contained the weighted square of the actuator rate. As the original weights from
-the simulation environment were not changed, the actuator rate penalty was small relative to
-the tracking error weight, allowing rapid thrust changes without penalizing actuator activity.
-This results in an increase in actuator activity, i.e., the thrust rate of the rotors increases,
-which is most pronounced in the WRC-AIC case. Future research might look into finding a
-more balanced approach between decreasing tracking error and limiting actuator activity.
+ Section~\ref{sec:WindFarmSimulationWFSim} discussed the modifications required in the WFSim simulation environment to enable adaptive control testing and to investigate the influence of intentional yaw misalignment through a yaw-angle-dependent power coefficient. This was followed by the design, implementation, and evaluation of an adaptive AIC controller, alongside two WRC-AIC controllers combining wake redirection and axial induction control.
 
-\begin{table}[h]
-\centering
-\caption[Wind farm controller evaluation criteria: Tracking error and
-actuator activity for adaptive AIC (wind speed change) and AIC vs two WRC schemes (challenging power reference).]{Wind farm controller evaluation criteria.
-    Tracking error (TE) and actuator activity (AA) for the adaptive AIC
-    ( Section~\ref{sec:AdaptiveWindFarmqLMPCforAIC}, wind speed change $V_\infty = 7$--$9$\,m/s)
-    and the WRC-AIC algorithms
-    (Section~\ref{sec:WindFarmLinearMPCforWRC-AIC}, challenging power reference $V_\infty = 8$\,m/s).
-    Results are not directly comparable across sections due to different
-    test cases ($Q = 10^{-4}$, $R = 10^{-6}$). Effective wind speeds estimated from the turbine powers. WRC-AIC: TE and AA from $k = 500$ and, in brackets, from $k = 240$.}
-\label{tab:WindFarmSummary}
-\begin{tabular}{ll rr}
-    \toprule
-    Section & Controller & TE (kW) & $\text{AA} / 10^{-3}$\,(-) \\
-    \midrule
-    \multirow{2}{*}{AIC}
-    & Baseline, non-adaptive AIC  & 456.0 & $3.8$ \\
-    & Adaptive AIC                &  17.2 & $7.6$ \\
-    \midrule
-    \multirow{3}{*}{WRC-AIC}
-    & Baseline AIC ($\gamma_1 = 0^\circ$)              &  118.0 & 6.2 \\
-    & AIC + Gaussian yaw ($\gamma_1^* = 18^\circ$)     &  65.3 & 16.9 \\
-    & WRC-AIC EIODMD ($n_u = 3$)                       & 27.8 & 15.6 \\
-    \bottomrule
-\end{tabular}
-\end{table}
+Section~\ref{sec:AdaptiveWindFarmqLMPCforAIC} discussed a data-driven EDMD algorithm. A state-space system was established incorporating the effective wind speeds of the two turbines, as well as their squares and cubes as lifted states, alongside the two turbine thrust controls. A test case featuring a sudden increase in wind speed, followed by a corresponding increase in power demand, was established. It was found that an adaptive version of the AIC qLMPC successfully mitigated the impact of this wind speed change (which was absent from the EDMD training data), reducing the tracking error from $456.0\,\text{kW}$ to $17.2\,\text{kW}$, albeit with an increase in actuator activity from $3.8 \cdot 10^{-3}$ to $7.6 \cdot 10^{-3}$. 
 
-The results highlight several important findings. Physics-informed lifting functions were shown
-to effectively capture both the relationship between control inputs and effective wind speeds and
-the mapping from control inputs to power outputs. Furthermore, it was demonstrated that
-Koopman-based estimation models can be updated online in real time, enabling adaptive control
-under non-stationary wind conditions. The inclusion of WRC led to an increase in total
+In Section~\ref{sec:WindFarmLinearMPCforWRC-AIC}, a test case with constant wind was set up under a reference power trajectory exceeding the greedy power of the wind farm (i.e., the power produced when all turbines face directly into the wind). Two WRC-AIC algorithms and a baseline AIC were tasked with tracking this challenging reference trajectory. The baseline AIC exhibited a considerable offset due to insufficient power generation, resulting in a tracking error of $118.0\,\text{kW}$. An AIC algorithm utilizing an offline-optimized static yaw angle of $\gamma_1^* = 18^\circ$ reduced the tracking error to $65.3\,\text{kW}$. Meanwhile, the WRC-AIC algorithm, which optimized thrust and yaw jointly, further reduced the tracking error to $27.8\,\text{kW}$. 
+
+While the baseline AIC resulted in the lowest actuator activity ($6.2 \cdot 10^{-3}$), the WRC-AIC achieved the lowest tracking error while increasing actuator activity only to $15.6 \cdot 10^{-3}$, compared to $16.9 \cdot 10^{-3}$ for the static yaw AIC. Because the original simulation weights were retained, the actuator rate penalty remained small relative to the tracking error weight, allowing rapid thrust adjustments without heavy penalization. This results in heightened actuator activity which is most pronounced in the WRC-AIC case. A comprehensive sensitivity analysis of the quadratic program weights is left for future research.
+
+Across the considered test cases, the tracking error ranged from just over $10\,\text{kW}$ to nearly $500\,\text{kW}$, while actuator activity varied between $0.001$ and $0.1$. For the AIC algorithm, actuator activity consists solely of the two thrust signals, which range between $0.2$ and $2$. For the WRC schemes, the yaw angle was added as a control input, allowed to vary from $0^\circ$ to $22^\circ$ with an additional penalty of $0.1$ to keep it roughly in the same order of magnitude as the thrust signals. In short, the default WFSim configuration places a heavy emphasis on minimizing tracking error. However, setting $R$ to zero was found to induce instabilities. A thorough investigation into the influence of higher penalty values for actuator activity remains a direction for future research.
+
+Apart from the comparison between non-adaptive and adaptive AIC schemes, Section~\ref{sec:WindFarmSimulationWFSim} also provides a sensitivity study on the two tuning parameters of the adaptive scheme, the update trigger condition and the sample size of historic data that is useful to be included in an update of the Koopman matrix. It was found that the setting the trigger condition to 0.15\,m/s was a good compromise between tracking error and number of model updates. The value of this trigger number corresponds to the difference between historic wind predictions and measurements for the first turbine. As this can be very well predicted as long as the wind stays constant it was a reliable indicator of a change in freestream wind. It was also found that five samples of historic effective wind speed measurement, here estimated from the turbine power, needed to to calculate the Koopman matrix update. Doubling or quadrupling that trajectory length however resulted in performance degradation rather than improvements. The combination of different trigger conditions sizes than 0.15\,m/s with smaller sample size numbers remains to be investigated. An excitation signal was included whenever the update condition was triggered. Changing the influence weight of that signal, which is currently added to the control signal with a weight of 0.01 to 0.99, as well as changing its form, or including a forgetting factor to put more weight on more current measurements is another research direction. Another very obvious area of research would be investigating the influence of additional lifting functions, other than the already included squares and cubes of the effective wind speed.
+
+
+In Section~\ref{sec:WindFarmLinearMPCforWRC-AIC}, however, the improvement in tracking error depending on including a total of~21 carefully selected lifting functions is discussed in detail. The aforementioned lifted states, the effective wind speeds, their cubes and squares form six lifted state. The following types of lifting functions are used to form an addition set of 14 lifted states: \begin{itemize}
+    \item the three inputs are included as states in filtered form to keep the model linear and 
+    \item four additional features represent the influence of the controls on the turbine power. 
+    \item Additionally, there are four moving means that are used to include the long time delays of approximately 100\,s that occur for the two turbines spaced more than 600\,m apart and 
+    \item three products of these mean and the feature representing the power harvest at the second turbine.
+   \end{itemize}
+An offset or bias state is added as a 21-st state. This was previously not necessary, as one wind speed in front of the first turbine was used for prediction, but became necessary with this prediction depending only on the control inputs. However, this has the advantage, that this emulates real wind farm control better, where reliable wind measurements might not be available. 
+
+ The inclusion of WRC led to an increase in total
 farm power output exceeding 5\% for all simulations used: the Bastankhah analytical wake model predicted
 an improvement of approximately 6\%, while the WFSim simulation indicated an increase of
 around 10\%. These results are consistent with trends reported in related literature. Both the
 Bastankhah and the NSE-based WFSim models showed good agreement in
 terms of wake expansion and power prediction. The combination of increased power yield and
 a good representation of the wind farm dynamics with the data-driven Koopman model resulted in accurate power reference tracking, even for reference
-signals exceeding the greedy power. This outcome underscores the potential of Koopman-based
+signals exceeding the greedy power. This result highlights the potential of Koopman-based
 WRC-AIC control strategies to enhance wind farm efficiency and support grid stability through power delivery more closely following the demanded power.
+
