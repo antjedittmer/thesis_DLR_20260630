@@ -565,10 +565,9 @@ Figure~\ref{fig:CtrlCmpMdlSweep}(b) shows results for the turbulent wind. The im
 
 \begin{figure} [ht]
     \subfloat[Stepped wind sweep]{\includegraphics[width=0.495\textwidth]{figures/Figures_ADi/cmpCtrlTimeDomain_All_RefSimulinkClosedLoop_beta.eps}}\hfill
-    \subfloat[Turbulent wind, IEC class B, 18~m/s mean speed]{\includegraphics[width=0.495\textwidth]{figures/Figures_ADi/cmpCtrlTimeDomain_All_RefSimulinkClosedLoopNTW18_beta.eps}}\hfill
+    \subfloat[Turbulent wind, turbulence class B, 18~m/s mean speed]{\includegraphics[width=0.485\textwidth]{figures/Figures_ADi/cmpCtrlTimeDomain_All_RefSimulinkClosedLoopNTW18_beta.eps}}\hfill
     %\subfloat[blc blc]{\includegraphics[width=0.31\textwidth]{figures/twoTurbinesGreedyOpt_2d.eps}}
-    \caption[Controller comparison with qLPV model Mdl2: Baseline PI vs.\ qLMPC for stepped wind sweep and turbulent wind.]{Controller comparison with qLPV model Mdl2: Baseline PI vs.\ qLMPC for stepped wind sweep and turbulent wind (18\,m/s mean, IEC turbulence
-        class B (14\%)).  PI control (blue line), qLMPC (red line) and power reference (black dashed line). Displayed signals: wind speed, control inputs, tower fore-aft
+    \caption[Controller comparison with qLPV model Mdl2: Baseline PI vs.\ qLMPC for stepped wind sweep and turbulent wind.]{Controller comparison with qLPV model Mdl2: Baseline PI vs.\ qLMPC for stepped wind sweep and turbulent wind.  PI control (blue line), qLMPC (red line) and power reference (black dashed line). Displayed signals: wind speed, control inputs, tower fore-aft
         accelerations, and power output.}
     \label{fig:CtrlCmpMdlSweep}
 \end{figure}
@@ -610,7 +609,7 @@ Figure~\ref{fig:CtrlCmpFilt2} shows both controllers on the plant with the wind 
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.495\textwidth]{figures/figDirConstr1/cmpTimeDomain_All5PIvsMPC_Filt.eps}
-    \caption[Controller comparison with qLPV model Mdl2 with filtered wind: Baseline PI vs.\ qLMPC.]{Controller comparison with qLPV model Mdl2 with filtered wind: Baseline PI (blue line) vs.\ qLMPC (red line) on the plant with the rotor-effective wind filters for turbulent wind (18\,m/s mean, IEC turbulence class B (14\%)), pitch rate limit 13\textdegree/s. Displayed signals: freestream wind speed, pitch, states, and power.}
+    \caption[Controller comparison with qLPV model Mdl2 with filtered wind: Baseline PI vs.\ qLMPC.]{Controller comparison with qLPV model Mdl2 with filtered wind: Baseline PI (blue line) vs.\ qLMPC (red line) on the plant with the rotor-effective wind filters for turbulent wind (18\,m/s mean, turbulence class B), pitch rate limit 13\textdegree/s. Displayed signals: freestream wind speed, pitch, states, and power.}
     \label{fig:CtrlCmpFilt2}
 \end{figure}
 The standard deviations of the pitch derivative, the rotor speed, the tower fore-aft acceleration and the power tracking error for Figures~\ref{fig:CtrlCmpRates} and~\ref{fig:CtrlCmpFilt2} are summarized in Table~\ref{tab:stddev_unified}.
@@ -657,7 +656,7 @@ Figure~\ref{fig:CtrlCmpFAST} shows the baseline PI controller, the original qLMP
 \begin{figure}[htbp]
     \subfloat[Stepped wind sweep]{\includegraphics[width=0.495\textwidth]{figures/figDirFASTthesis/cmpCtrlFASTthesis_Sweep_PI_beta_flapNotch_flapNotchSmooth12.eps}}\hfill
     \subfloat[Turbulent wind, IEC class B, 18~m/s mean speed]{\includegraphics[width=0.495\textwidth]{figures/figDirFASTthesis/cmpCtrlFASTthesis_NTM18B_PI_beta_flapNotch_flapNotchSmooth12.eps}}
-    \caption[Controller comparison on FAST: baseline PI, original qLMPC, and the qLMPC designs for FAST]{Controller comparison on FAST: baseline PI controller (blue), original qLMPC (red), notch filter design (yellow), and smooth design (purple) for the stepped wind sweep and turbulent wind (18\,m/s mean, IEC turbulence class B), pitch rate limit 13\textdegree/s. Displayed signals: wind speed, generator torque, blade 1 pitch angle, rotor speed, tower fore-aft acceleration, generator power with its reference (black dashed line), and blade 1 root out-of-plane moment.}
+    \caption[Controller comparison on FAST: baseline PI, original qLMPC, and the qLMPC designs for FAST]{Controller comparison on FAST: baseline PI controller (blue), original qLMPC (red), notch filter design (yellow), and smooth design (purple) for the stepped wind sweep and turbulent wind (18\,m/s mean, turbulence class B), pitch rate limit 13\textdegree/s. Displayed signals: wind speed, generator torque, blade 1 pitch angle, rotor speed, tower fore-aft acceleration, generator power with its reference (black dashed line), and blade 1 root out-of-plane moment.}
     \label{fig:CtrlCmpFAST}
 \end{figure}
 In the stepped wind sweep, shown in Figure~\ref{fig:CtrlCmpFAST}(a), the differences between the controllers are small. The original qLMPC, depicted in red, slightly outperforms the baseline PI controller, shown in blue, with a decrease of 8\% in the standard deviation of the tower fore-aft acceleration and of 4\% in those of the power tracking error and the rotor speed. This is achieved with smoother pitching, so that all four values show an improvement. The two other qLMPC designs, which were developed to address the issues in turbulent wind, show no overall improvement for the stepped wind sweep. Only the standard deviation of the rotor speed of the notch filter design decreases slightly, but due to the much more aggressive pitching, this does not translate into a lower standard deviation of the power tracking error. Presumably, these performance decreases result from the rotor-effective wind filter, which delays the scheduling wind speed although the wind steps act on the whole rotor area at once. This is particularly noticeable for the smooth design, whose pitch angle deviates from zero below rated wind speed.
@@ -666,7 +665,7 @@ In the turbulent wind, the original qLMPC, which performs very well on Mdl2 for 
 
 \begin{table}[h]
     \centering
-    \caption[Controller comparison on FAST for stepped wind sweep and turbulent wind.]{Controller comparison on FAST v8.16 for the stepped wind sweep and turbulent wind (18\,m/s mean, IEC turbulence class B), pitch rate limit 13\textdegree/s: standard deviations of the tower fore-aft acceleration, the power tracking error, the rotor speed, and the (collective) pitch rate. In parentheses the ratio baseline PI/controller; values above 1 indicate an improvement.}
+    \caption[Controller comparison on FAST for stepped wind sweep and turbulent wind.]{Controller comparison on FAST v8.16 for the stepped wind sweep and turbulent wind (18\,m/s mean, turbulence class B), pitch rate limit 13\textdegree/s: standard deviations of the tower fore-aft acceleration, the power tracking error, the rotor speed, and the (collective) pitch rate. In parentheses the ratio baseline PI/controller; values above 1 indicate an improvement.}
     \label{tab:CtrlComparisonFAST}
     \begin{tabular}{ll rrrr}
         \toprule
@@ -828,7 +827,7 @@ As expected, increasing the allowable pitch rate enhances the effectiveness of t
 \begin{figure} [htbp]
     \subfloat[Pitch rate limit 4\textdegree/s]{\includegraphics[width=0.495\textwidth]{figures/figures_WESC25/fig00a_Timeseries1.eps}}\hfill
     \subfloat[Pitch rate limit 13\textdegree/s]{\includegraphics[width=0.495\textwidth]{figures/figures_WESC25/fig00a_Timeseries3.eps}}\hfill
-    \caption[Controller comparison: Baseline and IPC PI with different pitch rate limits.]{Controller comparison: Baseline CPC (purple) and IPC PI (blue, red and yellow lines pitch signals of blades 1 to 3, blue all other signals) with different pitch rate limits for turbulent wind (18\,m/s mean, IEC turbulence class A (16\%), wind field of the optimization dataset). Rate limits: Low (4\textdegree/s) and high (13\textdegree/s) for IPC, standard  (8\textdegree/s) for baseline PI. Dashed lines in the pitch rate plots: $\pm 4$\textdegree/s and $\pm 8$\textdegree/s. Displayed signals: wind speed, pitch, pitch rate, states, power, and blade~1 root out-of-plane moment.}
+    \caption[Controller comparison: Baseline and IPC PI with different pitch rate limits.]{Controller comparison: Baseline CPC (purple) and IPC PI (blue, red and yellow lines pitch signals of blades 1 to 3, blue all other signals) with different pitch rate limits for turbulent wind (18\,m/s mean, turbulence class A, optimization dataset). Rate limits: Low (4\textdegree/s) and high (13\textdegree/s) for IPC, standard  (8\textdegree/s) for baseline PI. Dashed lines in the pitch rate plots: $\pm 4$\textdegree/s and $\pm 8$\textdegree/s. Displayed signals: wind speed, pitch, pitch rate, states, power, and blade~1 root out-of-plane moment.}
     \label{fig:timeseriesIPC}
 \end{figure}
 %
@@ -838,7 +837,7 @@ Figure~\ref{fig:PSDIPC} shows the Power Spectral Density (PSD) of the blade root
 \begin{figure}[h]
     \begin{center}
         \includegraphics[width=0.6\textwidth]{figures/figures_WESC25/fig02_PSDroot_breaky_ratecomp.png}
-        \caption[Controller comparison: Power Spectral Density of the blade~1 root out-of-plane moment of baseline PI with 8\textdegree/s rate limit, IPC with 4\textdegree/s,  8\textdegree/s, and 13\textdegree/s rate limit]{Controller comparison: Power Spectral Density of the blade~1 root out-of-plane moment of baseline PI (black) with 8\textdegree/s rate limit, IPC with 4\textdegree/s rate limit (blue, dash-dotted),  8\textdegree/s rate limit (red, solid), and 13\textdegree/s rate limit (yellow, dotted). Split y axis; peak values at 1P and 2P in the line colors.}
+        \caption[Controller comparison: Power Spectral Density of the blade~1 root out-of-plane moment of baseline PI with 8\textdegree/s rate limit, IPC with 4\textdegree/s,  8\textdegree/s, and 13\textdegree/s rate limit]{Controller comparison: Power Spectral Density of the blade~1 root out-of-plane moment of baseline PI (black) with 8\textdegree/s rate limit, IPC with 4\textdegree/s rate limit (blue, dash-dotted),  8\textdegree/s rate limit (red, solid), and 13\textdegree/s rate limit (yellow, dotted).}
         \label{fig:PSDIPC}
     \end{center}
 \end{figure}
@@ -935,11 +934,11 @@ Figure \ref{subfig:TEF2}\,(a) shows that a positive flap deflection leads to an 
 
 Figure~\ref{subfig:TEF2}\,(b) visualizes the drag coefficient. The curves of the drag coefficient $c_d$ appear smooth and physically meaningful for angles of attacks above -27\textdegree. Note that there is a sudden reversal of the vertical staggering of the polars below this value. There is neither a physical explanation for this effect, nor is any discontinuity observed for the rotor profile without trailing-edge flap. It can be assumed that the extrapolation method does not work optimally for profiles with flaps at these high TEF angles that would lead to flow separation and stall.  However, this can be disregarded as the range of TEF angles of attack in the simulations in the outer area of the rotor blades do not exceed -27\textdegree\ during normal operation. As this study uses OpenFAST v3.2.1, no additional code needs to be added for the TEF inclusion, unlike earlier studies that leveraged previous versions of FAST. The obtained coefficients are summarized in a text file, which is included as a parameter in the Airfoil Information section of the AeroDyn15.dat file of the NREL 5MW model available in the Git repo \cite{GitRepoCodeAALC}. %NACA64_A17_Flap.dat
 %
-\begin{figure} [h]
+\begin{figure} [htbp]
+    \centering
     \subfloat[Lift coefficient $c_{l}$]{\includegraphics[width=0.495\textwidth]{figures/Images_Torque24/fig01_Cl1out.eps}}\hfill 
-    \subfloat[Drag coefficient $c_{d}$]{\includegraphics[width=0.495\textwidth]{figures/Images_Torque24/fig01_Cd1out.eps}}\hfill
-    %\subfloat[blc blc]{\includegraphics[width=0.31\textwidth]{figures/twoTurbinesGreedyOpt_2d.eps}}
-    \caption{Lift and drag coefficients at different TEF angles $\eta_{\text{TEF}}$ and different blade angles of attack $\alpha$.}
+    \subfloat[Drag coefficient $c_{d}$]{\includegraphics[width=0.495\textwidth]{figures/Images_Torque24/fig01_Cd1out.eps}}
+    \caption{Lift and drag coefficients at different trailing-edge flap angles $\eta_{\text{TEF}}$ and blade angles of attack $\alpha$ for $-10^\circ$ (blue circle marker), $-7^\circ$ (red square marker), $-3^\circ$ (yellow triangle marker), $0^\circ$ (purple cross marker), $3^\circ$ (green diamond marker), $7^\circ$ (light blue dot marker), and $10^\circ$ (dark red triangle marker).}
     \label{subfig:TEF2}
 \end{figure}
 %
@@ -1016,9 +1015,9 @@ Unlike the previously discussed proof-of-concept on IPC and its comparison with 
 %   the Combined-IPC-TEFC repository): wind speed ranges, no tower top DEL, C_Act = actuator power (Eq. CAct_calc)
 \subsection{Results} \label{subsec:ResultsTEF}
 This section discusses both open loop results, obtained with the simulation set-up depicted in Figure~\ref{fig:OLdiag}, as well as closed loop results, simulated with the control loop from Figure~\ref{fig:CLdiag}. Figure~\ref{fig:OLval} shows the steady state values, at three different TEF angles, of power $P_g$, rotor speed $\omega_r$, rotor thrust $T_r$, and blade pitch angle $\beta_{0}$ for all 14 wind speeds. Simulations at constant wind speeds are run for 660\,s to confirm the validity of the TEF model. Data from the initial 60\,s are excluded to avoid non-physical initialization artifacts and the mean values are calculated for each wind speed.
-\begin{figure} [h]
-    \subfloat[Power and rotor speed]{\includegraphics[width=0.485\textwidth]{figures/Images_Torque24/fig06_TEFOL_1.eps}}\hfill
-    \subfloat[Rotor thrust and blade pitch]{\includegraphics[width=0.485\textwidth]{figures/Images_Torque24/fig06_TEFOL_2.eps}}\hfill
+\begin{figure} [htbp]\centering
+    \subfloat[Power and rotor speed]{\includegraphics[width=0.65\textwidth]{figures/Images_Torque24/fig06_TEFOL_1.eps}}\\
+    \subfloat[Rotor thrust and blade pitch]{\includegraphics[width=0.65\textwidth]{figures/Images_Torque24/fig06_TEFOL_2.eps}}
     \caption{TEF open-loop verification, TEF deflection at -10\textdegree{}\,(blue), 0\textdegree{}\,(red), and 10\textdegree{}\,(green).}
     \label{fig:OLval}
 \end{figure}
@@ -1027,13 +1026,14 @@ This section discusses both open loop results, obtained with the simulation set-
 The simulated power with and without TEF deflections shows the expected power characteristic curve of a wind turbine: In Region~II, both positive and negative flap deflections reduce power \(P_g\) due to decreased aerodynamic efficiency, unlike in Region~III, where the same power output is observed, as the power controller controls the pitch angle once rated wind speed is reached. Adjusting the pitch changes the aerodynamic forces. The control system can therefore maintain nominal power. This also reflects on the rotor speed \(\omega_r\), depicted in the second plot, which is slightly lower in Region~II but unchanged in Region~III. The thrust \(T_r\) in Region~II is decreased by a negative flap angle, while the influence of a positive flap angle on the thrust is negligible: The thrust cannot be increased beyond the neutral flap position due to the limited wind power, which necessarily limits the amount of energy converted into rotational energy. This leads to a dynamic equilibrium where, despite positive flap deflection, the thrust forces remain at levels equivalent to those at the neutral flap position. The second plot in Figure~\ref{fig:OLval}\,(b) shows the blade pitch \(\beta_{0}\), which is lower for a negative and higher for a positive TEF angle, corresponding to the lower and higher thrust force.
 
 Figure~\ref{fig:PSDTEF} shows the power spectral density (PSD) of the blade root bending moment in closed loop for the optimization dataset with a mean wind speed of 18\,m/s, the wind speed at which the AALC parameters are optimized.
-\begin{figure} [h]
-    \subfloat[Baseline (black), IPC (blue), and TEFC (green)]{\includegraphics[width=0.485\textwidth]{figures/figIPCThesis/fig02_PSDroot_breaky_AALCinit.eps}}\hfill
-    \subfloat[AALC (red), and AALC optimized (pink)]{\includegraphics[width=0.485\textwidth]{figures/figIPCThesis/fig02_PSDroot_breaky1c_AALC.eps}}\hfill
-    \caption{Power Spectral Density of the blade root out-of-plane moment for the optimization set, turbulence class A, with mean wind speed 18~m/s.}
+\begin{figure}[htbp]
+    \centering
+    \subfloat[Baseline (black), IPC (blue), and TEFC (green)]{\includegraphics[width=0.65\textwidth]{figures/figIPCThesis/fig02_PSDroot_breaky_AALCinit.eps}}\\
+    \subfloat[AALC (red), and AALC optimized (pink)]{\includegraphics[width=0.65\textwidth]{figures/figIPCThesis/fig02_PSDroot_breaky1c_AALC.eps}}
+    \caption[Controller comparison: Power Spectral Density of the blade~1 root out-of-plane moment of baseline PI, IPC, TEFC, AALC, and AALC with optimized parameters.]{Controller comparison: Power Spectral Density of the blade~1 root out-of-plane moment of baseline PI, IPC with $K_{I,\text{IPC}} = 1$, TEFC with $K_{P,\text{TEFC}} = 1$, AALC with $K_{I,\text{IPC}} = 1$ and $K_{P,\text{IPC}} = 1$, and AALC with optimized parameters \(K_{P,\text{IPC}}\), \(K_{I,\text{IPC}}\), and \(K_{P,\text{TEFC}}\), see \ref{tabone}. Results for turbulent wind (18 m/s mean, turbulence class A, optimization dataset).}
     \label{fig:PSDTEF}
 \end{figure}
-%
+
 IPC (blue line) and TEFC (green line) reduce the PSD of the 1P and 2P loads, respectively, compared to the baseline (black line): IPC alone reduces the 1P peak by 97.4\%, but increases the 2P peak by 29.8\%, while TEFC alone reduces the 2P peak by 76.8\% and the 1P peak by 38.3\%. These PSDs are obtained with the initially used AALC parameters with the original setting of a purely integral IPC and a purely proportional TEFC feedback, both set to values of one. In a second step, the three parameters \(K_{P,\text{IPC}}\), \(K_{I,\text{IPC}}\), and \(K_{P,\text{TEFC}}\) are optimized at 18\,m/s, subject to the constraint that the tower base DEL does not exceed the one of the baseline, resulting in an IPC PI controller with $K_{P,\text{IPC}} = 0.082$ and $K_{I,\text{IPC}} = 0.669$ and a TEFC P controller with $K_{P,\text{TEFC}} = 0.641$. An optimization started from the initial parameters instead of the optimized IPC parameters converges to the same cost.
 
 Figure~\ref{fig:PSDTEF}\,(b) demonstrates that considerable improvement with respect to the baseline controller is possible using the suggested AALC design: The combined IPC-TEFC with the original setting of a purely integral IPC and proportional TEFC feedback reduces the PSD at 1P by 97.0\%, and at 2P by 75.3\%. With the optimized parameters, the reduction with respect to the baseline is 94.9\% at 1P and 67.3\% at 2P, i.e., the residual peaks are larger than with the initial setting. The cost function, the largest of the three blade DELs, is nevertheless decreased from $J = 0.778$ for the initial controller to $J = 0.773$ for the optimized one, as the optimized controller reduces the DELs of the three blades more evenly (by 22.7\% to 23.3\%, compared to 22.2\% to 25.1\% with the initial setting). At the same time, the optimized AALC requires less pitch activity than the optimized IPC without TEF: the standard deviation of the pitch rate is 2.14\textdegree/s compared to 2.98\textdegree/s.
@@ -1109,13 +1109,13 @@ Figure~\ref{fig:CtrlCmpFASTIPC} and Table~\ref{tab:CtrlComparisonFASTNTM18B_PI_f
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=0.62\textwidth]{figures/figDirFASTthesis/cmpCtrlFASTthesis_NTM18B_PI_flapNotch_flapNotchIPC.eps}
-    \caption[Notch filter design with and without IPC on FAST for turbulent wind]{Notch filter design without and with IPC compared with the baseline PI controller on FAST for turbulent wind (18\,m/s mean, IEC turbulence class B), pitch rate limit 13\textdegree/s. Displayed signals: wind speed, generator torque, blade 1 pitch angle, rotor speed, tower fore-aft acceleration, generator power with its reference (black dashed line), and blade 1 root out-of-plane moment.}
+    \caption[Notch filter design with and without IPC on FAST for turbulent wind]{Notch filter design without and with IPC compared with the baseline PI controller on FAST for turbulent wind (18\,m/s mean, turbulence class B), pitch rate limit 13\textdegree/s. Displayed signals: wind speed, generator torque, blade 1 pitch angle, rotor speed, tower fore-aft acceleration, generator power with its reference (black dashed line), and blade 1 root out-of-plane moment.}
     \label{fig:CtrlCmpFASTIPC}
 \end{figure}
 
 \begin{table}[h]
     \centering
-    \caption[Controller comparison on FAST, 18 m/s turbulent (class B): notch filter design with and without IPC.]{Controller comparison on FAST v8.16, 18\,m/s turbulent wind (IEC turbulence class B), pitch rate limit 13\textdegree/s, notch filter design with and without IPC. Top: standard deviations of the tower fore-aft acceleration, the power tracking error, the rotor speed, the (collective) pitch rate, and the blade root out-of-plane moment (mean of the blades). Bottom: damage equivalent loads of the blade root (W\"ohler exponent 10, maximum of the blades) and the tower base (exponent 4). In parentheses the ratio baseline PI/controller; values above 1 indicate an improvement.}
+    \caption[Controller comparison on FAST, 18 m/s turbulent (class B): notch filter design with and without IPC.]{Controller comparison on FAST v8.16, 18\,m/s turbulent wind (turbulence class B), pitch rate limit 13\textdegree/s, notch filter design with and without IPC. Top: standard deviations of the tower fore-aft acceleration, the power tracking error, the rotor speed, the (collective) pitch rate, and the blade root out-of-plane moment (mean of the blades). Bottom: damage equivalent loads of the blade root (W\"ohler exponent 10, maximum of the blades) and the tower base (exponent 4). In parentheses the ratio baseline PI/controller; values above 1 indicate an improvement.}
     \label{tab:CtrlComparisonFASTNTM18B_PI_flapNotch_flapNotchIPC}
     \begin{tabular}{l rrr}
         \toprule
