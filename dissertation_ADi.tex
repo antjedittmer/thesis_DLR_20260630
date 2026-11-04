@@ -123,6 +123,7 @@
 \usepackage{chngcntr}
 \usepackage{pgfplots}	%for Matlab2Tikz
 \usepackage{enumitem}
+
 \usepgfplotslibrary{external}
 \tikzexternalize[prefix=figures/tikz/, shell escape=-enable-write18]	%!!Important! compile with: latex -enable-write18 on windows with MikTex
 \newcommand{\atikz}[2]{\scalebox{#1}{\input{"figures/#2.tikz"}}}
@@ -148,7 +149,7 @@
 \title{Quasi-Linear Parameter-Varying and Koopman Model Predictive Control for Wind Energy Systems}
 \author{Antje Dittmer}
 
-
+\raggedbottom
 
 \begin{document}
    % \maketitle
@@ -194,10 +195,13 @@
         
         In this thesis, Model Predictive Control (MPC) is used to design algorithms for wind turbine and wind farm control, aiming to minimize the Levelized Cost of Energy~(LCoE). The goal is to maximize power yield while minimizing mechanical loads and keeping actuator movements within their limits and as small as possible. For individual Wind Energy Conversion Systems~(WECS), this involves maximizing energy extraction up to the rated wind speed and pitching the blades above this speed to lower mechanical loads and maintain constant power output.
         
-        A novel velocity-based quasi-Linear Parameter-Varying Model Predictive Control (qLMPC) algorithm is applied to wind turbines as a Multiple-Input Multiple-Output~(MIMO) controller for the whole operating range of the turbine for the first time within the context of this thesis. A quasi-Linear Parameter-Varying~(qLPV) mathematical model is derived using Lagrange's equations for controller synthesis. This new qLMPC strategy is compared to state-of-the-art Collective Pitch Control~(CPC) and Individual Pitch Control~(IPC) using Damage Equivalent Loads~(DEL) for evaluation. Additionally, an enhanced turbine model with Trailing Edge Flaps (TEF) is developed, combining IPC and TEF control for improved performance.
+          %     For wind turbine control, a velocity-based quasi-Linear Parameter-Varying Model Predictive Control (qLMPC) algorithm is applied for the first time as a Multiple-Input Multiple-Output~(MIMO) controller over the whole operating range of the wind turbine. Two quasi-Linear Parameter-Varying~(qLPV) turbine models, one derived using Lagrange's equations, are developed and verified against the aeroelastic simulation software FAST. Without model mismatch, the qLMPC reduces tower accelerations and power fluctuations considerably. On FAST, it retains a large part of the power smoothing, but not the tower load reduction. The qLMPC is compared with state-of-the-art Collective Pitch Control~(CPC) and Individual Pitch Control~(IPC) using Damage Equivalent Loads~(DEL), power fluctuations, and actuator activity. Additionally, an enhanced turbine model with Trailing Edge Flaps (TEF) is developed, and the combination of IPC and TEF control achieves a slightly larger blade load reduction than IPC alone at considerably lower pitch actuator power.
+       
+      A novel velocity-based quasi-Linear Parameter-Varying Model Predictive Control (qLMPC) algorithm is applied to wind turbines as a Multiple-Input Multiple-Output~(MIMO) controller for the whole operating range of the turbine for the first time within the context of this thesis. Two quasi-Linear Parameter-Varying~(qLPV) turbine models, one derived using Lagrange's equations, are developed for controller synthesis. This new qLMPC strategy is compared to state-of-the-art Collective Pitch Control~(CPC) and Individual Pitch Control~(IPC) using Damage Equivalent Loads~(DEL), power fluctuations, and actuator activity as evaluation criteria. Additionally, an enhanced turbine model with Trailing Edge Flaps (TEF) is developed, combining IPC and TEF control for improved performance.
         
-        For wind farm control, a data-driven approach models wake interactions between turbines. Data from a simulation model is used to construct a Koopman matrix, a finite-dimensional representation of the Koopman operator, to design quasi-linear and linear models for qLMPC and linear  MPC of two turbines. Basis functions are carefully selected based on physical relationships governing wind and wake interactions. The qLPV model of wake interaction reduces the number of measurement points from several per turbine to one in front of the first turbine while maintaining comparable grid power reference tracking. An efficient online adaptive controller is demonstrated, showing that Wake Redirection Control (WRC) enables the turbines to produce more power consistently compared to the greedy baseline approach. Both wind turbine and wind farm control designs are formulated as Quadratic Programming (QP) problems to ensure real-time capability.  
         
+
+For wind farm control, a data-driven approach models wake interactions between turbines. Data from a simulation model is used to construct Koopman matrices, finite-dimensional representations of the Koopman operator, to derive models for MPC of a two-turbine wind farm. The lifting functions are carefully selected based on physical relationships governing wind, wake interactions, and power extraction from the wind by WECS. Two Koopman models are designed: One predicts the effective wind speeds at the turbines, using known physical relationships to derive the farm output, while the second predicts the farm power directly. Both Koopman models use only the control signals and the measured turbine powers, which eliminates the need for wind measurements in closed loop while maintaining acceptable grid power reference tracking. An efficient online adaptive controller for wind farm thrust control is demonstrated, which adapts to freestream wind conditions not contained in the training data. Combining Wake Redirection Control (WRC) with thrust control increases the farm power in steady state by about 10\% compared with the greedy baseline and considerably reduces the tracking error for power references above the greedy power. Both wind turbine and wind farm control designs are formulated as Quadratic Programming (QP) problems to ensure real-time capability.
     \end{abstract}
     
     \clearpage
@@ -223,7 +227,6 @@
     \include{chapters/03_WindTurbineqLPVmodel_01}
     \include{chapters/04_WindTurbineControl_02_notBold}
     \include{chapters/06_ApplicationWindFarmControl_04}
-    %\include{chapters/ClaudeSuggestions/ch05_ClaudeSuggestion}
     \include{chapters/07_Conclusion_02}
     \appendix
     \include{chapters/document}
