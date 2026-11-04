@@ -100,7 +100,7 @@ The continuous-time system, input, and output matrices are
     \bm{C}_c &= \nabla_{\bm{x}_{\text{MPC}}} \bm{h}_{\text{MPC}}(\bm{x}_{\text{MPC}}),
 \end{align*}
 with the state vector $\bm{x}_{\text{MPC}}$ and output vector $\bm{y}_{\text{MPC}}$ as defined in Equation~\eqref{eq:xMPCyMPC}. Since $\bm{y}_{\text{MPC}}$ consists of two states, $\bm{C}_c$ is constant. The scheduling parameter vector consists of the wind speed $V_{\infty}$, the pitch angle $\beta_0$, and the rotor speed $\omega_r$,
-\begin{equation} \label{eq:rhoWT}
+\begin{equation} \label{eq:rhoWT4}
     \bm{\rho}_\Rho = [V_{\infty} \quad \beta_0 \quad \omega_{r}]^T \in \mathbb{R}^{3 \times 1}.
 \end{equation}
 At the current time step, the measured or estimated values are used. Over the prediction horizon, $\omega_r$ and $\beta_0$ are taken from the predicted trajectories of the previous optimization step, while $V_{\infty}$ is held constant. Although the control scheme is velocity-based, i.e., based on state derivatives or, in discrete time, state differences, the scheduling parameters are taken in their original non-derivative form. This is because partial derivatives such as \( \partial T_r / \partial \omega_r \), \( \partial T_r / \partial \beta_0 \), and \( \partial T_r / \partial V_{\infty} \) are functions of the current physical states, not of their time derivatives.
@@ -160,7 +160,7 @@ The discrete-time outputs can be calculated as the sum of the former sampled out
 \end{align*}
 %
 Including the output signal values, the discrete state at step $k+1$ is calculated as presented in Equation~\eqref{eq:discreteVelocityqLPV}:
-\begin{equation} \label{eq:discreteVelocityqLPV}
+\begin{equation} \label{eq:discreteVelocityqLPV4}
     \begin{bmatrix}
         \bm{y}_{\text{MPC}}(k+1) \\
         \Delta \bm{x}_{\text{MPC}}(k+1)
@@ -357,7 +357,7 @@ At each time step, the scheduling trajectory
 \begin{align*}
     \bm{\Rho}_{k} = [\bm{\rho}_{\Rho}^T(k) \quad \bm{\rho}_{\Rho}^T(k+1) \quad \cdots \quad \bm{\rho}_{\Rho}^T(k+n_h-1)]^T \in \mathbb{R}^{3n_h \times 1}
 \end{align*}
-is required, which consists of the current scheduling parameter vector, introduced in Equation~\eqref{eq:rhoWT},
+is required, which consists of the current scheduling parameter vector, introduced in Equation~\eqref{eq:rhoWT4},
 \begin{align*}
     \bm{\rho}_{\Rho}(k) = [V_\infty(k) \quad \beta_0(k) \quad \omega_r(k)]^T \in \mathbb{R}^{3 \times 1}
 \end{align*}

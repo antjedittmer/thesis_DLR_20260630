@@ -1,0 +1,14 @@
+\paragraph{Use of AI tools.}
+During the preparation of this thesis, the AI assistant Claude (Anthropic), including the coding assistant Claude Code, was used under the author's direction as a programming and writing aid. Its use comprised:
+\begin{itemize}
+    \item \textbf{Code:} implementation and modification of MATLAB code in the author's GitHub repositories, e.g.,
+    \begin{itemize}
+        \item for the wind turbine controller studies of Chapter~\ref{sec:Application to Wind Turbine Control4}: the design of filters included in the controller to improve its performance, the re-tuning of controller gains, and the re-evaluation of the controller comparisons with the damage equivalent load settings used in this thesis;
+        
+        \item for the wind farm controller studies of Chapter~\ref{sec:ApplicationtoWindFarmControl}: the re-design of the system identification signals; the estimation of the effective wind speeds from the turbine powers, which makes the closed-loop operation independent of wind speed measurements; a re-design of the nonlinear features as functions of the filtered control signals, which are included as states of the model, and the adaptation of the corresponding MPC prediction to the updated model; and a sensitivity study that systematically investigates the influence of the controller parameters on tracking error and actuator activity.
+    \end{itemize}
+    The figures and tables of the simulation results in this thesis were generated directly from the simulation data with MATLAB scripts of this code.
+    \item \textbf{Text:} review of the chapters for consistency between text, equations, tables, and code; proofreading and language editing; and suggestions for passages, captions, and revised versions of sections of Chapters~1 to~6.
+\end{itemize}
+In addition, the author used ChatGPT, Gemini, and Perplexity for language editing, for support in generating and revising the MATLAB scripts used to produce the figures and tables, and for literature searches. All results obtained with AI tools were carefully reviewed and verified. Some modeling variants were proposed or refined with the help of the AI tools; their evaluation and selection, the design decisions, and the conclusions are the author's. All code changes were reviewed and their results checked by the author. Suggested text was reviewed, revised, and integrated by the author, who is responsible for the entire content of this thesis.
+
