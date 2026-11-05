@@ -123,6 +123,8 @@
 \usepackage{chngcntr}
 \usepackage{pgfplots}	%for Matlab2Tikz
 \usepackage{enumitem}
+% preamble (main language last):
+\usepackage[ngerman,english]{babel}
 
 \usepgfplotslibrary{external}
 \tikzexternalize[prefix=figures/tikz/, shell escape=-enable-write18]	%!!Important! compile with: latex -enable-write18 on windows with MikTex
@@ -138,6 +140,9 @@
 \newcommand{\trp}{T}
 \newcommand{\ones}{\textnormal{\textbf{1}}}
 \newcommand{\diag}{\textnormal{diag}}
+
+\usepackage[T1]{fontenc}
+\usepackage{microtype}
 
 %\leftmargin=-1em
 %\setlist
@@ -182,35 +187,46 @@
     \end{titlepage}
     \makeatother
     
-\clearpage
-\thispagestyle{empty}
 
-~
-\clearpage
+ \clearpage
+ \pagestyle{empty}   % no page numbers in the front matter
+ ~
+ \clearpage
  \include{chapters/AIUset}
-    
+    \cleardoublepage
     \begin{abstract}
         
-             Over the past two decades, wind turbines have significantly increased in size. Ensuring their economic, fully automatic operation in varying wind conditions has become more challenging due to larger towers and rotors with longer, more slender blades. The increasing number of turbines in wind farms, sometimes over a hundred, and their close spacing, as areas suitable for wind energy are limited, further complicate this task. Not only is individual wind turbine control difficult, but wind farm control is even more so, as efficient use of space necessitates accounting for wake interactions.
+
         
+          Over the past two decades, wind turbines have significantly increased in size. Ensuring their economic, fully automatic operation in varying wind conditions has become more challenging due to larger towers and rotors with longer, more slender blades. The increasing number of turbines in wind farms, sometimes a few hundred, and their close spacing, as areas suitable for wind energy are limited, further complicate this task. Not only is individual wind turbine control difficult, but wind farm control is even more so, as efficient use of space necessitates accounting for wake interactions.
+          
         In this thesis, Model Predictive Control (MPC) is used to design algorithms for wind turbine and wind farm control, aiming to minimize the Levelized Cost of Energy~(LCoE). The goal is to maximize power yield while minimizing mechanical loads and keeping actuator movements within their limits and as small as possible. For individual Wind Energy Conversion Systems~(WECS), this involves maximizing energy extraction up to the rated wind speed and pitching the blades above this speed to lower mechanical loads and maintain constant power output.
-        
-          %     For wind turbine control, a velocity-based quasi-Linear Parameter-Varying Model Predictive Control (qLMPC) algorithm is applied for the first time as a Multiple-Input Multiple-Output~(MIMO) controller over the whole operating range of the wind turbine. Two quasi-Linear Parameter-Varying~(qLPV) turbine models, one derived using Lagrange's equations, are developed and verified against the aeroelastic simulation software FAST. Without model mismatch, the qLMPC reduces tower accelerations and power fluctuations considerably. On FAST, it retains a large part of the power smoothing, but not the tower load reduction. The qLMPC is compared with state-of-the-art Collective Pitch Control~(CPC) and Individual Pitch Control~(IPC) using Damage Equivalent Loads~(DEL), power fluctuations, and actuator activity. Additionally, an enhanced turbine model with Trailing Edge Flaps (TEF) is developed, and the combination of IPC and TEF control achieves a slightly larger blade load reduction than IPC alone at considerably lower pitch actuator power.
-       
-      A novel velocity-based quasi-Linear Parameter-Varying Model Predictive Control (qLMPC) algorithm is applied to wind turbines as a Multiple-Input Multiple-Output~(MIMO) controller for the whole operating range of the turbine for the first time within the context of this thesis. Two quasi-Linear Parameter-Varying~(qLPV) turbine models, one derived using Lagrange's equations, are developed for controller synthesis. This new qLMPC strategy is compared to state-of-the-art Collective Pitch Control~(CPC) and Individual Pitch Control~(IPC) using Damage Equivalent Loads~(DEL), power fluctuations, and actuator activity as evaluation criteria. Additionally, an enhanced turbine model with Trailing Edge Flaps (TEF) is developed, combining IPC and TEF control for improved performance.
+           
+    For wind turbine control, a velocity-based quasi-Linear Parameter-Varying Model Predictive Control (qLMPC) algorithm is implemented for the first time in this thesis as a Multiple-Input Multiple-Output (MIMO) controller covering the turbine's entire operating range. Two quasi-Linear Parameter-Varying~(qLPV) turbine models, one derived using Lagrange's equations, are developed for controller synthesis. This new qLMPC strategy is compared to state-of-the-art Collective Pitch Control~(CPC) and Individual Pitch Control~(IPC) using Damage Equivalent Loads~(DEL), power fluctuations, and actuator activity as evaluation criteria. Additionally, an enhanced turbine model with Trailing Edge Flaps (TEF) is developed, and the combination of IPC and TEF control achieves a slightly larger blade load reduction than IPC alone at considerably lower pitch actuator power.
         
         
 
-For wind farm control, a data-driven approach models wake interactions between turbines. Data from a simulation model is used to construct Koopman matrices, finite-dimensional representations of the Koopman operator, to derive models for MPC of a two-turbine wind farm. The lifting functions are carefully selected based on physical relationships governing wind, wake interactions, and power extraction from the wind by WECS. Two Koopman models are designed: One predicts the effective wind speeds at the turbines, using known physical relationships to derive the farm output, while the second predicts the farm power directly. Both Koopman models use only the control signals and the measured turbine powers, which eliminates the need for wind measurements in closed loop while maintaining acceptable grid power reference tracking. An efficient online adaptive controller for wind farm thrust control is demonstrated, which adapts to freestream wind conditions not contained in the training data. Combining Wake Redirection Control (WRC) with thrust control increases the farm power in steady state by about 10\% compared with the greedy baseline and considerably reduces the tracking error for power references above the greedy power. Both wind turbine and wind farm control designs are formulated as Quadratic Programming (QP) problems to ensure real-time capability.
-    \end{abstract}
+For wind farm control, a data-driven approach models wake interactions between turbines. Data from a simulation model is used to construct Koopman matrices, finite-dimensional representations of the Koopman operator, to derive models for MPC of a two-turbine wind farm. The lifting functions are carefully selected based on physical relationships governing wind, wake interactions, and power extraction from the wind by WECS. Two Koopman models are designed: one predicts the effective wind speeds at the turbines, from which the farm power is derived using known physical relationships, while the second predicts the farm power directly. Both Koopman models use only the control signals and the measured turbine powers, which eliminates the need for wind measurements in closed loop while maintaining acceptable grid power reference tracking. An efficient online adaptive controller for wind farm thrust control is demonstrated, which adapts to freestream wind conditions not contained in the training data. Combining Wake Redirection Control (WRC) with thrust control increases the steady-state farm power compared with the greedy baseline and considerably reduces the tracking error for power references above the greedy power. Both wind turbine and wind farm control designs are formulated as Quadratic Programming (QP) problems to ensure real-time capability.
+\end{abstract}
+\cleardoublepage
+\begin{otherlanguage}{ngerman}
+{\renewcommand{\abstractname}{Kurzfassung}
+    \begin{abstract}
+In den letzten zwei Jahrzehnten sind Windenergieanlagen (WEA) deutlich größer geworden. Höhere Türme und Rotoren mit längeren, schlankeren Blättern erschweren ihren wirtschaftlichen, vollautomatischen Betrieb unter wechselnden Windbedingungen. Hinzu kommen die zunehmende Anzahl von Anlagen in Windparks, teilweise mehrere hundert, sowie ihre geringen Abstände aufgrund begrenzter geeigneter Flächen. Noch anspruchsvoller als die Regelung einzelner WEA ist die Windparkregelung, da eine effiziente Flächennutzung die Berücksichtigung von Nachlaufwechselwirkungen erfordert.
+
+In dieser Arbeit wird modellprädiktive Regelung (MPC) für den Entwurf von Algorithmen zur WEA- und Windparkregelung eingesetzt, mit dem Ziel, die Stromgestehungskosten (LCoE) zu minimieren. Dabei soll der Energieertrag maximiert, die mechanischen Lasten minimiert und die Stellbewegungen innerhalb ihrer Grenzen und möglichst gering gehalten werden. Für einzelne WEA bedeutet dies, unterhalb der Nennwindgeschwindigkeit die Energieentnahme zu maximieren und oberhalb die Blätter zu verstellen, um die Lasten zu reduzieren und die Leistung konstant zu halten.
+
+Für die Anlagenregelung wird in dieser Arbeit erstmals ein geschwindigkeitsbasierter quasi-linear parameterveränderlicher modellprädiktiver Regelungsalgorithmus (qLMPC) als Mehrgrößenregler (MIMO) für den gesamten Betriebsbereich der Anlage umgesetzt. Für den Reglerentwurf werden zwei quasi-linear parameterveränderliche (qLPV-)Modelle entwickelt, von denen eines auf den Lagrange-Gleichungen basiert. Die qLMPC wird mit der kollektiven (CPC) und der individuellen Blattverstellung (IPC) nach dem Stand der Technik verglichen, wobei schadensäquivalente Lasten (DEL), Leistungsschwankungen und Stellaktivität als Bewertungskriterien dienen. Zusätzlich wird ein Anlagenmodell mit Hinterkantenklappen (TEF) entwickelt. Die Kombination von IPC und TEF-Regelung erreicht eine etwas größere Reduktion der Blattlasten als IPC allein bei deutlich geringerer Stellleistung der Blattverstellung.
+
+Für die Windparkregelung werden die Nachlaufwechselwirkungen zwischen den Anlagen datengetrieben modelliert. Aus Simulationsdaten werden Koopman-Matrizen, endlichdimensionale Darstellungen des Koopman-Operators, bestimmt und daraus Modelle für die MPC eines Windparks mit zwei Anlagen abgeleitet. Die Lifting-Funktionen werden auf Grundlage physikalischer Zusammenhänge zwischen Wind, Nachlaufwechselwirkungen und der Leistungsentnahme der WEA ausgewählt. Es werden zwei Koopman-Modelle entworfen: Das erste prädiziert die effektiven Windgeschwindigkeiten an den Anlagen, aus denen die Parkleistung über bekannte physikalische Zusammenhänge berechnet wird, das zweite prädiziert die Parkleistung direkt. Beide Modelle verwenden ausschließlich die Stellsignale und die gemessenen Anlagenleistungen, sodass im geschlossenen Regelkreis keine Windmessungen erforderlich sind und dennoch eine akzeptable Nachführung der Netzleistungsvorgabe erreicht wird. Ein im Betrieb adaptierender Regler für die Schubregelung im Windpark passt sich an Anströmbedingungen an, die in den Trainingsdaten nicht enthalten sind. Die Kombination von Nachlaufablenkung (WRC) und Schubregelung erhöht die stationäre Parkleistung gegenüber dem Betrieb mit maximaler Einzelleistung (Greedy-Betrieb) und verringert den Folgefehler bei Leistungsvorgaben oberhalb der Greedy-Leistung deutlich. Anlagen- und Windparkregelung werden als quadratische Optimierungsprobleme (QP) formuliert, um die Echtzeitfähigkeit sicherzustellen.
+  \end{abstract}}
+\end{otherlanguage}
+
+\cleardoublepage
+\pagestyle{fancy}   % normal headers with page numbers from here on
+
+\tableofcontents
     
-    \clearpage
-    \thispagestyle{empty}
-    ~
-    \clearpage
-    
-    
-    \tableofcontents
 \makeatletter
 \begingroup
 \let\addcontentsline\@gobblethree
