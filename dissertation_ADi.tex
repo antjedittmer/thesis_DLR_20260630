@@ -23,6 +23,69 @@
 \usepackage{adjustbox}
 \usepackage{cancel}
 \usepackage{needspace}
+\usepackage{tikz}
+
+
+% 1. Blue Circle (-10°)
+\DeclareRobustCommand{\mlBlueCircle}{\tikz[baseline=-0.6ex]\draw[mlblue, thick] (0,0) -- (0.4,0) node[pos=0.5, draw=none, fill=mlblue, circle, inner sep=1.2pt]{};}
+
+% 2. Orange Star (-7°)
+\DeclareRobustCommand{\mlOrangeStar}{\tikz[baseline=-0.6ex]\draw[mlorange, thick] (0,0) -- (0.4,0) node[pos=0.5, inner sep=0pt, font=\small, mlorange]{$\ast$};}
+
+% 3. Yellow Plus (-3°)
+\DeclareRobustCommand{\mlYellowPlus}{\tikz[baseline=-0.6ex]\draw[mlyellow, thick] (0,0) -- (0.4,0) node[pos=0.5, inner sep=0pt, font=\small, mlyellow]{$+$};}
+
+% 4. Purple Cross (0°)
+\DeclareRobustCommand{\mlPurpleCross}{\tikz[baseline=-0.6ex]\draw[mlpurple, thick] (0,0) -- (0.4,0) node[pos=0.5, inner sep=0pt, font=\small, mlpurple]{$\times$};}
+
+% 5. Green Diamond (3°)
+\DeclareRobustCommand{\mlGreenDiamond}{\tikz[baseline=-0.6ex]\draw[mlgreen, thick] (0,0) -- (0.4,0) node[pos=0.5, draw=mlgreen, fill=mlgreen!30, diamond, inner sep=1.2pt]{};}
+
+% 6. Cyan Right-Pointing Triangle (7°)
+\DeclareRobustCommand{\mlCyanTriangle}{\tikz[baseline=-0.6ex]\draw[mlcyan, thick] (0,0) -- (0.4,0) node[pos=0.5, draw=mlcyan, fill=mlcyan!30, regular polygon, regular polygon sides=3, shape border rotate=270, inner sep=1.0pt]{};}
+
+% 7. Maroon Upward-Pointing Triangle (10°)
+\DeclareRobustCommand{\mlMaroonTriangle}{\tikz[baseline=-0.6ex]\draw[mlmaroon, thick] (0,0) -- (0.4,0) node[pos=0.5, draw=mlmaroon, fill=mlmaroon!30, regular polygon, regular polygon sides=3, inner sep=1.0pt]{};}
+
+% Define the modern MATLAB RGB colors
+\definecolor{mlblue}{RGB}{0,114,189}      % 1. Blue
+\definecolor{mlorange}{RGB}{217,83,25}    % 2. Orange
+\definecolor{mlyellow}{RGB}{237,177,32}   % 3. Yellow
+\definecolor{mlpurple}{RGB}{126,47,142}   % 4. Purple
+\definecolor{mlgreen}{RGB}{119,172,48}    % 5. Green
+\definecolor{mlcyan}{RGB}{77,190,238}     % 6. Light Blue / Cyan
+\definecolor{mlmaroon}{RGB}{162,20,47}    % 7. Maroon
+
+\definecolor{mlblack}{RGB}{0,0,0}    % 7. Maroon
+
+% Create convenient inline legend line commands
+%\DeclareRobustCommand{\mlBlue}{\tikz[baseline=-0.6ex]\draw[mlblue, thick] (0,0) -- (0.4,0);}
+%\DeclareRobustCommand{\mlOrange}{\tikz[baseline=-0.6ex]\draw[mlorange, thick] (0,0) -- (0.4,0);}
+\DeclareRobustCommand{\mlYellow}{\tikz[baseline=-0.6ex]\draw[mlyellow, thick] (0,0) -- (0.4,0);}
+\DeclareRobustCommand{\mlPurple}{\tikz[baseline=-0.6ex]\draw[mlpurple, thick] (0,0) -- (0.4,0);}
+\DeclareRobustCommand{\mlGreen}{\tikz[baseline=-0.6ex]\draw[mlgreen, thick] (0,0) -- (0.4,0);}
+\DeclareRobustCommand{\mlCyan}{\tikz[baseline=-0.6ex]\draw[mlcyan, thick] (0,0) -- (0.4,0);}
+\DeclareRobustCommand{\mlMaroon}{\tikz[baseline=-0.6ex]\draw[mlmaroon, thick] (0,0) -- (0.4,0);}
+
+
+
+
+
+% Centered legend line helper
+\newcommand{\mlBlue}{\textcolor{mlblue}{\raisebox{0.5ex}{\rule{0.4cm}{1.5pt}}}}
+\newcommand{\mlOrange}{\textcolor{mlorange}{\raisebox{0.5ex}{\rule{0.4cm}{1.5pt}}}}
+
+
+% Helper macro for a line segment with a marker in the center
+\newcommand{\mlLegendItem}[2]{% 
+    \textcolor{#1}{\raisebox{0.3ex}{%
+            \rule{0.15cm}{1.2pt}%
+            \hspace{1pt}#2\hspace{1pt}%
+            \rule{0.15cm}{1.2pt}%
+    }}%
+}
+
+
 \usepackage[table]{xcolor}
 
 % In your preamble:
@@ -127,7 +190,7 @@
 \usepackage[ngerman,english]{babel}
 
 \usepgfplotslibrary{external}
-\tikzexternalize[prefix=figures/tikz/, shell escape=-enable-write18]	%!!Important! compile with: latex -enable-write18 on windows with MikTex
+% \tikzexternalize[prefix=figures/tikz/, shell escape=-enable-write18]	%!!Important! compile with: latex -enable-write18 on windows with MikTex
 \newcommand{\atikz}[2]{\scalebox{#1}{\input{"figures/#2.tikz"}}}
 %\input{"legend.tex"}
 

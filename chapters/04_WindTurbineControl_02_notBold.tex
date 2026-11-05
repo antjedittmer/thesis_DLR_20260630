@@ -939,10 +939,19 @@ Figure~\ref{subfig:TEF2}\,(b) visualizes the drag coefficient. The curves of the
     \centering
     \subfloat[Lift coefficient $c_{l}$]{\includegraphics[width=0.495\textwidth]{figures/Images_Torque24/fig01_Cl1out.eps}}\hfill 
     \subfloat[Drag coefficient $c_{d}$]{\includegraphics[width=0.495\textwidth]{figures/Images_Torque24/fig01_Cd1out.eps}}
-    \caption[Lift and drag coefficients at different trailing-edge flap angles $\eta_{\text{TEF}}$ and blade angles of attack $\alpha$ ]{Lift and drag coefficients at different trailing-edge flap angles $\eta_{\text{TEF}}$ and blade angles of attack $\alpha$ for $-10^\circ$ (blue circle marker), $-7^\circ$ (red square marker), $-3^\circ$ (yellow triangle marker), $0^\circ$ (purple cross marker), $3^\circ$ (green diamond marker), $7^\circ$ (light blue dot marker), and $10^\circ$ (dark red triangle marker).}
+    \caption[Lift and drag coefficients at different trailing-edge flap angles $\eta_{\text{TEF}}$ and blade angles of attack $\alpha$ ]{Lift and drag coefficients at different trailing-edge flap angles $\eta_{\text{TEF}}$ and blade angles of attack $\alpha$ for $-10^\circ$ (\mlBlueCircle), $-7^\circ$ (), $-3^\circ$ (\mlYellowPlus), $0^\circ$ (purple cross marker), $3^\circ$ (green diamond marker), $7^\circ$ (light blue dot marker), and $10^\circ$ (dark red triangle marker).}
     \label{subfig:TEF2}
 \end{figure}
 %
+
+% Individual line+marker commands matching your legend styles:
+%\newcommand{\mlBlueCircle}{\mlLegendItem{mlblue}{$\circ$}}
+%\newcommand{\mlOrangeSquare}{\mlLegendItem{mlorange}{$\blacksquare$}} % or \square
+%\newcommand{\mlYellowTriangle}{\mlLegendItem{mlyellow}{$\triangle$}}
+%\newcommand{\mlPurpleCross}{\mlLegendItem{mlpurple}{$\times$}}
+%\newcommand{\mlGreenDiamond}{\mlLegendItem{mlgreen}{$\diamond$}}
+%\newcommand{\mlCyanTriangle}{\mlLegendItem{mlcyan}{$\triangleright$}} % pointing right/open
+%\newcommand{\mlMaroonTriangle}{\mlLegendItem{mlmaroon}{$\vartriangle$}}
 
 \subsubsection*{Baseline Power Controller} %speed-controlled-pitch-controlled
 In order to realistically simulate a modern turbine, a control system controlling rotor speed and generator torque is required, and the same baseline controller described and applied in the previous sections is utilized for that purpose. The aim of the IPC-TEFC is to further decrease the mechanical loads. Note that this load reduction controller using IPC together with TEF-control is an add-on controller to the baseline control system. This is possible as cyclic pitch motions are induced, which are effectively decoupled from the collective pitch motion ensuring the maximum power output above rated wind speed. As before, the implementation of the baseline controller is the power controller available within TU Delft's FASTTool, see \cite{mulders2020wind}. 

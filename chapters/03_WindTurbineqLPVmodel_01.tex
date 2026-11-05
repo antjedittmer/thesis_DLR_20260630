@@ -612,7 +612,7 @@ where the blade modal mass $m_b$ is assumed to be located at the application poi
        
     To generate the wind for the test cases, FASTTool is used. This environment is a MATLAB-based GUI designed for configuring simulations and tuning controller parameters. It uses the FORTRAN-based FAST NREL 5MW wind turbine model implementation and integrates it into Simulink as an S-function. The baseline power controller is implemented using Simulink blocks and MATLAB functions. This controller is used to control both wind turbine models introduced above, as well as the Simulink S-function implementation of the FAST model. In the MIMO controller architecture presented in the next chapter, both the pitch and generator torque controllers of the baseline controller are replaced by the qLMPC scheme. For model verification purposes, however, the original Simulink implementation of the baseline controller is retained. 
     
-    To verify the models, two simulations are performed using the original setup, including the baseline controller and the FAST NREL 5MW model implemented as an S-function. The first simulation consists of a wind-speed sweep from 4\,m/s to 25\,m/s in increments of 1\,m/s. Each wind-speed level is maintained for 100\,s to ensure that steady-state conditions are reached. This test is used to verify that the models converge to the same steady-state operating points and to compare their transient responses to wind-speed changes. The second simulation uses a turbulent wind field with a mean wind speed of 18\,m/s and IEC turbulence class B, corresponding to a turbulence intensity of 14\%. This simulation is used to investigate the qLPV models' responses to turbulent wind conditions. The first simulation is run for 2200\,s and the second for 660\,s. Both simulations are executed with a sampling time of 8\,ms, and the generated wind data are stored. Using these recorded wind speed time series, the simulations are repeated with the FAST NREL 5MW S-function replaced by the Simulink implementations of the qLPV models.
+    To verify the models, two simulations are performed using the original setup, including the baseline controller and the FAST NREL 5MW model implemented as an S-function. The first simulation consists of a wind-speed sweep from 4\,m/s to 25\,m/s in increments of 1\,m/s. Each wind-speed level is maintained for 100\,s to ensure that steady-state conditions are reached. This test is used to verify that the models converge to the same steady-state operating points and to compare their transient responses to wind-speed changes. The second simulation uses a turbulent wind field with a mean wind speed of 18\,m/s and turbulence class B, corresponding to a turbulence intensity of 14\%. This simulation is used to investigate the qLPV models' responses to turbulent wind conditions. The first simulation is run for 2200\,s and the second for 660\,s. Both simulations are executed with a sampling time of 8\,ms, and the generated wind data are stored. Using these recorded wind speed time series, the simulations are repeated with the FAST NREL 5MW S-function replaced by the Simulink implementations of the qLPV models.
     
     %\newpage
     \subsection{Results}\label{subsec:ResultsqLPVModel}
@@ -623,13 +623,13 @@ where the blade modal mass $m_b$ is assumed to be located at the application poi
         
         \subfloat[Wind speed $V_{\infty} = 4$\,m/s]{\includegraphics[width=0.75\textwidth]{Figures_ADi/BodeV4.eps}}\\
         \subfloat[Wind speed $V_{\infty} = 11$\,m/s]{\includegraphics[width=0.75\textwidth]{Figures_ADi/BodeV11.eps}}
-        \caption[Open-loop verification: Frequency response magnitude of linearized FAST and qLPV models for below rated wind speeds.]{Open-loop verification: Frequency response magnitude of linearized FAST and qLPV models for below rated wind speeds. Mdl1 (black dashed line), Mdl2 (blue line), and FAST reference implementation (red line) at frequencies from 0.01\,Hz to 2\,Hz.} %
+        \caption[Open-loop verification: Frequency response magnitude of linearized FAST and qLPV models for below rated wind speeds.]{Open-loop verification: Frequency response magnitude of linearized FAST and qLPV models for below rated wind speeds. Mdl1 (black dashed line), Mdl2 (\mlBlue), and FAST reference implementation (\mlOrange) at frequencies from 0.01\,Hz to 2\,Hz.} %
         \label{fig:Bode4}
     \end{figure}
     \begin{figure} [htp]\centering
         \subfloat[Wind speed $V_{\infty} = 12$\,m/s]{\includegraphics[width=0.75\textwidth]{Figures_ADi/BodeV12.eps}}\\ 
         \subfloat[Wind speed $V_{\infty} = 25$\,m/s]{\includegraphics[width=0.75\textwidth]{Figures_ADi/BodeV25.eps}}
-        \caption[Open-loop verification: Frequency response magnitude of linearized FAST and qLPV models for above rated wind speeds.]{Open-loop verification: Frequency response magnitude of linearized FAST and qLPV models for above rated wind speeds. Mdl1 (black dashed line), Mdl2 (blue line), and FAST reference implementation (red line) at frequencies from 0.01\,Hz to 2\,Hz.} 
+        \caption[Open-loop verification: Frequency response magnitude of linearized FAST and qLPV models for above rated wind speeds.]{Open-loop verification: Frequency response magnitude of linearized FAST and qLPV models for above rated wind speeds. Mdl1 (), Mdl2 (\mlBlue), and FAST reference implementation (\mlOrange) at frequencies from 0.01\,Hz to 2\,Hz.} 
         \label{fig:Bode12}
     \end{figure}
     
@@ -655,7 +655,7 @@ where the blade modal mass $m_b$ is assumed to be located at the application poi
         \caption[Closed-loop verification: FAST and qLPV models with PI baseline 
         controller, stepped wind sweep 4\,m/s to 25\,m/s.]%
         {Closed-loop verification: FAST and qLPV models simulated in closed loop with the PI baseline controller with a stepped wind sweep from 4\,m/s to 25\,m/s. 
-            Mdl1 (black dashed line), Mdl2 (blue line), and FAST reference implementation (red line). Displayed signals: wind, control inputs, 
+            Mdl1 (black dashed line), Mdl2 (\mlBlue), and FAST reference implementation (\mlOrange). Displayed signals: wind, control inputs, 
             rotor speed, tower accelerations, and power.}
         \label{fig:TimeCmpMdlSweep}
     \end{figure}
@@ -671,8 +671,7 @@ where the blade modal mass $m_b$ is assumed to be located at the application poi
         \caption[Closed-loop model comparison: FAST and qLPV models with baseline 
         PI controller, under turbulent wind with and without filter on freestream wind.]{Closed-loop model comparison: FAST and qLPV models with PI baseline controller, under turbulent wind, 18\,m/s mean, IEC turbulence 
             class B (14\%), with and without filter on freestream wind. Mdl1 (black 
-            dashed line), Mdl2 (blue line), and FAST reference implementation (red 
-            line). Displayed signals: wind, control inputs, rotor speed, tower 
+            dashed line), Mdl2 (\mlBlue), and FAST reference implementation (\mlOrange). Displayed signals: wind, control inputs, rotor speed, tower 
             accelerations, and power.}
         \label{fig:TimeCmpMdlNTM}
     \end{figure}
