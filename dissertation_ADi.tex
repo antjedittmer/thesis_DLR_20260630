@@ -63,10 +63,15 @@
 
 \definecolor{mlblack}{RGB}{0,0,0}    % Black
 
+
 \definecolor{mlred}{rgb}{1,0,0}      % MATLAB 'r'
 \definecolor{mlpink}{rgb}{1,0,1}     % MATLAB 'm' (magenta)
 \definecolor{mldarkgreen}{rgb}{0,0.6,0}     % MATLAB green
+\definecolor{mldarkblue}{rgb}{0,0,0.8}     % MATLAB blue
+\definecolor{mldarkred}{rgb}{0.8,0,0}     % MATLAB red
+
 \definecolor{mloldblue}{rgb}{0,0,1}     % MATLAB old blue
+\definecolor{mloldgreen}{rgb}{0,1,0}     % MATLAB old green
 
 \tikzset{mlline/.style={line width=1.7pt}}
 
@@ -80,15 +85,36 @@
 \DeclareRobustCommand{\mlMaroon}{\tikz[baseline=-0.6ex]\draw[mlmaroon, mlline] (0,0) -- (0.4,0);}
 
 \DeclareRobustCommand{\mlBlackDashed}{\tikz[baseline=-0.6ex]\draw[black, mlline, dash pattern=on 3pt off 2pt] (0,0) -- (0.4,0);}
+
+%\definecolor{mlgray}{RGB}{0.8,0.8,0.8}  % Gray
+\definecolor{mlgray}{rgb}{0.5,0.5,0.5}  % Gray
+\DeclareRobustCommand{\mlGrayDashed}{\tikz[baseline=-0.6ex]\draw[mlgray, mlline, dash pattern=on 3pt off 2pt] (0,0) -- (0.4,0);}
 \DeclareRobustCommand{\mBlack}{\tikz[baseline=-0.6ex]\draw[mlblack, mlline] (0,0) -- (0.4,0);}
 \DeclareRobustCommand{\mlRed}{\tikz[baseline=-0.6ex]\draw[mlred, mlline] (0,0) -- (0.4,0);}
 \DeclareRobustCommand{\mlDarkGreen}{\tikz[baseline=-0.6ex]\draw[mldarkgreen, mlline] (0,0) -- (0.4,0);}
+\DeclareRobustCommand{\mlGray}{\tikz[baseline=-0.6ex]\draw[mlgray, mlline] (0,0) -- (0.4,0);}
+
 \DeclareRobustCommand{\mlPink}{\tikz[baseline=-0.6ex]\draw[mlpink, mlline] (0,0) -- (0.4,0);}
 \DeclareRobustCommand{\mlOldBlue}{\tikz[baseline=-0.6ex]\draw[mloldblue, mlline] (0,0) -- (0.4,0);}
+\DeclareRobustCommand{\mlOldGreen}{\tikz[baseline=-0.6ex]\draw[mloldgreen, mlline] (0,0) -- (0.4,0);}
 
 \DeclareRobustCommand{\mlBlueDashDot}{\tikz[baseline=-0.6ex]\draw[mlblue, mlline, dash pattern=on 4pt off 1.5pt on 1pt off 1.5pt] (0,0) -- (0.4,0);}
 %\DeclareRobustCommand{\mlYellowDotted}{\tikz[baseline=-0.6ex]\draw[mlyellow, mlline, line cap=round, dash pattern=on 0pt off 3pt] (0,0) -- (0.4,0);}
 \DeclareRobustCommand{\mlYellowDotted}{\tikz[baseline=-0.6ex]\draw[mlyellow, mlline, dash pattern=on 1.5pt off 1.5pt] (0,0) -- (0.4,0);}
+\DeclareRobustCommand{\mlGreenDotted}{\tikz[baseline=-0.6ex]\draw[mlgreen, mlline, dash pattern=on 1.5pt off 1.5pt] (0,0) -- (0.4,0);}
+
+\DeclareRobustCommand{\mlPurpleDashDot}{\tikz[baseline=-0.6ex]\draw[mlpurple, mlline, dash pattern=on 4pt off 1.5pt on 1pt off 1.5pt] (0,0) -- (0.4,0);}
+\DeclareRobustCommand{\mlPinkDotted}{\tikz[baseline=-0.6ex]\draw[mlpink, mlline, dash pattern=on 1.5pt off 1.5pt] (0,0) -- (0.4,0);}
+\DeclareRobustCommand{\mlGreenDashed}{\tikz[baseline=-0.6ex]\draw[mlgreen, mlline, dash pattern=on 3pt off 2pt] (0,0) -- (0.4,0);}
+
+\DeclareRobustCommand{\mlOldBlueDashed}{\tikz[baseline=-0.6ex]\draw[mloldblue, mlline, dash pattern=on 3pt off 2pt] (0,0) -- (0.4,0);}
+\DeclareRobustCommand{\mlOldBlueeDashDot}{\tikz[baseline=-0.6ex]\draw[mloldblue, mlline, dash pattern=on 4pt off 1.5pt on 1pt off 1.5pt] (0,0) -- (0.4,0);}
+\DeclareRobustCommand{\mlYellowDashDot}{\tikz[baseline=-0.6ex]\draw[mlyellow, mlline, dash pattern=on 4pt off 1.5pt on 1pt off 1.5pt] (0,0) -- (0.4,0);}
+
+
+\DeclareRobustCommand{\mlDarkBlueDashed}{\tikz[baseline=-0.6ex]\draw[mldarkblue, mlline, dash pattern=on 3pt off 2pt] (0,0) -- (0.4,0);}
+\DeclareRobustCommand{\mlDarkRedDashed}{\tikz[baseline=-0.6ex]\draw[mldarkred, mlline, dash pattern=on 3pt off 2pt] (0,0) -- (0.4,0);}
+\DeclareRobustCommand{\mlPurpleDashed}{\tikz[baseline=-0.6ex]\draw[mlpurple, mlline, dash pattern=on 3pt off 2pt] (0,0) -- (0.4,0);}
 
 
 % #1 colour, #2 line pattern, #3 marker path (centred at origin)
@@ -97,7 +123,7 @@
         \draw[#1, mlline, #2] (0,0) -- (0.7,0);
         \begin{scope}[shift={(0.35,0)}] \draw[#1, line width=0.9pt, fill=white] #3; \end{scope}}}
 
-\DeclareRobustCommand{\mlBlueDashDotSquare}{\mlMarkerLine{mlblue}{dash pattern=on 4pt off 1.5pt on 1pt off 1.5pt}{(-2.2pt,-2.2pt) rectangle (2.2pt,2.2pt)}}
+\DeclareRobustCommand{\mlBlueDashDotSquare}{\mlMarkerLine{mloldblue}{dash pattern=on 4pt off 1.5pt on 1pt off 1.5pt}{(-2.2pt,-2.2pt) rectangle (2.2pt,2.2pt)}}
 \DeclareRobustCommand{\mlDarkGreenDashedDiamond}{\mlMarkerLine{mldarkgreen}{dash pattern=on 3pt off 2pt}{(0,3pt) -- (3pt,0) -- (0,-3pt) -- (-3pt,0) -- cycle}}
 \DeclareRobustCommand{\mlRedCircle}{\mlMarkerLine{mlred}{}{(0,0) circle (2.4pt)}}
 

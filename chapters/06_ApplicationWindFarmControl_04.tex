@@ -208,7 +208,7 @@ Figure~\ref{fig:WFSimFlowAIC} visualizes the data flow of the qLMPC scheme for t
 \begin{figure}[htp]
     \centering
     \includegraphics[width=1\textwidth,trim={0 0cm 0cm 0.3cm},clip]{figures/figuresBlockDiagram_IFAC23/farmCtrl16_P_multVthesis_EDMD.pdf}
-    \caption[Block diagram of WFSim for AIC]{Block diagram of WFSim for AIC with farm control input signals $P_{\text{ref}}$, $P_1$, $P_2$, thrust control signals $C_{T1}^{\prime}$ and $C_{T2}^{\prime}$, freestream wind $V_\infty$ and wind $V_1 = V_{1_m}$. Wind speeds directly in front and behind the $i$-th turbine are $V_{i_1}$ to $V_{i_{n_r}}$ and $V_{i\text{out}_1}$ to $V_{i\text{out}_{n_r}}$. The input to the EDMD model (dashed blue box in the closed-loop diagram and blue box below it) are $C_{T1}^{\prime}$ and $C_{T2}^{\prime}$, its output are the effective wind speeds $V_{r1}$ and $V_{r2}$.}
+    \caption[Block diagram of WFSim for AIC]{Block diagram of WFSim for AIC with farm control input signals $P_{\text{ref}}$, $P_1$, $P_2$, thrust control signals $C_{T1}^{\prime}$ and $C_{T2}^{\prime}$, freestream wind $V_\infty$ and wind $V_1 = V_{1_m}$. Wind speeds directly in front and behind the $i$-th turbine are $V_{i_1}$ to $V_{i_{n_r}}$ and $V_{i\text{out}_1}$ to $V_{i\text{out}_{n_r}}$. The input to the EDMD model (\mlOldBlue) are $C_{T1}^{\prime}$ and $C_{T2}^{\prime}$, its output are the effective wind speeds $V_{r1}$ and $V_{r2}$.}
     \label{fig:WFSimFlowAIC}
 \end{figure}
 %
@@ -672,10 +672,10 @@ For the data acquisition phase of \cite{dittmer2022data}, two simulations were p
 Figure~\ref{fig:IDdataAIC}(a) shows the first dataset with $n_o = 29,999$ samples at a constant freestream wind speed of 7\,m/s, which is used for the identification. The second dataset, with $n_o = 9,999$ samples and another random sequence of thrust levels, serves for verification. Its freestream wind speed is 7\,m/s up to $t = 5000$\,s and is then increased to 9\,m/s within 20\,s, i.e., with a ramp of 0.1\,m/s per sample. Figure~\ref{fig:IDdataAIC}(b) shows its first part up to the wind speed change, i.e., at constant freestream wind. Both subfigures show the non-adaptive model.
 \begin{figure}[ht]
     \centering
-    \subfloat[Identification dataset]{\includegraphics[width=0.485\textwidth]{figures/figures_CDC22/Fig00_AIC7mpers_OL_id.eps}}\hfill
-    \subfloat[Verification dataset up to the wind speed change at $t = 5000$\,s.]{\includegraphics[width=0.485\textwidth]{figures/figures_CDC22/Fig00_AIC7mpers_OL_val.eps}}
+    \subfloat[Identification dataset, VAF: $V_{r1}= 100\%,\;V_{r2}=49\%$.]{\includegraphics[width=0.485\textwidth]{figures/figures_CDC22/Fig00_AIC7mpers_OL_id.eps}}\hfill
+    \subfloat[Verification dataset up to the wind speed change at $t = 5000$\,s, VAF: $V_{r1}= 100\%,\;V_{r2}=51\%$.]{\includegraphics[width=0.485\textwidth]{figures/figures_CDC22/Fig00_AIC7mpers_OL_val.eps}}
     
-    \caption[Identification and verification datasets at $V_\infty = 7$\,m/s for the Koopman model identification of the adaptive AIC algorithm]{Identification and verification datasets at $V_\infty = 7$\,m/s for the Koopman model identification of the adaptive AIC algorithm. Subplots (top to bottom): thrust $C_T^\prime$; constant wind speed $V_\infty$ (black) and $V_1$ (blue); real vs.estimated effective wind $V_{r1}, V_{r2}$. WT1/WT2 signals are blue/red; black dashed lines denote estimates.}
+    \caption[Identification and verification datasets at $V_\infty = 7$\,m/s for the Koopman model identification of the adaptive AIC algorithm]{Identification and verification datasets at $V_\infty = 7$\,m/s for the Koopman model identification of the adaptive AIC algorithm. Subplots (top to bottom): thrust $C_T^\prime$; constant wind speed $V_\infty$ (\mBlack) and $V_1$ (\mlBlue); real vs.estimated (\mlBlackDashed) effective wind $V_{r1}, V_{r2}$. WT1/WT2 signals are \mlBlue/\mlOrange.}
     \label{fig:IDdataAIC}
 \end{figure}
 To quantify the model's accuracy, the Variance Accounted For (VAF) value is utilized to measure the similarity between the simulated and estimated effective wind speeds. This measure of how well the output signal variation is explained by the model is also used in previous studies on Koopman DMD, e.g., \cite{Cassamo.2020}, and is defined as:
@@ -694,9 +694,9 @@ The offline-identified model, trained on the first dataset depicted in Figure~\r
 In the present study, the richer identification dataset results in a better initial Koopman matrix, such that this additional measurement is no longer required. A VAF value of approximately 80\% for $V_{r2}$ is achieved on the dataset with the wind speed change. Note that the $V_{r2}$ VAF value is higher than under constant wind speed conditions, as the wind speed change increases the variance of the signal.
 
 \begin{figure}[ht]
-    \subfloat[Non-adaptive model ($V_\infty = 7$\,m/s)]{\includegraphics[width=0.485\textwidth]{figures/figures_CDC22/Fig01_OL_Update0_tex.eps}}\hfill
-    \subfloat[Online-updated model]{\includegraphics[width=0.485\textwidth]{figures/figures_CDC22/Fig02_OL_Update1_tex.eps}}
-    \caption[Open-loop identification comparison during a wind speed step]{Open-loop identification comparison during a wind speed step at $t=5000$\,s. Subplots (top to bottom): thrust $C_T^\prime$; wind speeds $V_\infty$ (black) and $V_1$ (blue); real vs.estimated effective wind $V_{r1}, V_{r2}$; and the update signal (black). WT1/WT2 signals are blue/red; dashed lines denote estimates.}
+    \subfloat[Non-adaptive model ($V_\infty = 7$\,m/s), VAF: $V_{r1}= 23\%,\;V_{r1}=8\%$.]{\includegraphics[width=0.485\textwidth]{figures/figures_CDC22/Fig01_OL_Update0_tex.eps}}\hfill
+    \subfloat[Online-updated model,, VAF: $V_{r1}= 100\%,\;V_{r1}=80\%$]{\includegraphics[width=0.485\textwidth]{figures/figures_CDC22/Fig02_OL_Update1_tex.eps}}
+    \caption[Open-loop identification comparison during a wind speed step]{Open-loop identification comparison during a wind speed step at $t=5000$\,s. Subplots (top to bottom): thrust $C_T^\prime$; wind speeds $V_\infty$ (\mBlack) and $V_1$ (\mlBlue); real vs.estimated effective wind $V_{r1}$(\mlDarkBlueDashed), $V_{r2}$(\mlDarkRedDashed); and the update signal (\mBlack). WT1/WT2 signals are \mlBlue/\mlOrange.}
     \label{fig:ValComp}
 \end{figure}
 
@@ -707,17 +707,21 @@ Figure~\ref{fig:SingVal} depicts the maximum and minimum singular values of four
 \begin{figure}[ht]
     \centering
     \includegraphics[width=0.65\textwidth]{figures/figures_CDC22/Fig03_OL_Bode_tex.eps}
-    \caption[Maximum and minimum singular values of the Koopman models at various sample steps $k$ during online identification]{Maximum and minimum singular values of the Koopman models at various sample steps $k$ during online identification. The shift from the initial model (grey) to the final adapted model (green) demonstrates the convergence of the model's frequency response toward the reference offline identification (dashed black) following the wind speed step change.}
+  %  \caption[Maximum and minimum singular values of the Koopman models at various sample steps $k$ during online identification]{Maximum and minimum singular values of the Koopman models at four sample steps $k$ during online identification. Shift from the initial model ($k = 240$, \mlGray), equal to the offline identified model at a wind speed of 7\,m/s, via the models at $k= 5100$ (\mlYellowDashDot) and $k = 6000$ (\mlPurpleDashed) to the final adapted model ($k= 8000$, \mlGreenDotted), as well as the reference offline identification model (\mlBlackDashed), identified at 9\,m/s.}
+    
+
+    \caption[Maximum and minimum singular values of the Koopman models at various sample steps $k$ during online identification]{Maximum and minimum singular values of the Koopman models at four sample steps $k$ during online identification. Shift from the initial model ($k = 240$, \mlGray), the offline-identified model at 7\,m/s, through the intermediate models ($k = 5100$, \mlYellowDashDot; $k = 6000$, \mlPurpleDashed) to the final adapted model ($k = 8000$, \mlGreenDotted) is shown with the reference offline-identified model at 9\,m/s (\mlBlackDashed).}
+
     \label{fig:SingVal}
 \end{figure}
-
+%
 \begin{itemize}
     \item The grey line ($k = 240$) represents the initial Koopman model identified at $V_{\infty} = 7\,\mathrm{m/s}$. Its frequency response differs significantly from the reference offline model (black dashed line) identified with the third dataset, obtained at $V_{\infty} = 9\,\mathrm{m/s}$: both black dashed lines show that the largest and the smallest singular values are higher by a factor of two over the depicted frequency range. However, all four lines, which are identified based on a large dataset, show nearly constant amplifications for frequencies below $0.4\,\mathrm{rad/s}$.
     \item The yellow line ($k = 5100$) shows the model after the first 25 updates following the wind speed step at $5000\,\mathrm{s}$. Its singular values have changed considerably compared with the initial model, but do not yet match those of the reference model. It can also be seen that the singular values behave reasonably as a low-pass for frequencies higher than $0.03\,\mathrm{rad/s}$. For lower frequencies, a slight 'hump' develops.
     \item The purple line ($k = 6000$) illustrates the model during the transition as more data from the $9\,\mathrm{m/s}$ regime is incorporated after 55 updates.
     \item The green line ($k = 8000$) represents the final adapted model, i.e., the model after the last of the 65 updates at $6235\,\mathrm{s}$, showing a high degree of correlation with the reference offline model for frequencies above about $10^{-3}\,\mathrm{rad/s}$. Below, the singular values of the adapted model are considerably larger than those of the reference model, as short batches of updates contain hardly any information on the static gain.
 \end{itemize}
-
+%
 However, because the singular values of the adapted model match the reference model (identified at $9\,\mathrm{m/s}$) well in the relevant frequency range in which the controls influence the wind speed, the adapted model yields acceptable VAF values in open-loop, and will be shown to yield good VAF values in closed-loop tests.
 The subsequent section presents closed-loop results obtained from WFSim using the adaptive Koopman model to provide effective wind speed estimates to the qLMPC controller. The value for the triggering condition $\nu$ was set to 0.15\,m/s which was found to be a good compromise between the number of updates and the accuracy of the estimation. A sensitivity study with $\nu \in \{0.02, 0.05, 0.1, 0.15, 0.3\}$\,m/s and $h \in \{5, 10, 20\}$ in the closed-loop test case described below confirms this choice: only $\nu = 0.02$\,m/s with $h = 5$ or $h = 10$ reaches a slightly lower tracking error of 13.7 and 14.0\,kW instead of 17.2\,kW, but with three times as many updates (237 and 270 instead of 80), while all other combinations shown result in tracking errors between 20 and 62\,kW. The results of the sensitivity study are listed in Table~\ref{tab:sensitivityAdaptiveAIC} at the end of this section; for $\nu = 0.10$ and $\nu = 0.05$, only the batch length $h = 5$ is shown.
 
@@ -733,7 +737,7 @@ Figure~\ref{fig:CL_Comparison} compares the performance of the non-adaptive (a) 
     % Subfigure (a): No online update
     \subfloat[Non-adaptive Koopman MPC] {\includegraphics[width=0.495\textwidth]{figures/figures_CDC22/Fig04_CL_Update0_tex.eps}}\hfill
     \subfloat[Adaptive Koopman MPC with online updates]{\includegraphics[width=0.495\textwidth]{figures/figures_CDC22/Fig05_CL_Update1_tex.eps}}
-    \caption[Closed-loop tracking comparison during a wind speed ramp and power reference step.]{Closed-loop tracking comparison during a wind speed ramp and power reference step. Subplots (top to bottom): reference $P_{\text{ref}}$ (black) and farm power $P_{\text{WF}}$ (purple dash-dotted); wind speeds $V_\infty$ (black) and $V_1$ (blue); thrust $C_T^\prime$; real vs. estimated effective wind $V_{r1}, V_{r2}$; and the update signal (black), which is zero in (a). The titles give TE, $1000\cdot$AA, and the estimated effective wind speeds' VAF values. WT1/WT2 signals are blue/red; dashed lines (dark blue/dark red) denote estimates.}
+    \caption[Closed-loop tracking comparison during a wind speed ramp and power reference step.]{Closed-loop tracking comparison during a wind speed ramp and power reference step. Subplots (top to bottom): reference $P_{\text{ref}}$ (\mBlack) and farm power $P_{\text{WF}}$ (\mlPurpleDashed); wind speeds $V_\infty$ (\mBlack) and $V_1$ (\mlBlue); thrust $C_T^\prime$; real vs. estimated effective wind $V_{r1}$ (\mlDarkBlueDashed), $V_{r2}$ (\mlDarkRedDashed); and the update signal (\mBlack), which is zero in (a). The titles give TE, $1000\cdot$AA, and the estimated effective wind speeds' VAF values. WT1/WT2 signals are \mlBlue/\mlOrange.}
     \label{fig:CL_Comparison}
 \end{figure}
 %
@@ -816,7 +820,7 @@ Figure~\ref{fig:BlockDiagramFarm} illustrates the underlying concept for the WRC
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.9\textwidth]{figures/figuresBlockDiagram_IFAC23/farmCtrl17_P_multVthesis_WRCAIC_EIODMD.pdf}
-    \caption[Block diagram of WFSim for WRC-AIC]{Block diagram of WFSim for WRC-AIC with farm control inputs $P_{\text{ref}}$, $P_1$, $P_2$, control signals $C_{T1}^{\prime}$, $C_{T2}^{\prime}$, $\gamma_1$, freestream wind $V_\infty$, and wind $V_1 = V_{1_m}$. Wind speeds directly in front and behind the $i$-th turbine are $V_{i_1}$ to $V_{i_{n_r}}$ and $V_{i\text{out}_1}$ to $V_{i\text{out}_{n_r}}$. The input to the EDMD model (blue) are $C_{T1}^{\prime}$ and  $C_{T2}^{\prime}$, its outputs are the effective wind outputs $V_{r1}$ and $V_{r2}$. The input to the EIODMD model (red) are $C_{T1}^{\prime}, C_{T2}^{\prime}$, and $\gamma_1$, its output is the farm power $P_{\text{WF}} = P_1 + P_2$.}
+    \caption[Block diagram of WFSim for WRC-AIC]{Block diagram of WFSim for WRC-AIC with farm control inputs $P_{\text{ref}}$, $P_1$, $P_2$, control signals $C_{T1}^{\prime}$, $C_{T2}^{\prime}$, $\gamma_1$, freestream wind $V_\infty$, and wind $V_1 = V_{1_m}$. Wind speeds directly in front and behind the $i$-th turbine are $V_{i_1}$ to $V_{i_{n_r}}$ and $V_{i\text{out}_1}$ to $V_{i\text{out}_{n_r}}$. The input to the EDMD model (\mlOldBlue) are $C_{T1}^{\prime}$ and  $C_{T2}^{\prime}$, its outputs are the effective wind outputs $V_{r1}$ and $V_{r2}$. The input to the EIODMD model (\mlRed) are $C_{T1}^{\prime}, C_{T2}^{\prime}$, and $\gamma_1$, its output is the farm power $P_{\text{WF}} = P_1 + P_2$.}
     \label{fig:BlockDiagramFarm}
 \end{figure}
 %
@@ -987,8 +991,10 @@ Figure~\ref{fig:WRCAICOL_EDMD} shows the new identification dataset in panels~(a
         \includegraphics[width=0.485\textwidth]{figures/figures_IFAC23/03aFig_WRC_Val_P.eps}
         % \label{fig:PowerPerYaw}
     }
-    \caption[Identification and verification datasets of the Koopman model for the WRC-AIC algorithm]{Identification (a, c) and verification (b, d) datasets of the Koopman model $\hat{K}_2$ for the WRC-AIC algorithm: estimated effective wind speeds $V_{r1}$ and $V_{r2}$ ( a and b) and farm power $P_{\text{WF}}$ (c and d). Subplots (top to bottom): thrust $C_T^\prime$; yaw $\gamma_1$; real vs. estimated $V_{r1}, V_{r2}$ (a, b) or $P_{\text{WF}}$ (c, d). WT1/WT2 signals are blue/red; black and grey dashed lines denote the estimates of the 21-state ($n_\varphi = 21$) and six-state model ($n_\varphi = 6$).}
+    \caption[Identification and verification datasets of the Koopman model for the WRC-AIC algorithm]{Identification (a, c) and verification (b, d) datasets of Koopman model $\hat{K}_2$ for the WRC-AIC algorithm: estimated effective wind speeds $V_{r1}$ and $V_{r2}$ (a, b) and farm power $P_{\text{WF}}$ (c, d). Subplots (top to bottom): thrust $C_T^\prime$; yaw $\gamma_1$; real vs. estimated $V_{r1}, V_{r2}$ (a, b) or $P_{\text{WF}}$ (c, d). WT1/WT2 signals are \mlBlue/\mlOrange, 21-state ($n_\varphi = 21$) and six-state  ($n_\varphi = 6$) model estimates are~\mlBlackDashed/\mlGrayDashed.}
     \label{fig:WRCAICOL_EDMD}
+    
+    % black and grey dashed lines denote the
 \end{figure}
 Note that the effective wind speed estimates are not used in the presented WRC-AIC design. However, they are included to demonstrate that, with the carefully designed new datasets, power predictions are as good as or even better than those of the effective wind speeds. Thus, the need for physics-based wind turbine models is eliminated in the presented design. The plots also illustrate the advantage of using the new set of lifted states. As before, the signals of the first and second turbines are depicted in blue and red, respectively, and the wind farm power is also shown in blue. Estimates obtained with the new linear Koopman model with 21 states are shown as black dashed lines, while those obtained with the old model are shown as grey dashed lines. With the new Koopman matrix, VAF values above 85\% are achieved for both datasets and all estimates. The black dashed lines closely follow the blue and red reference signals. However, when the new datasets are used with the old Koopman matrix from~\cite{dittmer2023koopman}, which includes only six states, considerable discrepancies develop over time between the reference signals and the estimates. This is attributed to the design of the six-state model, which includes the effective wind speeds and their quadratic and cubic terms but no temporal states to capture the evolution of the moving means, unlike the 21-state model, which includes the filtered control signals and the moving means as additional states. This also explains why, somewhat counterintuitively, the VAF values for the shorter verification datasets are higher than those of the identification sets. For the six-state model, apart from the least challenging case, the effective wind speed of the first turbine, for which a VAF value of 90.3\% is achieved, the verification VAF values remain low: 17.7\% for the effective wind speed of the second turbine and 60.6\% for the wind farm power. The VAF values for this comparison are summarized in Table~\ref{tab:WRCModelComparison}, which also includes the closed-loop results and is therefore placed in the section presenting the simulation results obtained with the MPC algorithms in closed loop.
 
@@ -1004,7 +1010,7 @@ Apart from the above described datasets, open-loop WFSim simulation results to q
         \includegraphics[width=0.48\textwidth]{figures/figures_IFAC23/01FigPwrVsYaw_tex.eps}
         \label{fig:PowerPerYaw}
     }
-    \caption[Open-loop validation of the Gaussian wake model against WFSim.]{Open-loop validation of the Gaussian wake model against WFSim: (a) steady-state longitudinal wind field with Gaussian wake centerline $\delta$ and expansion $\sigma_y$ as blue dashed and dash-dotted lines; (b) power output comparison where WFSim results are marked with circles and the Gaussian model with squares: WT1 (blue), WT2 (red), total wind farm (black), and maximum power point (green)}
+    \caption[Open-loop validation of the Gaussian wake model against WFSim.]{Open-loop validation of the Gaussian wake model against WFSim: (a) steady-state longitudinal wind field with Gaussian wake centerline $\delta$~(\mlOldBlueDashed) and expansion $\sigma_y$~(\mlOldBlueeDashDot); (b) power output comparison where WFSim results are marked with circles and the Gaussian model with squares: WT1 (\mlOldBlue), WT2 (\mlRed), total wind farm (\mBlack), and maximum power point (\mlOldGreen)}
     \label{fig:OpenLoopResultsCombined}
 \end{figure}
 
@@ -1038,7 +1044,7 @@ Figure~\ref{fig:ClosedLoopComparison} compares the closed-loop performance of th
         \label{fig:CLMPC2}
     }
     
-    \caption[Closed-loop performance comparison of the baseline AIC and the two WRC-AIC algorithms]{Closed-loop performance comparison of the baseline AIC and the two WRC-AIC algorithms. Subplots (top to bottom): reference $P_{\text{ref}}$ (solid black), farm power $P_{\text{WF}}$ (purple dash-dotted), predicted farm power $P_{\text{WF,est}}$ (pink dotted), and greedy power $P_{\text{greedy}}$ (green dashed); wind speeds $V_\infty$ (black) and $V_1$ (blue); thrust $C'_T$; yaw $\gamma$; and effective wind speeds $V_{r1}, V_{r2}$. WT1/WT2 signals are blue/red}
+    \caption[Controller comparison of the baseline AIC and the two WRC-AIC algorithms]{Controller comparison of the baseline AIC and the two WRC-AIC algorithms. Subplots (top to bottom): reference $P_{\text{ref}}$ (\mBlack), farm power $P_{\text{WF}}$ (\mlPurpleDashDot), predicted farm power $P_{\text{WF,est}}$ (\mlPinkDotted), and greedy power $P_{\text{greedy}}$ (\mlGreenDashed); wind speeds $V_\infty$ (\mBlack) and $V_1$ (\mlBlue); thrust $C'_T$; yaw $\gamma$; and effective wind speeds $V_{r1}, V_{r2}$. WT1/WT2 signals are \mlBlue/\mlOrange.}
     \label{fig:ClosedLoopComparison}
 \end{figure}
 
@@ -1060,7 +1066,7 @@ Similar to the adaptive AIC, the improved tracking performance comes at the cost
 To assess the effect of the input features and the moving means, the analysis is repeated with a Koopman model with only the six lifted states used in \cite{dittmer2023koopman}, i.e., the effective wind speeds, their squares and cubes.
 
 
-Table~\ref{tab:WRCModelComparison} summarizes the discussed WRC-AIC algorithms for the model with six lifted states and the 21-state model. The state matrix of the six-state model has two eigenvalues close to 1, the largest with an absolute value of 1.0002, and its open-loop simulations drift over the long datasets, resulting in VAF values of 0 for the identification dataset and between 17.7\% and 90.3\% for the verification dataset. In closed loop, where the prediction starts at every sample from the estimated effective wind speeds and only covers the horizon of 10 samples, the six-state model still performs reasonably well. However, the 21-state model reduces both the tracking error and the actuator activity for all three controllers, e.g., for the WRC-AIC from 36.9\,kW to 27.8\,kW and from $20.8 \cdot 10^{-3}$ to $15.6 \cdot 10^{-3}$. 
+Table~\ref{tab:WRCModelComparison} summarizes the discussed WRC-AIC algorithms for the model with six lifted states and the 21-state model. The state matrix of the six-state model has two eigenvalues close to 1, the largest with an absolute value of 1.0002, and its open-loop simulations drift over the long datasets, resulting in VAF values of 0 for the identification dataset and between 17.7\% and 90.3\% for the verification dataset. In closed loop, where the prediction starts at every sample from the estimated effective wind speeds and only covers the horizon of 10 samples, the six-state model still performs reasonably well. However, the 21-state model reduces both the tracking error and the actuator activity for all three controllers, e.g., for the WRC-AIC from 36.9\,kW to 27.8\,kW and from $20.8 \cdot 10^{-3}$ to $15.6 \cdot 10^{-3}$. As discussed before, this model has one eigenvalue at 1 because of the bias state. The second largest eigenvalue of this discrete model is 0.9985, so the 21-state system is stable.
 
 
 % Created by writeWRCModelTable (mainGeneratePlotThesis) on 2026-10-31
