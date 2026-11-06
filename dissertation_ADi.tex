@@ -26,26 +26,31 @@
 \usepackage{tikz}
 
 
-% 1. Blue Circle (-10°)
-\DeclareRobustCommand{\mlBlueCircle}{\tikz[baseline=-0.6ex]\draw[mlblue, thick] (0,0) -- (0.4,0) node[pos=0.5, draw=none, fill=mlblue, circle, inner sep=1.2pt]{};}
+% #1 colour, #2 marker path centred at origin
+\newcommand{\mlLegendLine}[2]{%
+    \tikz[baseline=-0.6ex, line width=0.6pt]{%
+        \draw[#1] (0,0) -- (0.5,0);
+        \begin{scope}[shift={(0.25,0)}] \draw[#1] #2; \end{scope}}}
 
-% 2. Orange Star (-7°)
-\DeclareRobustCommand{\mlOrangeStar}{\tikz[baseline=-0.6ex]\draw[mlorange, thick] (0,0) -- (0.4,0) node[pos=0.5, inner sep=0pt, font=\small, mlorange]{$\ast$};}
-
-% 3. Yellow Plus (-3°)
-\DeclareRobustCommand{\mlYellowPlus}{\tikz[baseline=-0.6ex]\draw[mlyellow, thick] (0,0) -- (0.4,0) node[pos=0.5, inner sep=0pt, font=\small, mlyellow]{$+$};}
-
-% 4. Purple Cross (0°)
-\DeclareRobustCommand{\mlPurpleCross}{\tikz[baseline=-0.6ex]\draw[mlpurple, thick] (0,0) -- (0.4,0) node[pos=0.5, inner sep=0pt, font=\small, mlpurple]{$\times$};}
-
-% 5. Green Diamond (3°)
-\DeclareRobustCommand{\mlGreenDiamond}{\tikz[baseline=-0.6ex]\draw[mlgreen, thick] (0,0) -- (0.4,0) node[pos=0.5, draw=mlgreen, fill=mlgreen!30, diamond, inner sep=1.2pt]{};}
-
-% 6. Cyan Right-Pointing Triangle (7°)
-\DeclareRobustCommand{\mlCyanTriangle}{\tikz[baseline=-0.6ex]\draw[mlcyan, thick] (0,0) -- (0.4,0) node[pos=0.5, draw=mlcyan, fill=mlcyan!30, regular polygon, regular polygon sides=3, shape border rotate=270, inner sep=1.0pt]{};}
-
-% 7. Maroon Upward-Pointing Triangle (10°)
-\DeclareRobustCommand{\mlMaroonTriangle}{\tikz[baseline=-0.6ex]\draw[mlmaroon, thick] (0,0) -- (0.4,0) node[pos=0.5, draw=mlmaroon, fill=mlmaroon!30, regular polygon, regular polygon sides=3, inner sep=1.0pt]{};}
+% 1. Blue circle (-10°)
+\DeclareRobustCommand{\mlBlueCircle}{\mlLegendLine{mlblue}{(0,0) circle (1.7pt)}}
+% 2. Orange asterisk (-7°)
+\DeclareRobustCommand{\mlOrangeStar}{\mlLegendLine{mlorange}{%
+        (-2pt,0) -- (2pt,0) (0,-2pt) -- (0,2pt) (-1.4pt,-1.4pt) -- (1.4pt,1.4pt) (-1.4pt,1.4pt) -- (1.4pt,-1.4pt)}}
+% 3. Yellow line, no marker (-3°)
+\DeclareRobustCommand{\mlYellowLine}{\mlLegendLine{mlyellow}{}}
+% 4. Purple cross (0°)
+\DeclareRobustCommand{\mlPurpleCross}{\mlLegendLine{mlpurple}{%
+        (-1.5pt,-1.5pt) -- (1.5pt,1.5pt) (-1.5pt,1.5pt) -- (1.5pt,-1.5pt)}}
+% 5. Green diamond (3°)
+\DeclareRobustCommand{\mlGreenDiamond}{\mlLegendLine{mlgreen}{%
+        (0,2.2pt) -- (2.2pt,0) -- (0,-2.2pt) -- (-2.2pt,0) -- cycle}}
+% 6. Cyan right-pointing triangle (7°)
+\DeclareRobustCommand{\mlCyanTriangle}{\mlLegendLine{mlcyan}{%
+        (2.2pt,0) -- (-1.3pt,2pt) -- (-1.3pt,-2pt) -- cycle}}
+% 7. Maroon upward triangle (10°)
+\DeclareRobustCommand{\mlMaroonTriangle}{\mlLegendLine{mlmaroon}{%
+        (0,2.2pt) -- (2pt,-1.3pt) -- (-2pt,-1.3pt) -- cycle}}
 
 % Define the modern MATLAB RGB colors
 \definecolor{mlblue}{RGB}{0,114,189}      % 1. Blue
@@ -56,24 +61,60 @@
 \definecolor{mlcyan}{RGB}{77,190,238}     % 6. Light Blue / Cyan
 \definecolor{mlmaroon}{RGB}{162,20,47}    % 7. Maroon
 
-\definecolor{mlblack}{RGB}{0,0,0}    % 7. Maroon
+\definecolor{mlblack}{RGB}{0,0,0}    % Black
+
+\definecolor{mlred}{rgb}{1,0,0}      % MATLAB 'r'
+\definecolor{mlpink}{rgb}{1,0,1}     % MATLAB 'm' (magenta)
+\definecolor{mldarkgreen}{rgb}{0,0.6,0}     % MATLAB green
+\definecolor{mloldblue}{rgb}{0,0,1}     % MATLAB old blue
+
+\tikzset{mlline/.style={line width=1.7pt}}
 
 % Create convenient inline legend line commands
-%\DeclareRobustCommand{\mlBlue}{\tikz[baseline=-0.6ex]\draw[mlblue, thick] (0,0) -- (0.4,0);}
-%\DeclareRobustCommand{\mlOrange}{\tikz[baseline=-0.6ex]\draw[mlorange, thick] (0,0) -- (0.4,0);}
-\DeclareRobustCommand{\mlYellow}{\tikz[baseline=-0.6ex]\draw[mlyellow, thick] (0,0) -- (0.4,0);}
-\DeclareRobustCommand{\mlPurple}{\tikz[baseline=-0.6ex]\draw[mlpurple, thick] (0,0) -- (0.4,0);}
-\DeclareRobustCommand{\mlGreen}{\tikz[baseline=-0.6ex]\draw[mlgreen, thick] (0,0) -- (0.4,0);}
-\DeclareRobustCommand{\mlCyan}{\tikz[baseline=-0.6ex]\draw[mlcyan, thick] (0,0) -- (0.4,0);}
-\DeclareRobustCommand{\mlMaroon}{\tikz[baseline=-0.6ex]\draw[mlmaroon, thick] (0,0) -- (0.4,0);}
+\DeclareRobustCommand{\mlBlue}{\tikz[baseline=-0.6ex]\draw[mlblue, mlline] (0,0) -- (0.4,0);}
+\DeclareRobustCommand{\mlOrange}{\tikz[baseline=-0.6ex]\draw[mlorange, mlline] (0,0) -- (0.4,0);}
+\DeclareRobustCommand{\mlYellow}{\tikz[baseline=-0.6ex]\draw[mlyellow, mlline] (0,0) -- (0.4,0);}
+\DeclareRobustCommand{\mlPurple}{\tikz[baseline=-0.6ex]\draw[mlpurple, mlline] (0,0) -- (0.4,0);}
+\DeclareRobustCommand{\mlGreen}{\tikz[baseline=-0.6ex]\draw[mlgreen, mlline] (0,0) -- (0.4,0);}
+\DeclareRobustCommand{\mlCyan}{\tikz[baseline=-0.6ex]\draw[mlcyan, mlline] (0,0) -- (0.4,0);}
+\DeclareRobustCommand{\mlMaroon}{\tikz[baseline=-0.6ex]\draw[mlmaroon, mlline] (0,0) -- (0.4,0);}
+
+\DeclareRobustCommand{\mlBlackDashed}{\tikz[baseline=-0.6ex]\draw[black, mlline, dash pattern=on 3pt off 2pt] (0,0) -- (0.4,0);}
+\DeclareRobustCommand{\mBlack}{\tikz[baseline=-0.6ex]\draw[mlblack, mlline] (0,0) -- (0.4,0);}
+\DeclareRobustCommand{\mlRed}{\tikz[baseline=-0.6ex]\draw[mlred, mlline] (0,0) -- (0.4,0);}
+\DeclareRobustCommand{\mlDarkGreen}{\tikz[baseline=-0.6ex]\draw[mldarkgreen, mlline] (0,0) -- (0.4,0);}
+\DeclareRobustCommand{\mlPink}{\tikz[baseline=-0.6ex]\draw[mlpink, mlline] (0,0) -- (0.4,0);}
+\DeclareRobustCommand{\mlOldBlue}{\tikz[baseline=-0.6ex]\draw[mloldblue, mlline] (0,0) -- (0.4,0);}
+
+\DeclareRobustCommand{\mlBlueDashDot}{\tikz[baseline=-0.6ex]\draw[mlblue, mlline, dash pattern=on 4pt off 1.5pt on 1pt off 1.5pt] (0,0) -- (0.4,0);}
+%\DeclareRobustCommand{\mlYellowDotted}{\tikz[baseline=-0.6ex]\draw[mlyellow, mlline, line cap=round, dash pattern=on 0pt off 3pt] (0,0) -- (0.4,0);}
+\DeclareRobustCommand{\mlYellowDotted}{\tikz[baseline=-0.6ex]\draw[mlyellow, mlline, dash pattern=on 1.5pt off 1.5pt] (0,0) -- (0.4,0);}
+
+
+% #1 colour, #2 line pattern, #3 marker path (centred at origin)
+\newcommand{\mlMarkerLine}[3]{%
+    \tikz[baseline=-0.6ex]{%
+        \draw[#1, mlline, #2] (0,0) -- (0.7,0);
+        \begin{scope}[shift={(0.35,0)}] \draw[#1, line width=0.9pt, fill=white] #3; \end{scope}}}
+
+\DeclareRobustCommand{\mlBlueDashDotSquare}{\mlMarkerLine{mlblue}{dash pattern=on 4pt off 1.5pt on 1pt off 1.5pt}{(-2.2pt,-2.2pt) rectangle (2.2pt,2.2pt)}}
+\DeclareRobustCommand{\mlDarkGreenDashedDiamond}{\mlMarkerLine{mldarkgreen}{dash pattern=on 3pt off 2pt}{(0,3pt) -- (3pt,0) -- (0,-3pt) -- (-3pt,0) -- cycle}}
+\DeclareRobustCommand{\mlRedCircle}{\mlMarkerLine{mlred}{}{(0,0) circle (2.4pt)}}
+
+\definecolor{mlmeshblue}{rgb}{0,0,0.8}
+\definecolor{mlmeshgray}{rgb}{0.7,0.7,0.7}
+
+\DeclareRobustCommand{\mlPrimaryMesh}{\tikz[baseline=-0.6ex]\draw[mlmeshblue, line width=0.9pt] (0,-0.09) rectangle (0.4,0.09);}
+\DeclareRobustCommand{\mlSecondaryMesh}{\tikz[baseline=-0.6ex]\draw[mlmeshgray, line width=0.9pt] (0,-0.09) rectangle (0.4,0.09);}
 
 
 
+%\DeclareRobustCommand{\mlBlackDashed}{\tikz[baseline=-0.6ex]\draw[black, thick, dash pattern=on 2pt off 1.5pt] (0,0) -- (0.4,0);}
 
 
 % Centered legend line helper
-\newcommand{\mlBlue}{\textcolor{mlblue}{\raisebox{0.5ex}{\rule{0.4cm}{1.5pt}}}}
-\newcommand{\mlOrange}{\textcolor{mlorange}{\raisebox{0.5ex}{\rule{0.4cm}{1.5pt}}}}
+%\newcommand{\mlBlue}{\textcolor{mlblue}{\raisebox{0.5ex}{\rule{0.4cm}{1.5pt}}}}
+%\newcommand{\mlOrange}{\textcolor{mlorange}{\raisebox{0.5ex}{\rule{0.4cm}{1.5pt}}}}
 
 
 % Helper macro for a line segment with a marker in the center
