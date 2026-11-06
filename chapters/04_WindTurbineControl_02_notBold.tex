@@ -562,10 +562,10 @@ Figure~\ref{fig:CtrlCmpMdlSweep}(b) shows results for the turbulent wind. The im
 
 
 \begin{figure} [ht]
-    \subfloat[Stepped wind sweep]{\includegraphics[width=0.495\textwidth]{figures/Figures_ADi/cmpCtrlTimeDomain_All_RefSimulinkClosedLoop_beta.eps}}\hfill
-    \subfloat[Turbulent wind, turbulence class B, 18~m/s mean speed]{\includegraphics[width=0.495\textwidth]{figures/Figures_ADi/cmpCtrlTimeDomain_All_RefSimulinkClosedLoopNTW18_beta.eps}}\hfill
+    \subfloat[Stepped wind sweep, mean cputime MPC 9.74$\cdot 10^{-4}$\,s]{\includegraphics[width=0.495\textwidth]{figures/Figures_ADi/cmpCtrlTimeDomain_All_RefSimulinkClosedLoop_beta.eps}}\hfill
+    \subfloat[Turbulent wind,  mean cputime MPC 9.88$\cdot 10^{-4}$\,s]{\includegraphics[width=0.495\textwidth]{figures/Figures_ADi/cmpCtrlTimeDomain_All_RefSimulinkClosedLoopNTW18_beta.eps}}\hfill
     %\subfloat[blc blc]{\includegraphics[width=0.31\textwidth]{figures/twoTurbinesGreedyOpt_2d.eps}}
-    \caption[Controller comparison on qLPV model Mdl2: Baseline PI vs.\ qLMPC for stepped wind sweep and turbulent wind.]{Controller comparison on qLPV model Mdl2: Baseline PI vs.\ qLMPC for stepped wind sweep and turbulent wind.  PI control (\mlBlue), qLMPC (\mlOrange) and power reference (\mlBlackDashed). Displayed signals: wind speed, control inputs, tower fore-aft
+    \caption[Controller comparison on qLPV model Mdl2: Baseline PI vs.\ qLMPC for stepped wind sweep and turbulent wind.]{Controller comparison on qLPV model Mdl2: Baseline PI (\mlBlue) vs.\ qLMPC (\mlOrange) for stepped wind sweep and turbulent wind (18~m/s mean, turbulence class B) with power reference~(\mlBlackDashed). Displayed signals: wind speed, control inputs, tower fore-aft
         accelerations, and power output.}
     \label{fig:CtrlCmpMdlSweep}
 \end{figure}
@@ -607,7 +607,7 @@ Figure~\ref{fig:CtrlCmpFilt2} shows both controllers on the plant with the wind 
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.495\textwidth]{figures/figDirConstr1/cmpTimeDomain_All5PIvsMPC_Filt.eps}
-    \caption[Controller comparison on qLPV model Mdl2 with filtered wind: Baseline PI and qLMPC.]{Controller comparison on qLPV model Mdl2 with filtered wind: Baseline PI (\mlBlue) and qLMPC (\mlOrange) on the plant with the rotor-effective wind filters for turbulent wind (18\,m/s mean, turbulence class B), pitch rate limit 13\textdegree/s. Displayed signals: freestream wind speed, pitch, states, and power.}
+    \caption[Controller comparison on qLPV model Mdl2 with filtered wind: Baseline PI and qLMPC.]{Controller comparison on qLPV model Mdl2 with filtered wind: Baseline PI (\mlBlue) and qLMPC (\mlOrange), qLMPC and Mdl2 with rotor-effective wind filters for turbulent wind (18\,m/s mean, turbulence class B), pitch rate limit 13\textdegree/s. Displayed signals: wind speed, pitch, states, and power.}
     \label{fig:CtrlCmpFilt2}
 \end{figure}
 The standard deviations of the pitch derivative, the rotor speed, the tower fore-aft acceleration and the power tracking error for Figures~\ref{fig:CtrlCmpRates} and~\ref{fig:CtrlCmpFilt2} are summarized in Table~\ref{tab:stddev_unified}.
